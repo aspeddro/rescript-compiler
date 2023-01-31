@@ -37,11 +37,6 @@ console.log(c);
 
 console.log(3);
 
-function H($star) {
-  return {};
-}
-
 exports.f = f;
 exports.N = N;
-exports.H = H;
 /*  Not a pure module */

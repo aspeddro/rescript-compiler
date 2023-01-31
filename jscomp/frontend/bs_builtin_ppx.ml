@@ -485,6 +485,9 @@ let rec structure_mapper (self : mapper) (stru : Ast_structure.t) =
                   Pstr_extension (({ txt = "private"; loc }, payload), _);
               }
               :: next -> (
+                match next with
+                | [] -> Location.raise_errorf ~loc "%%%%private extension should not be empty"
+                | _ -> (
                 match payload with
                 | PStr work ->
                     aux
@@ -493,7 +496,7 @@ let rec structure_mapper (self : mapper) (stru : Ast_structure.t) =
                       next
                 | PSig _ | PTyp _ | PPat _ ->
                     Location.raise_errorf ~loc
-                      "private extension is not support")
+                      "private extension is not support"))
             | _ -> expand_reverse acc (structure_mapper self rest)
           in
           aux [] stru
