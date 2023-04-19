@@ -93,3 +93,5 @@ playground/*.cmj
 playground/*.cmi
 playground/.netrc
 playground/compiler.js
+
+npm-releases

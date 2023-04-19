@@ -1,7 +1,9 @@
 const fs = require("fs");
 const os = require("os");
+// const platforms = require("../../scripts/platform");
 
-const artifactPath = require("../../scripts/bin_path").dirName;
+// const artifactPath = require("../../scripts/bin_path").dirName;
+const artifactPath = `${process.platform}-${process.arch}`
 const artifactName = "binaries-" + artifactPath;
 
 console.log("Artifact path:", artifactPath);

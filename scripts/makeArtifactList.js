@@ -12,6 +12,7 @@
 const { spawnSync, execSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const platforms = require("./platform")
 
 const isCheckMode = process.argv.includes("-check");
 
@@ -46,14 +47,14 @@ if (isCheckMode) {
 }
 
 function getFilesAddedByCI() {
-  const platforms = ["darwin", "darwinarm64", "linux", "win32"];
+  // const platforms = ["darwin", "darwinarm64", "linux", "win32"];
   const exes = ["bsb_helper.exe", "bsc.exe", "ninja.exe", "rescript.exe"];
 
   const files = ["ninja.COPYING"];
 
   for (let platform of platforms) {
     for (let exe of exes) {
-      files.push(`${platform}/${exe}`);
+      files.push(`${platform.os}-${platform.arch}/${exe}`);
     }
   }
 

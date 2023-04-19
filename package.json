@@ -12,6 +12,13 @@
     "bstracing": "lib/bstracing",
     "rescript": "rescript"
   },
+  "optionalDependencies": {
+    "@rescript/rescript-darwin-arm64": "11.0.0-alpha.4",
+    "@rescript/rescript-darwin-x64": "11.0.0-alpha.4",
+    "@rescript/rescript-linux-arm64": "11.0.0-alpha.4",
+    "@rescript/rescript-linux-x64": "11.0.0-alpha.4",
+    "@rescript/rescript-win32-x64": "11.0.0-alpha.4"
+  },
   "scripts": {
     "test": "node scripts/ciTest.js -all",
     "test-bsb": "node scripts/ciTest.js -bsb",
