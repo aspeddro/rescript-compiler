@@ -67,10 +67,10 @@ function main() {
     fs.rmSync(folder, { recursive: true, force: true });
   }
   fs.mkdirSync(folder);
-  generatePackage(platforms[3]);
-  // for (const platform of platforms) {
-  //   generatePackage(platform)
-  // }
+  // generatePackage(platforms[3]);
+  for (const platform of platforms) {
+    generatePackage(platform);
+  }
 }
 
 main();
