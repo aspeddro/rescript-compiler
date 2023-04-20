@@ -10,5 +10,5 @@ console.log("Artifact path:", name);
 // Pass artifactPath and artifactName to subsequent GitHub actions
 fs.appendFileSync(
   process.env.GITHUB_ENV,
-  `artifact_path=${artifactPath}${os.EOL}artifact_name=${artifactName}${os.EOL}`
+  `artifact_path=${name}${os.EOL}artifact_name=${artifactName}${os.EOL}`
 );
