@@ -1,4 +1,4 @@
-const name = `${process.platform}-${process.arch}`
+const name = `${process.platform}-${process.arch}`;
 const platforms = [
   {
     os: "darwin",
@@ -23,9 +23,9 @@ const platforms = [
   {
     os: "win32",
     arch: "x64",
-    exe: "rescript"
-  }
+    exe: "rescript",
+  },
 ];
 
-exports.platforms = platforms
-exports.name = name
+exports.platforms = platforms;
+exports.name = name;
