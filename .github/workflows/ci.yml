@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, buildjet-2vcpu-ubuntu-2204-arm]
+        os: [ubuntu-latest]
 
     runs-on: ${{matrix.os}}
 
@@ -59,44 +59,44 @@ jobs:
 
   # The full build including tests does not work on Linux ARM because setup-ocaml fails.
   # Therefore, only upload the binaries from the static build
-  upload-linux-arm64-binaries:
-    needs:
-      - static-binaries-linux
+  # upload-linux-arm64-binaries:
+  #   needs:
+  #     - static-binaries-linux
 
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+  #   runs-on: buildjet-2vcpu-ubuntu-2204-arm
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Download static linux binaries
-        if: runner.os == 'Linux'
-        uses: actions/download-artifact@v3
-        with:
-          name: static-binaries-linux-${{ runner.arch }}
+  #     - name: Download static linux binaries
+  #       if: runner.os == 'Linux'
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: static-binaries-linux-${{ runner.arch }}
 
-      - name: Make static linux binaries executable
-        if: runner.os == 'Linux'
-        run: |
-          chmod +x ninja/ninja
-          chmod +x _build/install/default/bin/*
+  #     - name: Make static linux binaries executable
+  #       if: runner.os == 'Linux'
+  #       run: |
+  #         chmod +x ninja/ninja
+  #         chmod +x _build/install/default/bin/*
 
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+  #     - name: Use Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
 
-      - name: Copy exes to platform bin dirs
-        run: node ./scripts/copyExes.js
+  #     - name: Copy exes to platform bin dirs
+  #       run: node ./scripts/copyExes.js
 
-      - name: Prepare artifact upload
-        run: node .github/workflows/get_artifact_info.js
+  #     - name: Prepare artifact upload
+  #       run: node .github/workflows/get_artifact_info.js
 
-      - name: "Upload artifacts: binaries"
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.artifact_name }}
-          path: ${{ env.artifact_path }}
+  #     - name: "Upload artifacts: binaries"
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: ${{ env.artifact_name }}
+  #         path: ${{ env.artifact_path }}
 
   build:
     needs: static-binaries-linux
@@ -291,7 +291,7 @@ jobs:
           [
             macos-latest,
             ubuntu-latest,
-            buildjet-2vcpu-ubuntu-2204-arm,
+            # buildjet-2vcpu-ubuntu-2204-arm,
             windows-latest,
           ]
 
