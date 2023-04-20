@@ -12,7 +12,7 @@
 const { spawnSync, execSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
-const platforms = require("./platform")
+const {platforms} = require("./platforms")
 
 const isCheckMode = process.argv.includes("-check");
 

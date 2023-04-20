@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const platforms = require('./platform');
+const { platforms } = require('./platforms');
 const fs = require('fs');
 const { duneBinDir } = require("./dune");
 const ninjaDir = "ninja";
@@ -32,7 +32,7 @@ function generatePackage(platform) {
 
   const description = `This is the ${platform.os} ${platform.arch} binary for ReScript.`;
   const pkg = {
-    name: `${owner}/${platform.bin}`,
+    name: `${owner}/rescript-${platform.os}-${platform.arch}`,
     version,
     preferUnplugged: true,
     description,
@@ -48,15 +48,15 @@ function generatePackage(platform) {
 
 ${description}`;
 
-  const dir = `${folder}/${platform.os}-${platform.arch}`;
+  const dir_pkg = `${folder}/${platform.os}-${platform.arch}`;
 
-  fs.mkdirSync(dir);
-  fs.writeFileSync(`${dir}/package.json`, JSON.stringify(pkg, null, 2));
-  fs.writeFileSync(`${dir}/README.md`, readme);
+  fs.mkdirSync(dir_pkg);
+  fs.writeFileSync(`${dir_pkg}/package.json`, JSON.stringify(pkg, null, 2));
+  fs.writeFileSync(`${dir_pkg}/README.md`, readme);
 
-  binaries.forEach((bin) => fs.copyFileSync(`${duneBinDir}/${bin}`, `${dir}/${bin}`))
-  fs.copyFileSync(`${ninjaDir}/ninja`, `${dir}/ninja`)
-  fs.cpSync("lib", `${dir}/lib`, { recursive: true });
+  binaries.forEach((bin) => fs.copyFileSync(`${duneBinDir}/${bin}`, `${dir_pkg}/${bin}`))
+  fs.copyFileSync(`${ninjaDir}/ninja`, `${dir_pkg}/ninja`)
+  fs.cpSync("lib", `${dir_pkg}/lib`, { recursive: true });
 
   console.log(`Package ${platform.os}-${platform.arch} created`);
 }

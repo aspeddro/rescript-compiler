@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
-const platforms = require('./platform')
+const { platforms } = require('./platforms')
 
 for (const platform of platforms) {
   fs.chmodSync(`binaries-${platform.os}-${platform.arch}`, 0o755);
