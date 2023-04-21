@@ -5,10 +5,6 @@ CREDITS.md
 LICENSE
 README.md
 bsc
-darwin/bsb_helper.exe
-darwin/bsc.exe
-darwin/ninja.exe
-darwin/rescript.exe
 docs/docson/build-schema.json
 lib/bstracing
 lib/cmi_cache.bin
@@ -957,14 +953,6 @@ lib/ocaml/uchar.cmt
 lib/ocaml/uchar.cmti
 lib/ocaml/uchar.ml
 lib/ocaml/uchar.mli
-linux/bsb_helper.exe
-linux/bsc.exe
-linux/ninja.exe
-linux/rescript.exe
-linuxarm64/bsb_helper.exe
-linuxarm64/bsc.exe
-linuxarm64/ninja.exe
-linuxarm64/rescript.exe
 ninja.COPYING
 package.json
 rescript
@@ -974,7 +962,3 @@ scripts/rescript_convert.js
 scripts/rescript_dump.js
 scripts/rescript_format.js
 scripts/rescript_postinstall.js
-win32/bsb_helper.exe
-win32/bsc.exe
-win32/ninja.exe
-win32/rescript.exe

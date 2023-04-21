@@ -48,15 +48,15 @@ if (isCheckMode) {
 
 function getFilesAddedByCI() {
   // const platforms = ["darwin", "darwinarm64", "linux", "win32"];
-  const exes = ["bsb_helper.exe", "bsc.exe", "ninja.exe", "rescript.exe"];
+  // const exes = ["bsb_helper.exe", "bsc.exe", "ninja.exe", "rescript.exe"];
 
   const files = ["ninja.COPYING"];
 
-  for (let platform of platforms) {
-    for (let exe of exes) {
-      files.push(`${platform.os}-${platform.arch}/${exe}`);
-    }
-  }
+  // for (let platform of platforms) {
+  //   for (let exe of exes) {
+  //     files.push(`${platform.os}-${platform.arch}/${exe}`);
+  //   }
+  // }
 
   return files;
 }

@@ -15,23 +15,24 @@ const bugs = "https://github.com/rescript-lang/rescript-compiler/issues";
 const license = "MIT";
 const version = JSON.parse(fs.readFileSync("./package.json", "utf8")).version;
 
-const files = [
-  "CHANGELOG.md",
-  "CREDITS.md",
-  "ninja.COPYING",
-  "bsc",
-  "rescript",
-  "docs/docson/build-schema.json",
-  "lib",
-  "scripts",
-];
+// const files = [
+//   "CHANGELOG.md",
+//   "CREDITS.md",
+//   "ninja.COPYING",
+//   "bsc",
+//   "rescript",
+//   "docs/docson/build-schema.json",
+//   "lib",
+//   "scripts",
+// ];
 
 const binaries = ["rescript", "bsc", "bsb_helper"];
 
 function generatePackage(platform) {
   const description = `This is the ${platform.os} ${platform.arch} binary for ReScript.`;
+  const name = `${owner}/rescript-${platform.os}-${platform.arch}`;
   const pkg = {
-    name: `${owner}/rescript-${platform.os}-${platform.arch}`,
+    name,
     version,
     preferUnplugged: true,
     description,
@@ -57,9 +58,9 @@ ${description}`;
     fs.copyFileSync(`${duneBinDir}/${bin}`, `${dir_pkg}/${bin}`)
   );
   fs.copyFileSync(`${ninjaDir}/ninja`, `${dir_pkg}/ninja`);
-  fs.cpSync("lib", `${dir_pkg}/lib`, { recursive: true });
+  // fs.cpSync("lib", `${dir_pkg}/lib`, { recursive: true });
 
-  console.log(`Package ${platform.os}-${platform.arch} created`);
+  console.log(`Package ${name} created`);
 }
 
 function main() {
@@ -67,7 +68,6 @@ function main() {
     fs.rmSync(folder, { recursive: true, force: true });
   }
   fs.mkdirSync(folder);
-  // generatePackage(platforms[3]);
   for (const platform of platforms) {
     generatePackage(platform);
   }
