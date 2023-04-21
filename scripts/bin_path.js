@@ -9,8 +9,7 @@ var path = require("path");
  * So we'll have "darwin", "linux" and "win32" for x64 arch,
  * but "darwinarm64" and "linuxarm64" for arm64 arch.
  */
-var binDirName =
-  process.arch === "x64" ? process.platform : process.platform + process.arch;
+var binDirName = `${process.platform}-${process.arch}`;
 
 /**
  *
