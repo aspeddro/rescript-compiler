@@ -141,26 +141,13 @@ jobs:
           chmod +x ninja/ninja
           chmod +x _build/install/default/bin/*
 
-      - name: Set opam repository url
-        id: repository
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "::set-output name=url::https://github.com/ocaml-opam/opam-repository-mingw.git#sunset"
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            echo "::set-output name=url::https://github.com/custom/opam-repository.git#macOS"
-          else
-            echo "::set-output name=url::https://github.com/ocaml/opam-repository.git"
-          fi
-
-      - name: Use OCaml ${{matrix.ocaml_compiler}} ${{ steps.repository.outputs.url }}
+      - name: Use OCaml ${{matrix.ocaml_compiler}}
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: ${{matrix.ocaml_compiler}}
           opam-pin: false
           opam-depext: false
-          opam-repositories: |
-            default: ${{ steps.repository.outputs.url }}
+          allow-prelease-opam: true
 
       - name: "Install OPAM dependencies"
         run: opam install . --deps-only
