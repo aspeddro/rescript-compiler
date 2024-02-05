@@ -3,15 +3,11 @@
 
 
 function f(param) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "noassert.res",
-          1,
-          14
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: noassert.res, Line: 1, Col: 14", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function h(param) {

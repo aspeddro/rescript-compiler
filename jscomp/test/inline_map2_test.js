@@ -434,15 +434,11 @@ function Make(Ord) {
       
     }
     if (typeof s2 !== "object") {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "inline_map2_test.res",
-              359,
-              11
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: inline_map2_test.res, Line: 359, Col: 11", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     var v2 = s2._1;
     var match$1 = split(v2, s1);
@@ -1082,15 +1078,11 @@ function merge(f, s1, s2) {
     
   }
   if (typeof s2 !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "inline_map2_test.res",
-            359,
-            11
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: inline_map2_test.res, Line: 359, Col: 11", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var v2 = s2._1;
   var match$1 = split(v2, s1);
@@ -1766,15 +1758,11 @@ function merge$1(f, s1, s2) {
     
   }
   if (typeof s2 !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "inline_map2_test.res",
-            359,
-            11
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: inline_map2_test.res, Line: 359, Col: 11", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var v2 = s2._1;
   var match$1 = split$1(v2, s1);

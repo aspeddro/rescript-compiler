@@ -212,139 +212,181 @@ function singleton(x) {
 }
 
 function unbalanced_left(x) {
-  if (typeof x === "object") {
-    if (x._0 === "Black") {
-      var match = x._1;
-      if (typeof match === "object") {
-        if (match._0 === "Black") {
-          return [
-                  balance_left({
-                        TAG: "Node",
-                        _0: "Red",
-                        _1: match._1,
-                        _2: match._2,
-                        _3: match._3
-                      }, x._2, x._3),
-                  true
-                ];
-        }
-        var match$1 = match._3;
-        if (typeof match$1 === "object" && match$1._0 === "Black") {
-          return [
-                  {
+  if (typeof x !== "object") {
+    throw new Error("Assertion Failure. File: rbset.res, Line: 64, Col: 9", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+  }
+  if (x._0 === "Black") {
+    var match = x._1;
+    if (typeof match !== "object") {
+      throw new Error("Assertion Failure. File: rbset.res, Line: 64, Col: 9", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
+    }
+    if (match._0 === "Black") {
+      return [
+              balance_left({
                     TAG: "Node",
-                    _0: "Black",
+                    _0: "Red",
                     _1: match._1,
                     _2: match._2,
-                    _3: balance_left({
-                          TAG: "Node",
-                          _0: "Red",
-                          _1: match$1._1,
-                          _2: match$1._2,
-                          _3: match$1._3
-                        }, x._2, x._3)
-                  },
-                  false
-                ];
-        }
-        
-      }
-      
-    } else {
-      var match$2 = x._1;
-      if (typeof match$2 === "object" && match$2._0 === "Black") {
-        return [
-                balance_left({
+                    _3: match._3
+                  }, x._2, x._3),
+              true
+            ];
+    }
+    var match$1 = match._3;
+    if (typeof match$1 !== "object") {
+      throw new Error("Assertion Failure. File: rbset.res, Line: 64, Col: 9", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
+    }
+    if (match$1._0 === "Black") {
+      return [
+              {
+                TAG: "Node",
+                _0: "Black",
+                _1: match._1,
+                _2: match._2,
+                _3: balance_left({
                       TAG: "Node",
                       _0: "Red",
-                      _1: match$2._1,
-                      _2: match$2._2,
-                      _3: match$2._3
-                    }, x._2, x._3),
-                false
-              ];
-      }
-      
+                      _1: match$1._1,
+                      _2: match$1._2,
+                      _3: match$1._3
+                    }, x._2, x._3)
+              },
+              false
+            ];
     }
+    throw new Error("Assertion Failure. File: rbset.res, Line: 64, Col: 9", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "rbset.res",
-          64,
-          9
-        ],
-        Error: new Error()
-      };
+  var match$2 = x._1;
+  if (typeof match$2 !== "object") {
+    throw new Error("Assertion Failure. File: rbset.res, Line: 64, Col: 9", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+  }
+  if (match$2._0 === "Black") {
+    return [
+            balance_left({
+                  TAG: "Node",
+                  _0: "Red",
+                  _1: match$2._1,
+                  _2: match$2._2,
+                  _3: match$2._3
+                }, x._2, x._3),
+            false
+          ];
+  }
+  throw new Error("Assertion Failure. File: rbset.res, Line: 64, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function unbalanced_right(x) {
-  if (typeof x === "object") {
-    if (x._0 === "Black") {
-      var match = x._3;
-      var x$1 = x._2;
-      var a = x._1;
-      if (typeof match === "object") {
-        if (match._0 === "Black") {
-          return [
-                  balance_right(a, x$1, {
-                        TAG: "Node",
-                        _0: "Red",
-                        _1: match._1,
-                        _2: match._2,
-                        _3: match._3
-                      }),
-                  true
-                ];
-        }
-        var match$1 = match._1;
-        if (typeof match$1 === "object" && match$1._0 === "Black") {
-          return [
-                  {
+  if (typeof x !== "object") {
+    throw new Error("Assertion Failure. File: rbset.res, Line: 75, Col: 9", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+  }
+  if (x._0 === "Black") {
+    var match = x._3;
+    var x$1 = x._2;
+    var a = x._1;
+    if (typeof match !== "object") {
+      throw new Error("Assertion Failure. File: rbset.res, Line: 75, Col: 9", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
+    }
+    if (match._0 === "Black") {
+      return [
+              balance_right(a, x$1, {
                     TAG: "Node",
-                    _0: "Black",
-                    _1: balance_right(a, x$1, {
-                          TAG: "Node",
-                          _0: "Red",
-                          _1: match$1._1,
-                          _2: match$1._2,
-                          _3: match$1._3
-                        }),
+                    _0: "Red",
+                    _1: match._1,
                     _2: match._2,
                     _3: match._3
-                  },
-                  false
-                ];
-        }
-        
-      }
-      
-    } else {
-      var match$2 = x._3;
-      if (typeof match$2 === "object" && match$2._0 === "Black") {
-        return [
-                balance_right(x._1, x._2, {
+                  }),
+              true
+            ];
+    }
+    var match$1 = match._1;
+    if (typeof match$1 !== "object") {
+      throw new Error("Assertion Failure. File: rbset.res, Line: 75, Col: 9", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
+    }
+    if (match$1._0 === "Black") {
+      return [
+              {
+                TAG: "Node",
+                _0: "Black",
+                _1: balance_right(a, x$1, {
                       TAG: "Node",
                       _0: "Red",
-                      _1: match$2._1,
-                      _2: match$2._2,
-                      _3: match$2._3
+                      _1: match$1._1,
+                      _2: match$1._2,
+                      _3: match$1._3
                     }),
-                false
-              ];
-      }
-      
+                _2: match._2,
+                _3: match._3
+              },
+              false
+            ];
     }
+    throw new Error("Assertion Failure. File: rbset.res, Line: 75, Col: 9", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "rbset.res",
-          75,
-          9
-        ],
-        Error: new Error()
-      };
+  var match$2 = x._3;
+  if (typeof match$2 !== "object") {
+    throw new Error("Assertion Failure. File: rbset.res, Line: 75, Col: 9", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+  }
+  if (match$2._0 === "Black") {
+    return [
+            balance_right(x._1, x._2, {
+                  TAG: "Node",
+                  _0: "Red",
+                  _1: match$2._1,
+                  _2: match$2._2,
+                  _3: match$2._3
+                }),
+            false
+          ];
+  }
+  throw new Error("Assertion Failure. File: rbset.res, Line: 75, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function lbalance(x1, x2, x3) {
@@ -560,15 +602,11 @@ function add(x, s) {
 
 function remove_min(x) {
   if (typeof x !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "rbset.res",
-            138,
-            4
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: rbset.res, Line: 138, Col: 4", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var c = x._0;
   if (c === "Black") {
@@ -596,15 +634,11 @@ function remove_min(x) {
                 false
               ];
       }
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "rbset.res",
-              138,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: rbset.res, Line: 138, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   } else {

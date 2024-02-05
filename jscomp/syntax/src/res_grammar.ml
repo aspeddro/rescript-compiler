@@ -147,7 +147,7 @@ let isAtomicTypExprStart = function
   | _ -> false
 
 let isExprStart = function
-  | Token.Assert | At | Await | Backtick | Bang | Codepoint _ | False | Float _
+  | Token.At | Await | Backtick | Bang | Codepoint _ | False | Float _
   | For | Hash | If | Int _ | Lazy | Lbrace | Lbracket | LessThan | Lident _
   | List | Lparen | Minus | MinusDot | Module | Percent | Plus | PlusDot
   | String _ | Switch | True | Try | Uident _ | Underscore (* _ => doThings() *)
@@ -256,7 +256,7 @@ let isAttributeStart = function
 let isJsxChildStart = isAtomicExprStart
 
 let isBlockExprStart = function
-  | Token.Assert | At | Await | Backtick | Bang | Codepoint _ | Exception
+  | Token.At | Await | Backtick | Bang | Codepoint _ | Exception
   | False | Float _ | For | Forwardslash | Hash | If | Int _ | Lazy | Lbrace
   | Lbracket | LessThan | Let | Lident _ | List | Lparen | Minus | MinusDot
   | Module | Open | Percent | Plus | PlusDot | String _ | Switch | True | Try

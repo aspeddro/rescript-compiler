@@ -51,15 +51,11 @@ function bench(param) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_HashMap.has(empty, i$1)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              37,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 37, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
@@ -73,33 +69,25 @@ function bench2(m) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_HashMap.has(empty, String(i$1))) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              61,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 61, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
   for(var i$2 = 0; i$2 <= 1000000; ++i$2){
     Belt_HashMap.remove(empty, String(i$2));
   }
-  if (empty.size === 0) {
-    return ;
+  if (empty.size !== 0) {
+    throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 66, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_hashtbl_string_test.res",
-          66,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 function bench3(m) {
@@ -111,33 +99,25 @@ function bench3(m) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_MapDict.has(table, String(i$1), cmp)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              81,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 81, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
   for(var i$2 = 0; i$2 <= 1000000; ++i$2){
     table = Belt_MapDict.remove(table, String(i$2), cmp);
   }
-  if (Belt_MapDict.size(table) === 0) {
-    return ;
+  if (Belt_MapDict.size(table) !== 0) {
+    throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 86, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_hashtbl_string_test.res",
-          86,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 var Sx = Belt_Id.comparable(Caml.string_compare);
@@ -149,33 +129,25 @@ function bench4(param) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_HashMapString.has(table, String(i$1))) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              98,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 98, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
   for(var i$2 = 0; i$2 <= 1000000; ++i$2){
     Belt_HashMapString.remove(table, String(i$2));
   }
-  if (Belt_HashMapString.isEmpty(table)) {
-    return ;
+  if (!Belt_HashMapString.isEmpty(table)) {
+    throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 103, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_hashtbl_string_test.res",
-          103,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 function bench5(param) {
@@ -188,15 +160,11 @@ function bench5(param) {
   console.time("bs_hashtbl_string_test.res 117");
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_HashMap.has(table, i$1)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              119,
-              6
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 119, Col: 6", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
@@ -206,18 +174,14 @@ function bench5(param) {
     Belt_HashMap.remove(table, i$2);
   }
   console.timeEnd("bs_hashtbl_string_test.res 122");
-  if (Belt_HashMap.isEmpty(table)) {
-    return ;
+  if (!Belt_HashMap.isEmpty(table)) {
+    throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 127, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_hashtbl_string_test.res",
-          127,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 function bench6(param) {
@@ -227,33 +191,25 @@ function bench6(param) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_HashMapInt.has(table, i$1)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              138,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 138, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
   for(var i$2 = 0; i$2 <= 1000000; ++i$2){
     Belt_HashMapInt.remove(table, i$2);
   }
-  if (table.size === 0) {
-    return ;
+  if (table.size !== 0) {
+    throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 143, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_hashtbl_string_test.res",
-          143,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 function bench7(param) {
@@ -263,33 +219,25 @@ function bench7(param) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Belt_HashSetInt.has(table, i$1)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_hashtbl_string_test.res",
-              160,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 160, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
   for(var i$2 = 0; i$2 <= 1000000; ++i$2){
     Belt_HashSetInt.remove(table, i$2);
   }
-  if (table.size === 0) {
-    return ;
+  if (table.size !== 0) {
+    throw new Error("Assertion Failure. File: bs_hashtbl_string_test.res, Line: 170, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_hashtbl_string_test.res",
-          170,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 console.time("bs_hashtbl_string_test.res 181");

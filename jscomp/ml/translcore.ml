@@ -305,6 +305,7 @@ let primitives_table =
       ("%raise", Praise Raise_regular);
       ("%reraise", Praise Raise_reraise);
       ("%raise_notrace", Praise Raise_notrace);
+      ("%assert", Passert);
       ("%sequand", Psequand);
       ("%sequor", Psequor);
       ("%boolnot", Pnot);

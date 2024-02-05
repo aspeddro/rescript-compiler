@@ -97,28 +97,20 @@ add_test("File \"js_json_test.res\", line 22, characters 11-18", (function (para
         ty2._0.forEach(function (x) {
               var ty3 = Js_json.classify(x);
               if (typeof ty3 !== "object") {
-                throw {
-                      RE_EXN_ID: "Assert_failure",
-                      _1: [
-                        "js_json_test.res",
-                        37,
-                        19
-                      ],
-                      Error: new Error()
-                    };
+                throw new Error("Assertion Failure. File: js_json_test.res, Line: 37, Col: 19", {
+                          cause: {
+                            RE_EXN_ID: "Assertion_failure"
+                          }
+                        });
               }
               if (ty3.TAG === "JSONNumber") {
                 return ;
               }
-              throw {
-                    RE_EXN_ID: "Assert_failure",
-                    _1: [
-                      "js_json_test.res",
-                      37,
-                      19
-                    ],
-                    Error: new Error()
-                  };
+              throw new Error("Assertion Failure. File: js_json_test.res, Line: 37, Col: 19", {
+                        cause: {
+                          RE_EXN_ID: "Assertion_failure"
+                        }
+                      });
             });
         return {
                 TAG: "Ok",
@@ -257,15 +249,11 @@ function option_get(x) {
   if (x !== undefined) {
     return Caml_option.valFromOption(x);
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "js_json_test.res",
-          111,
-          12
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: js_json_test.res, Line: 111, Col: 12", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 var dict = {};

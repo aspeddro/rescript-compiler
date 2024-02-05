@@ -14,6 +14,9 @@
 /* Almost rewritten  by authors of ReScript */
 
 @@bs.config({flags: ["-bs-noassertfalse"]})
+@@warning("-21")
+external assert: bool => 'a = "%assert"
+
 type rec node<'k, 'v> = {
   @as("k") mutable key: 'k,
   @as("v") mutable value: 'v,

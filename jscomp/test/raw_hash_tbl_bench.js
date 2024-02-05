@@ -10,15 +10,11 @@ function bench(param) {
   }
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Hashtbl.mem(table, i$1)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "raw_hash_tbl_bench.res",
-              8,
-              4
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: raw_hash_tbl_bench.res, Line: 8, Col: 4", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }

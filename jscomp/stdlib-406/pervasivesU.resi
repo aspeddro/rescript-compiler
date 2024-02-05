@@ -52,6 +52,8 @@ external raise: exn => 'a = "%raise"
 */
 external raise_notrace: exn => 'a = "%raise_notrace"
 
+external assert: bool => 'a = "%assert"
+
 /** Raise exception [Invalid_argument] with the given string. */
 let invalid_arg: string => 'a
 

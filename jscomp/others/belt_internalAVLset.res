@@ -30,6 +30,9 @@ type rec node<'value> = {
 }
 and t<'value> = option<node<'value>>
 
+@@warning("-21")
+external assert: bool => 'a = "%assert"
+
 module A = Belt_Array
 module S = Belt_SortArray
 

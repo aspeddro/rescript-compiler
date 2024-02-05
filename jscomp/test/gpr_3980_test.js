@@ -7,42 +7,30 @@ var match = 1;
 
 if (match !== undefined) {
   if (match !== 1) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "gpr_3980_test.res",
-            15,
-            7
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: gpr_3980_test.res, Line: 15, Col: 7", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var match$1 = 1;
   if (match$1 !== 1) {
     if (match$1 !== 2) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "gpr_3980_test.res",
-              13,
-              9
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: gpr_3980_test.res, Line: 13, Col: 9", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     Js_math.floor(1);
   }
   
 } else {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "gpr_3980_test.res",
-          15,
-          7
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: gpr_3980_test.res, Line: 15, Col: 7", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 /*  Not a pure module */

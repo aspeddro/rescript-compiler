@@ -1,5 +1,5 @@
 @@bs.config({flags: ["-bs-noassertfalse"]})
-
+external assert: bool => 'a = "%assert"
 type key = int
 
 module N = Belt_internalAVLtree

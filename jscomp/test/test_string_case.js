@@ -9,15 +9,11 @@ function f(x) {
     case "bcde" :
         return 1;
     default:
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "test_string_case.res",
-              5,
-              9
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: test_string_case.res, Line: 5, Col: 9", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
   }
 }
 

@@ -217,6 +217,7 @@ let lam_prim ~primitive:(p : Lambda.primitive) ~args loc : Lam.t =
   | Pduprecord -> prim ~primitive:Pduprecord ~args loc
   | Plazyforce -> prim ~primitive:Plazyforce ~args loc
   | Praise _ -> prim ~primitive:Praise ~args loc
+  | Passert -> prim ~primitive:Passert ~args loc
   | Psequand -> prim ~primitive:Psequand ~args loc
   | Psequor -> prim ~primitive:Psequor ~args loc
   | Pnot -> prim ~primitive:Pnot ~args loc

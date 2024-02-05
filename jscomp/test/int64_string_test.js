@@ -1307,28 +1307,20 @@ var random_data = {
 Belt_List.forEach(random_data, (function (u) {
         if (u) {
           if (u.tl) {
-            throw {
-                  RE_EXN_ID: "Assert_failure",
-                  _1: [
-                    "int64_string_test.res",
-                    191,
-                    9
-                  ],
-                  Error: new Error()
-                };
+            throw new Error("Assertion Failure. File: int64_string_test.res, Line: 191, Col: 9", {
+                      cause: {
+                        RE_EXN_ID: "Assertion_failure"
+                      }
+                    });
           }
           var match = u.hd;
           return eq("File \"int64_string_test.res\", line 190, characters 25-32", Caml_int64.to_string(match[0]), match[1]);
         }
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "int64_string_test.res",
-                191,
-                9
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: int64_string_test.res, Line: 191, Col: 9", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       }));
 
 eq("File \"int64_string_test.res\", line 195, characters 3-10", Caml_int64.to_string([

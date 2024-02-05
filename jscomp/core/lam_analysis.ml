@@ -104,7 +104,7 @@ let rec no_side_effects (lam : Lam.t) : bool =
       (* Operations on boxed integers (Nativeint.t, Int32.t, Int64.t) *)
       | Parraysets
       (* byte swap *)
-      | Parraysetu | Poffsetref _ | Praise | Plazyforce | Psetfield _ ->
+      | Parraysetu | Poffsetref _ | Praise | Passert  | Plazyforce | Psetfield _ ->
           false)
   | Llet (_, _, arg, body) -> no_side_effects arg && no_side_effects body
   | Lswitch (_, _) -> false

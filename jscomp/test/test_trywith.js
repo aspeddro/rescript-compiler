@@ -130,15 +130,11 @@ function f(x) {
   if (x.TAG === "D") {
     return 1;
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "test_trywith.res",
-          59,
-          9
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: test_trywith.res, Line: 59, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 var u1 = "bad character decimal encoding \\";

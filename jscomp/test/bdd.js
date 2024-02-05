@@ -67,25 +67,17 @@ function resize(newSize) {
       var n = bucket.hd;
       if (typeof n !== "object") {
         if (n === "One") {
-          throw {
-                RE_EXN_ID: "Assert_failure",
-                _1: [
-                  "bdd.res",
-                  60,
-                  13
-                ],
-                Error: new Error()
-              };
+          throw new Error("Assertion Failure. File: bdd.res, Line: 60, Col: 13", {
+                    cause: {
+                      RE_EXN_ID: "Assertion_failure"
+                    }
+                  });
         }
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "bdd.res",
-                60,
-                13
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: bdd.res, Line: 60, Col: 13", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       } else {
         var ind = hashVal(getId(n._0), getId(n._3), n._1) & newSz_1;
         Caml_array.set(newArr, ind, {
@@ -143,25 +135,17 @@ function mkNode(low, v, high) {
       var n = b.hd;
       if (typeof n !== "object") {
         if (n === "One") {
-          throw {
-                RE_EXN_ID: "Assert_failure",
-                _1: [
-                  "bdd.res",
-                  121,
-                  15
-                ],
-                Error: new Error()
-              };
+          throw new Error("Assertion Failure. File: bdd.res, Line: 121, Col: 15", {
+                    cause: {
+                      RE_EXN_ID: "Assertion_failure"
+                    }
+                  });
         }
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "bdd.res",
-                121,
-                15
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: bdd.res, Line: 121, Col: 15", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       } else {
         if (v === n._1 && idl === getId(n._0) && idh === getId(n._3)) {
           return n;
@@ -397,18 +381,14 @@ function main(param) {
   for(var i = 1; i <= 100; ++i){
     succeeded = succeeded && test_hwb(bdd, random_vars(22));
   }
-  if (succeeded) {
-    return ;
+  if (!succeeded) {
+    throw new Error("Assertion Failure. File: bdd.res, Line: 301, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bdd.res",
-          301,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 main();

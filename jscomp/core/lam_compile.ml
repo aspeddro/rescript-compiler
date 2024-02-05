@@ -1510,6 +1510,34 @@ and compile_prim (prim_info : Lam.prim_info)
          while ocaml it's an expression, we should remove such things in lambda optimizations
       *)
       | { value = None } -> assert false)
+  (* TODO: @aspeddro *)
+  | { primitive = Passert; args = [e]; _} -> (
+      match
+          compile_lambda { lambda_cxt with continuation = NeedValue Not_tail } e
+        with
+        | { block; value = Some v } ->
+          let cause = E.obj [
+            (Lit "cause",
+              E.obj [
+                (Lit "RE_EXN_ID", E.str "Assertion_failure")
+            ])] in
+
+          let loc_start = prim_info.loc.loc_start in
+          let fname = loc_start.pos_fname |> Filename.basename in
+          let line = loc_start.pos_lnum in
+          let col = loc_start.pos_cnum - loc_start.pos_bol in
+
+          let message = Printf.sprintf "Assertion Failure. File: %s, Line: %d, Col: %d" fname line col in
+
+          let statement = S.throw_stmt (E.new_ (E.js_global "Error") [E.str message; cause]) in
+
+          Js_output.make
+            [S.if_ v block ~else_:[statement]]
+            ~value:E.undefined ~output_finished:False
+
+        | { value = None } -> assert false
+
+      )
   | { primitive = Psequand; args = [ l; r ]; _ } ->
       compile_sequand l r lambda_cxt
   | { primitive = Psequor; args = [ l; r ] } -> compile_sequor l r lambda_cxt

@@ -247,15 +247,11 @@ function internal_bal(l, v, r) {
   hr = typeof r !== "object" ? 0 : r._3;
   if (hl > (hr + 2 | 0)) {
     if (typeof l !== "object") {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "set_gen.res",
-              278,
-              15
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: set_gen.res, Line: 278, Col: 15", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     var lr = l._2;
     var lv = l._1;
@@ -266,15 +262,11 @@ function internal_bal(l, v, r) {
     if (typeof lr === "object") {
       return create(create(ll, lv, lr._0), lr._1, create(lr._2, v, r));
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "set_gen.res",
-            288,
-            19
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: set_gen.res, Line: 288, Col: 19", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (hr <= (hl + 2 | 0)) {
     return {
@@ -286,15 +278,11 @@ function internal_bal(l, v, r) {
           };
   }
   if (typeof r !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "set_gen.res",
-            300,
-            15
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: set_gen.res, Line: 300, Col: 15", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var rr = r._2;
   var rv = r._1;
@@ -305,15 +293,11 @@ function internal_bal(l, v, r) {
   if (typeof rl === "object") {
     return create(create(l, v, rl._0), rl._1, create(rl._2, rv, rr));
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "set_gen.res",
-          306,
-          19
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: set_gen.res, Line: 306, Col: 19", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function remove_min_elt(x) {
@@ -532,15 +516,11 @@ function of_sorted_list(l) {
               match$4[1]
             ];
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "set_gen.res",
-            447,
-            18
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: set_gen.res, Line: 447, Col: 18", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   };
   return sub(List.length(l), l)[0];
 }

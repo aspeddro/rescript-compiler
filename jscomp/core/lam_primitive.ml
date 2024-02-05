@@ -52,6 +52,7 @@ type t =
   | Pjs_object_create of External_arg_spec.obj_params
   (* Exceptions *)
   | Praise
+  | Passert
   (* Boolean operations *)
   | Psequand
   | Psequor
@@ -174,6 +175,7 @@ let eq_primitive_approx (lhs : t) (rhs : t) =
   | Pwrap_exn -> rhs = Pwrap_exn
   | Pbytes_to_string -> rhs = Pbytes_to_string
   | Praise -> rhs = Praise
+  | Passert -> rhs = Passert
   | Psequand -> rhs = Psequand
   | Psequor -> rhs = Psequor
   | Pnot -> rhs = Pnot

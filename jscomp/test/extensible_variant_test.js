@@ -24,15 +24,11 @@ function to_int(x) {
   if (x.RE_EXN_ID === Int$1) {
     return x._2;
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "extensible_variant_test.res",
-          16,
-          9
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: extensible_variant_test.res, Line: 16, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 var suites_0 = [

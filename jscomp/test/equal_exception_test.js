@@ -13,52 +13,36 @@ var v = "gso";
 
 function is_equal(param) {
   if (Caml_bytes.get(Bytes.make(3, /* 'a' */97), 0) !== /* 'a' */97) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "equal_exception_test.res",
-            4,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: equal_exception_test.res, Line: 4, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (Bytes.make(3, /* 'a' */97)[0] !== /* 'a' */97) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "equal_exception_test.res",
-            5,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: equal_exception_test.res, Line: 5, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var u = Bytes.make(3, /* 'a' */97);
   u[0] = /* 'b' */98;
   if (u[0] !== /* 'b' */98) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "equal_exception_test.res",
-            8,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: equal_exception_test.res, Line: 8, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  if (Caml_string.get(v, 0) === /* 'g' */103) {
-    return ;
+  if (Caml_string.get(v, 0) !== /* 'g' */103) {
+    throw new Error("Assertion Failure. File: equal_exception_test.res, Line: 9, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "equal_exception_test.res",
-          9,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 function is_exception(param) {
@@ -154,27 +138,19 @@ var Not_found = /* @__PURE__ */Caml_exceptions.create("Equal_exception_test.Not_
 if (Caml_obj.equal(e, {
         RE_EXN_ID: Not_found
       }) !== false) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "equal_exception_test.res",
-          50,
-          0
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: equal_exception_test.res, Line: 50, Col: 0", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 if (Not_found === "Not_found" !== false) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "equal_exception_test.res",
-          51,
-          0
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: equal_exception_test.res, Line: 51, Col: 0", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 Mt.from_suites("exception", suites);

@@ -141,15 +141,11 @@ function lorem(tr) {
   if (typeof tmp !== "object") {
     return "Lf";
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "flexible_array_test.res",
-          80,
-          9
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: flexible_array_test.res, Line: 80, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 var empty = [
@@ -298,7 +294,7 @@ function $eq$tilde(x, y) {
   return Caml_obj.equal(x, of_array(y));
 }
 
-var u = of_array([
+of_array([
       1,
       2,
       2,
@@ -306,27 +302,6 @@ var u = of_array([
       3,
       6
     ]);
-
-var x = sort(u);
-
-if (!Caml_obj.equal(x, of_array([
-            1,
-            2,
-            2,
-            3,
-            5,
-            6
-          ]))) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "flexible_array_test.res",
-          184,
-          2
-        ],
-        Error: new Error()
-      };
-}
 
 var v = $$Array.init(500, (function (i) {
         return 500 - i | 0;
@@ -336,9 +311,9 @@ var y = $$Array.init(500, (function (i) {
         return i + 1 | 0;
       }));
 
-var x$1 = sort(of_array(v));
+var x = sort(of_array(v));
 
-Caml_obj.equal(x$1, of_array(y));
+Caml_obj.equal(x, of_array(y));
 
 exports.sub = sub;
 exports.update = update;
@@ -347,4 +322,4 @@ exports.loext = loext;
 exports.lorem = lorem;
 exports.Int_array = Int_array;
 exports.$eq$tilde = $eq$tilde;
-/* u Not a pure module */
+/*  Not a pure module */

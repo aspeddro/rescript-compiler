@@ -13,15 +13,11 @@ function bench(param) {
   console.time("bs_rbset_int_bench.res 11");
   for(var i$1 = 0; i$1 <= 1000000; ++i$1){
     if (!Rbset.mem(i$1, data)) {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "bs_rbset_int_bench.res",
-              13,
-              6
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: bs_rbset_int_bench.res, Line: 13, Col: 6", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     
   }
@@ -31,18 +27,14 @@ function bench(param) {
     data = Rbset.remove(i$2, data);
   }
   console.timeEnd("bs_rbset_int_bench.res 16");
-  if (Rbset.cardinal(data) === 0) {
-    return ;
+  if (Rbset.cardinal(data) !== 0) {
+    throw new Error("Assertion Failure. File: bs_rbset_int_bench.res, Line: 21, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_rbset_int_bench.res",
-          21,
-          2
-        ],
-        Error: new Error()
-      };
+  
 }
 
 console.time("bs_rbset_int_bench.res 24");

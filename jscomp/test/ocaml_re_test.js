@@ -1078,15 +1078,11 @@ function split_at_match_rec(_l$p, _x) {
         
       }
     } else {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "ocaml_re_test.res",
-              816,
-              16
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: ocaml_re_test.res, Line: 816, Col: 16", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
   };
 }
@@ -1896,15 +1892,11 @@ function colorize(c, regexp) {
               _regexp = regexp._1;
               continue ;
           default:
-            throw {
-                  RE_EXN_ID: "Assert_failure",
-                  _1: [
-                    "ocaml_re_test.res",
-                    2169,
-                    8
-                  ],
-                  Error: new Error()
-                };
+            throw new Error("Assertion Failure. File: ocaml_re_test.res, Line: 2169, Col: 8", {
+                      cause: {
+                        RE_EXN_ID: "Assertion_failure"
+                      }
+                    });
         }
       }
     };
@@ -2524,15 +2516,11 @@ function translate(ids, kind, _ign_group, ign_case, _greedy, pos, cache, c, _x) 
                     match$5[1]
                   ];
         default:
-          throw {
-                RE_EXN_ID: "Assert_failure",
-                _1: [
-                  "ocaml_re_test.res",
-                  2403,
-                  80
-                ],
-                Error: new Error()
-              };
+          throw new Error("Assertion Failure. File: ocaml_re_test.res, Line: 2403, Col: 80", {
+                    cause: {
+                      RE_EXN_ID: "Assertion_failure"
+                    }
+                  });
       }
     }
   };
@@ -2566,28 +2554,20 @@ function case_insens(s) {
 
 function as_set(x) {
   if (typeof x !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "ocaml_re_test.res",
-            2438,
-            11
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: ocaml_re_test.res, Line: 2438, Col: 11", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (x.TAG === "Set") {
     return x._0;
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "ocaml_re_test.res",
-          2438,
-          11
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: ocaml_re_test.res, Line: 2438, Col: 11", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function handle_case(_ign_case, _x) {
@@ -3412,6 +3392,69 @@ function parse(multiline, dollar_endonly, dotall, ungreedy, s) {
             };
     }
   };
+  var piece = function (param) {
+    var r = atom();
+    if (accept(/* '*' */42)) {
+      return greedy_mod(repn(r, 0, undefined));
+    }
+    if (accept(/* '+' */43)) {
+      return greedy_mod(repn(r, 1, undefined));
+    }
+    if (accept(/* '?' */63)) {
+      return greedy_mod(repn(r, 0, 1));
+    }
+    if (!accept(/* '{' */123)) {
+      return r;
+    }
+    var i$1 = integer();
+    if (i$1 !== undefined) {
+      var j = accept(/* ',' */44) ? integer() : i$1;
+      if (!accept(/* '}' */125)) {
+        throw {
+              RE_EXN_ID: Parse_error,
+              Error: new Error()
+            };
+      }
+      if (j !== undefined && j < i$1) {
+        throw {
+              RE_EXN_ID: Parse_error,
+              Error: new Error()
+            };
+      }
+      return greedy_mod(repn(r, i$1, j));
+    }
+    i.contents = i.contents - 1 | 0;
+    return r;
+  };
+  var branch$p = function (_left) {
+    while(true) {
+      var left = _left;
+      if (i.contents === l || test(/* '|' */124) || test(/* ')' */41)) {
+        return seq$2(List.rev(left));
+      }
+      _left = {
+        hd: piece(),
+        tl: left
+      };
+      continue ;
+    };
+  };
+  var regexp$p = function (_left) {
+    while(true) {
+      var left = _left;
+      if (!accept(/* '|' */124)) {
+        return left;
+      }
+      _left = alt$1({
+            hd: left,
+            tl: {
+              hd: branch$p(/* [] */0),
+              tl: /* [] */0
+            }
+          });
+      continue ;
+    };
+  };
   var atom = function (param) {
     if (accept(/* '.' */46)) {
       if (dotall) {
@@ -3721,6 +3764,87 @@ function parse(multiline, dollar_endonly, dotall, ungreedy, s) {
       };
     }
   };
+  var bracket = function (_s) {
+    while(true) {
+      var s = _s;
+      if (s !== /* [] */0 && accept(/* ']' */93)) {
+        return s;
+      }
+      var match = $$char();
+      if (match.NAME === "Char") {
+        var c = match.VAL;
+        if (accept(/* '-' */45)) {
+          if (accept(/* ']' */93)) {
+            return {
+                    hd: {
+                      TAG: "Set",
+                      _0: single(c)
+                    },
+                    tl: {
+                      hd: {
+                        TAG: "Set",
+                        _0: {
+                          hd: [
+                            /* '-' */45,
+                            /* '-' */45
+                          ],
+                          tl: /* [] */0
+                        }
+                      },
+                      tl: s
+                    }
+                  };
+          }
+          var match$1 = $$char();
+          if (match$1.NAME !== "Char") {
+            return {
+                    hd: {
+                      TAG: "Set",
+                      _0: single(c)
+                    },
+                    tl: {
+                      hd: {
+                        TAG: "Set",
+                        _0: {
+                          hd: [
+                            /* '-' */45,
+                            /* '-' */45
+                          ],
+                          tl: /* [] */0
+                        }
+                      },
+                      tl: {
+                        hd: match$1.VAL,
+                        tl: s
+                      }
+                    }
+                  };
+          }
+          _s = {
+            hd: {
+              TAG: "Set",
+              _0: seq(c, match$1.VAL)
+            },
+            tl: s
+          };
+          continue ;
+        }
+        _s = {
+          hd: {
+            TAG: "Set",
+            _0: single(c)
+          },
+          tl: s
+        };
+        continue ;
+      }
+      _s = {
+        hd: match.VAL,
+        tl: s
+      };
+      continue ;
+    };
+  };
   var $$char = function (param) {
     if (i.contents === l) {
       throw {
@@ -4015,150 +4139,6 @@ function parse(multiline, dollar_endonly, dotall, ungreedy, s) {
               VAL: c$2
             };
     }
-  };
-  var bracket = function (_s) {
-    while(true) {
-      var s = _s;
-      if (s !== /* [] */0 && accept(/* ']' */93)) {
-        return s;
-      }
-      var match = $$char();
-      if (match.NAME === "Char") {
-        var c = match.VAL;
-        if (accept(/* '-' */45)) {
-          if (accept(/* ']' */93)) {
-            return {
-                    hd: {
-                      TAG: "Set",
-                      _0: single(c)
-                    },
-                    tl: {
-                      hd: {
-                        TAG: "Set",
-                        _0: {
-                          hd: [
-                            /* '-' */45,
-                            /* '-' */45
-                          ],
-                          tl: /* [] */0
-                        }
-                      },
-                      tl: s
-                    }
-                  };
-          }
-          var match$1 = $$char();
-          if (match$1.NAME !== "Char") {
-            return {
-                    hd: {
-                      TAG: "Set",
-                      _0: single(c)
-                    },
-                    tl: {
-                      hd: {
-                        TAG: "Set",
-                        _0: {
-                          hd: [
-                            /* '-' */45,
-                            /* '-' */45
-                          ],
-                          tl: /* [] */0
-                        }
-                      },
-                      tl: {
-                        hd: match$1.VAL,
-                        tl: s
-                      }
-                    }
-                  };
-          }
-          _s = {
-            hd: {
-              TAG: "Set",
-              _0: seq(c, match$1.VAL)
-            },
-            tl: s
-          };
-          continue ;
-        }
-        _s = {
-          hd: {
-            TAG: "Set",
-            _0: single(c)
-          },
-          tl: s
-        };
-        continue ;
-      }
-      _s = {
-        hd: match.VAL,
-        tl: s
-      };
-      continue ;
-    };
-  };
-  var piece = function (param) {
-    var r = atom();
-    if (accept(/* '*' */42)) {
-      return greedy_mod(repn(r, 0, undefined));
-    }
-    if (accept(/* '+' */43)) {
-      return greedy_mod(repn(r, 1, undefined));
-    }
-    if (accept(/* '?' */63)) {
-      return greedy_mod(repn(r, 0, 1));
-    }
-    if (!accept(/* '{' */123)) {
-      return r;
-    }
-    var i$1 = integer();
-    if (i$1 !== undefined) {
-      var j = accept(/* ',' */44) ? integer() : i$1;
-      if (!accept(/* '}' */125)) {
-        throw {
-              RE_EXN_ID: Parse_error,
-              Error: new Error()
-            };
-      }
-      if (j !== undefined && j < i$1) {
-        throw {
-              RE_EXN_ID: Parse_error,
-              Error: new Error()
-            };
-      }
-      return greedy_mod(repn(r, i$1, j));
-    }
-    i.contents = i.contents - 1 | 0;
-    return r;
-  };
-  var branch$p = function (_left) {
-    while(true) {
-      var left = _left;
-      if (i.contents === l || test(/* '|' */124) || test(/* ')' */41)) {
-        return seq$2(List.rev(left));
-      }
-      _left = {
-        hd: piece(),
-        tl: left
-      };
-      continue ;
-    };
-  };
-  var regexp$p = function (_left) {
-    while(true) {
-      var left = _left;
-      if (!accept(/* '|' */124)) {
-        return left;
-      }
-      _left = alt$1({
-            hd: left,
-            tl: {
-              hd: branch$p(/* [] */0),
-              tl: /* [] */0
-            }
-          });
-      continue ;
-    };
   };
   var res = regexp$p(branch$p(/* [] */0));
   if (i.contents !== l) {

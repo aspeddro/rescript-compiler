@@ -897,15 +897,11 @@ function assoc_by_string(def, k, _lst) {
     if (def !== undefined) {
       return Caml_option.valFromOption(def);
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "ext_list_test.res",
-            472,
-            14
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: ext_list_test.res, Line: 472, Col: 14", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   };
 }
 
@@ -923,15 +919,11 @@ function assoc_by_int(def, k, _lst) {
     if (def !== undefined) {
       return Caml_option.valFromOption(def);
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "ext_list_test.res",
-            487,
-            14
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: ext_list_test.res, Line: 487, Col: 14", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   };
 }
 

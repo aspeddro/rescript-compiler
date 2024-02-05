@@ -40,15 +40,11 @@ function convert(s) {
                     if (x$1 !== undefined) {
                       return x$1;
                     }
-                    throw {
-                          RE_EXN_ID: "Assert_failure",
-                          _1: [
-                            "chn_test.res",
-                            17,
-                            14
-                          ],
-                          Error: new Error()
-                        };
+                    throw new Error("Assertion Failure. File: chn_test.res, Line: 17, Col: 14", {
+                              cause: {
+                                RE_EXN_ID: "Assertion_failure"
+                              }
+                            });
                   })));
 }
 

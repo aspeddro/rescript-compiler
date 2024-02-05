@@ -214,35 +214,31 @@ function f(children) {
             a14
           ];
   }
-  if (children$15.tl) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "gpr_1150.res",
-            100,
-            62
-          ],
-          Error: new Error()
-        };
+  if (!children$15.tl) {
+    return [
+            a0,
+            a1,
+            a2,
+            a3,
+            a4,
+            a5,
+            a6,
+            a7,
+            a8,
+            a9,
+            a10,
+            a11,
+            a12,
+            a13,
+            a14,
+            children$15.hd
+          ];
   }
-  return [
-          a0,
-          a1,
-          a2,
-          a3,
-          a4,
-          a5,
-          a6,
-          a7,
-          a8,
-          a9,
-          a10,
-          a11,
-          a12,
-          a13,
-          a14,
-          children$15.hd
-        ];
+  throw new Error("Assertion Failure. File: gpr_1150.res, Line: 100, Col: 62", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 exports.f = f;

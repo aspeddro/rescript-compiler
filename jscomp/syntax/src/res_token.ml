@@ -54,7 +54,6 @@ type t =
   | LessThanSlash
   | Hash
   | HashEqual
-  | Assert
   | Lazy
   | Tilde
   | Question
@@ -165,7 +164,6 @@ let toString = function
   | Asterisk -> "*"
   | AsteriskDot -> "*."
   | Exponentiation -> "**"
-  | Assert -> "assert"
   | Lazy -> "lazy"
   | Tilde -> "tilde"
   | Question -> "?"
@@ -211,7 +209,6 @@ let toString = function
 let keywordTable = function
   | "and" -> And
   | "as" -> As
-  | "assert" -> Assert
   | "await" -> Await
   | "constraint" -> Constraint
   | "else" -> Else
@@ -241,7 +238,7 @@ let keywordTable = function
 [@@raises Not_found]
 
 let isKeyword = function
-  | Await | And | As | Assert | Constraint | Else | Exception | External | False
+  | Await | And | As | Constraint | Else | Exception | External | False
   | For | If | In | Include | Land | Lazy | Let | List | Lor | Module | Mutable
   | Of | Open | Private | Rec | Switch | True | Try | Typ | When | While ->
     true
