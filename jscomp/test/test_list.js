@@ -704,15 +704,11 @@ function chop(_k, _l) {
       _k = k - 1 | 0;
       continue ;
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "test_list.res",
-            343,
-            11
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: test_list.res, Line: 343, Col: 11", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   };
 }
 

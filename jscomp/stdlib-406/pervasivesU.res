@@ -33,6 +33,8 @@ external __unsafe_cast: 'a => 'b = "%identity"
 external raise: exn => 'a = "%raise"
 external raise_notrace: exn => 'a = "%raise_notrace"
 
+external assert: bool => 'a = "%assert"
+
 let failwith = s => raise(Failure(s))
 let invalid_arg = s => raise(Invalid_argument(s))
 

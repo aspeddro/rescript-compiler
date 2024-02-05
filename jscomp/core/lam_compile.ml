@@ -1533,7 +1533,7 @@ and compile_prim (prim_info : Lam.prim_info)
 
           Js_output.make
             [S.if_ v block ~else_:[statement]]
-            ~value:E.undefined ~output_finished:True
+            ~value:E.undefined ~output_finished:False
 
         | { value = None } -> assert false
 

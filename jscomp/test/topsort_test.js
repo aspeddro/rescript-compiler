@@ -122,15 +122,11 @@ if (!Caml_obj.equal(dfs1({
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          35,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 35, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 console.log("");
@@ -160,15 +156,11 @@ if (!Caml_obj.equal(dfs1({
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          38,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 38, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function dfs2(nodes, graph, visited) {
@@ -221,15 +213,11 @@ if (!Caml_obj.equal(dfs2({
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          57,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 57, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 if (!Caml_obj.equal(dfs2({
@@ -257,15 +245,11 @@ if (!Caml_obj.equal(dfs2({
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          58,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 58, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function dfs3(nodes, graph) {
@@ -315,15 +299,11 @@ if (!Caml_obj.equal(dfs3({
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          74,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 74, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 if (!Caml_obj.equal(dfs3({
@@ -351,15 +331,11 @@ if (!Caml_obj.equal(dfs3({
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          75,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 75, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 var grwork = {
@@ -440,15 +416,11 @@ if (!Caml_obj.equal(unsafe_topsort(grwork), {
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          112,
-          9
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 112, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function height(param) {
@@ -1392,15 +1364,11 @@ function of_list(l) {
                   match$4[1]
                 ];
         }
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "set.res",
-                691,
-                20
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: set.res, Line: 691, Col: 20", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       };
       return sub(List.length(l$1), l$1)[0];
     } else {
@@ -1521,15 +1489,11 @@ if (!Caml_obj.equal(pathsort(grwork), {
           }
         }
       })) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          144,
-          9
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 144, Col: 9", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 try {
@@ -1540,55 +1504,98 @@ try {
         ],
         tl: grwork
       });
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "topsort_test.res",
-          148,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: topsort_test.res, Line: 148, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 catch (raw_exn){
   var exn = Caml_js_exceptions.internalToOCamlException(raw_exn);
-  var exit = 0;
   if (exn.RE_EXN_ID === Cycle) {
     var match = exn._1;
-    if (match && match.hd === "go") {
-      var match$1 = match.tl;
-      if (match$1 && match$1.hd === "washup") {
-        var match$2 = match$1.tl;
-        if (match$2 && match$2.hd === "eat") {
-          var match$3 = match$2.tl;
-          if (!(match$3 && match$3.hd === "go" && !match$3.tl)) {
-            exit = 1;
+    if (match) {
+      if (match.hd === "go") {
+        var match$1 = match.tl;
+        if (match$1) {
+          if (match$1.hd === "washup") {
+            var match$2 = match$1.tl;
+            if (match$2) {
+              if (match$2.hd === "eat") {
+                var match$3 = match$2.tl;
+                if (match$3) {
+                  if (match$3.hd === "go") {
+                    if (match$3.tl) {
+                      throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                                cause: {
+                                  RE_EXN_ID: "Assertion_failure"
+                                }
+                              });
+                    }
+                    
+                  } else {
+                    throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                              cause: {
+                                RE_EXN_ID: "Assertion_failure"
+                              }
+                            });
+                  }
+                } else {
+                  throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                            cause: {
+                              RE_EXN_ID: "Assertion_failure"
+                            }
+                          });
+                }
+              } else {
+                throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                          cause: {
+                            RE_EXN_ID: "Assertion_failure"
+                          }
+                        });
+              }
+            } else {
+              throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                        cause: {
+                          RE_EXN_ID: "Assertion_failure"
+                        }
+                      });
+            }
+          } else {
+            throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                      cause: {
+                        RE_EXN_ID: "Assertion_failure"
+                      }
+                    });
           }
-          
         } else {
-          exit = 1;
+          throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                    cause: {
+                      RE_EXN_ID: "Assertion_failure"
+                    }
+                  });
         }
       } else {
-        exit = 1;
+        throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       }
     } else {
-      exit = 1;
+      throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
   } else {
-    exit = 1;
+    throw new Error("Assertion Failure. File: topsort_test.res, Line: 151, Col: 7", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
-  if (exit === 1) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "topsort_test.res",
-            151,
-            7
-          ],
-          Error: new Error()
-        };
-  }
-  
 }
 
 exports.graph = graph;

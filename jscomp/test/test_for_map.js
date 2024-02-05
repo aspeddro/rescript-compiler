@@ -744,15 +744,11 @@ function merge$1(f, s1, s2) {
     
   }
   if (typeof s2 !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "map.res",
-            552,
-            11
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: map.res, Line: 552, Col: 11", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var v2 = s2.v;
   var match$1 = split(v2, s1);

@@ -673,15 +673,11 @@ function Make(Ord) {
                 match$4[1]
               ];
       }
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "test_set.res",
-              497,
-              20
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: test_set.res, Line: 497, Col: 20", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     };
     return sub(List.length(l), l)[0];
   };

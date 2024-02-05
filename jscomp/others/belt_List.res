@@ -61,6 +61,8 @@
 
 @@bs.config({flags: ["-bs-noassertfalse"]})
 
+external assert: bool => 'a = "%assert"
+
 type t<'a> = list<'a>
 
 module A = Belt_Array

@@ -30,15 +30,11 @@ $$Array.iter((function (x) {
       }), u);
 
 if (v.contents !== 45) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "test_closure.res",
-          52,
-          2
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: test_closure.res, Line: 52, Col: 2", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 exports.v = v;

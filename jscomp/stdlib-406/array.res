@@ -14,7 +14,7 @@
 /* ************************************************************************ */
 
 /* Array operations */
-
+@@warning("-21")
 external length: array<'a> => int = "%array_length"
 external get: (array<'a>, int) => 'a = "%array_safe_get"
 external set: (array<'a>, int, 'a) => unit = "%array_safe_set"

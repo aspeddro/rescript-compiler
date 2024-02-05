@@ -20,18 +20,14 @@ for(var i = 1; i <= 2; ++i){
         });
       return ;
     }
-    if (i === n) {
-      return ;
+    if (i !== n) {
+      throw new Error("Assertion Failure. File: gpr_858_unit2_test.res, Line: 6, Col: 13", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "gpr_858_unit2_test.res",
-            6,
-            13
-          ],
-          Error: new Error()
-        };
+    
   }
   }(i));
   f(0, i);

@@ -46,15 +46,11 @@ var f3 = (()=>true);
 var bbbb = f3();
 
 if (!bbbb) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "gpr_2682_test.res",
-          52,
-          0
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: gpr_2682_test.res, Line: 52, Col: 0", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 exports.sum = sum;

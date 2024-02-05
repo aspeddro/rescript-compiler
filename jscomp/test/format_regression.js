@@ -4,63 +4,64 @@
 var Curry = require("../../lib/js/curry.js");
 
 function peek_queue(param) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "format_regression.res",
-          10,
-          22
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: format_regression.res, Line: 10, Col: 22", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function int_of_size(param) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "format_regression.res",
-          11,
-          23
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: format_regression.res, Line: 11, Col: 23", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function take_queue(param) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "format_regression.res",
-          12,
-          22
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: format_regression.res, Line: 12, Col: 22", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function format_pp_token(param, param$1) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "format_regression.res",
-          13,
-          32
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: format_regression.res, Line: 13, Col: 32", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function advance_loop(state) {
   while(true) {
-    var match = peek_queue(state.pp_queue);
-    var size = match.elem_size;
-    var size$1 = int_of_size(size);
-    if (size$1 < 0 && (state.pp_right_total - state.pp_left_total | 0) < state.pp_space_left) {
+    throw new Error("Assertion Failure. File: format_regression.res, Line: 10, Col: 22", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+    throw new Error("Assertion Failure. File: format_regression.res, Line: 11, Col: 23", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+    if (size < 0 && (state.pp_right_total - state.pp_left_total | 0) < state.pp_space_left) {
       return ;
     }
-    take_queue(state.pp_queue);
-    Curry._1(format_pp_token(state, size$1 < 0 ? 1000000010 : size$1), match.token);
+    throw new Error("Assertion Failure. File: format_regression.res, Line: 12, Col: 22", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+    size < 0;
+    throw new Error("Assertion Failure. File: format_regression.res, Line: 13, Col: 32", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
+    Curry._1(undefined, match.token);
     state.pp_left_total = match.length + state.pp_left_total | 0;
     continue ;
   };

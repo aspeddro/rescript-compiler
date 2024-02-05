@@ -22,7 +22,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+
 type t = {@as("RE_EXN_ID") id: string}
+
+
+type error = {cause: t}
 
 /**
    Could be exported for better inlining
@@ -73,7 +77,11 @@ let is_extension = (type a, e: a): bool =>
   if Js.testAny(e) {
     false
   } else {
-    Js.typeof((Obj.magic(e): t).id) == "string"
+    if !Js.testAny((Obj.magic(e): error).cause) {
+      Js.typeof((Obj.magic(e): error).cause.id) == "string"
+    } else {
+      Js.typeof((Obj.magic(e): t).id) == "string"
+    }
   }
 
 /** FIXME: remove the trailing `/` */

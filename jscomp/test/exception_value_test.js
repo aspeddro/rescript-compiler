@@ -15,15 +15,11 @@ function f(param) {
 
 function assert_f(x) {
   if (x <= 3) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "exception_value_test.res",
-            4,
-            11
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: exception_value_test.res, Line: 4, Col: 11", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   return 3;
 }

@@ -37,26 +37,18 @@ function Make(funarg) {
     };
     var step2 = function (top, rest_of_stack) {
       if (find_default(already_processed, top)) {
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "gpr_405_test.res",
-                40,
-                6
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: gpr_405_test.res, Line: 40, Col: 6", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       }
       if (find_default(on_the_stack, top)) {
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "gpr_405_test.res",
-                41,
-                6
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: gpr_405_test.res, Line: 41, Col: 6", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       }
       Curry._3(H.add, on_the_stack, top, true);
       Curry._3(H.add, n_labels, top, counter.contents);

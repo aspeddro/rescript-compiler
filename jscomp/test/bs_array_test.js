@@ -140,15 +140,11 @@ var v$1 = [
 ];
 
 if (!Belt_Array.set(v$1, 0, 0)) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_array_test.res",
-          51,
-          6
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: bs_array_test.res, Line: 51, Col: 6", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 b("File \"bs_array_test.res\", line 48, characters 4-11", Belt_Array.getExn(v$1, 0) === 0);
@@ -159,15 +155,11 @@ var v$2 = [
 ];
 
 if (!Belt_Array.set(v$2, 1, 0)) {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "bs_array_test.res",
-          59,
-          6
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: bs_array_test.res, Line: 59, Col: 6", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 b("File \"bs_array_test.res\", line 56, characters 4-11", Belt_Array.getExn(v$2, 1) === 0);
@@ -392,15 +384,11 @@ function addone(x) {
 
 function makeMatrixExn(sx, sy, init) {
   if (!(sx >= 0 && sy >= 0)) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "bs_array_test.res",
-            153,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: bs_array_test.res, Line: 153, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var res = new Array(sx);
   for(var x = 0; x < sx; ++x){

@@ -39,6 +39,7 @@ external \"&&": (bool, bool) => bool = "%sequand"
 external not: bool => bool = "%boolnot"
 
 external raise: exn => 'a = "%raise"
+external assert: bool => 'a = "%assert"
 external ignore: 'a => unit = "%ignore"
 external \"|>": ('a, 'a => 'b) => 'b = "%revapply"
 external \"@@": ('a => 'b, 'a) => 'b = "%apply"

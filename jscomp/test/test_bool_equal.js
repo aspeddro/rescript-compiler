@@ -18,48 +18,32 @@ function bool_equal(x, y) {
 
 function assertions(param) {
   if (!bool_equal(true, true)) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "test_bool_equal.res",
-            16,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: test_bool_equal.res, Line: 16, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (!bool_equal(false, false)) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "test_bool_equal.res",
-            17,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: test_bool_equal.res, Line: 17, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (bool_equal(true, false)) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "test_bool_equal.res",
-            18,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: test_bool_equal.res, Line: 18, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (bool_equal(false, true)) {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "test_bool_equal.res",
-            19,
-            2
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: test_bool_equal.res, Line: 19, Col: 2", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   
 }

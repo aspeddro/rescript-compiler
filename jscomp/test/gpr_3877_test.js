@@ -21,27 +21,19 @@ var a = "good response";
 var b = "bad response";
 
 if (a !== "good response") {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "gpr_3877_test.res",
-          26,
-          0
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: gpr_3877_test.res, Line: 26, Col: 0", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 if (b !== "bad response") {
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "gpr_3877_test.res",
-          27,
-          0
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: gpr_3877_test.res, Line: 27, Col: 0", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 exports.test = test;

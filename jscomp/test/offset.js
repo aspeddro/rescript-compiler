@@ -948,15 +948,11 @@ function of_list(l) {
                   match$4[1]
                 ];
         }
-        throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "set.res",
-                691,
-                20
-              ],
-              Error: new Error()
-            };
+        throw new Error("Assertion Failure. File: set.res, Line: 691, Col: 20", {
+                  cause: {
+                    RE_EXN_ID: "Assertion_failure"
+                  }
+                });
       };
       return sub(List.length(l$1), l$1)[0];
     } else {

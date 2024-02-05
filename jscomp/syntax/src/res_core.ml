@@ -2115,11 +2115,6 @@ and parseOperandExpr ~context p =
   let attrs = ref (parseAttributes p) in
   let expr =
     match p.Parser.token with
-    | Assert ->
-      Parser.next p;
-      let expr = parseExpr p in
-      let loc = mkLoc startPos p.prevEndPos in
-      Ast_helper.Exp.assert_ ~loc expr
     | Lident "async"
     (* we need to be careful when we're in a ternary true branch:
        `condition ? ternary-true-branch : false-branch`

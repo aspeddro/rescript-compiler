@@ -33,15 +33,11 @@ function bal(l, x, d, r) {
   hr = typeof r !== "object" ? 0 : r._4;
   if (hl > (hr + 2 | 0)) {
     if (typeof l !== "object") {
-      throw {
-            RE_EXN_ID: "Assert_failure",
-            _1: [
-              "inline_map_demo.res",
-              41,
-              15
-            ],
-            Error: new Error()
-          };
+      throw new Error("Assertion Failure. File: inline_map_demo.res, Line: 41, Col: 15", {
+                cause: {
+                  RE_EXN_ID: "Assertion_failure"
+                }
+              });
     }
     var lr = l._3;
     var ld = l._2;
@@ -53,15 +49,11 @@ function bal(l, x, d, r) {
     if (typeof lr === "object") {
       return create(create(ll, lv, ld, lr._0), lr._1, lr._2, create(lr._3, x, d, r));
     }
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "inline_map_demo.res",
-            47,
-            19
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: inline_map_demo.res, Line: 47, Col: 19", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   if (hr <= (hl + 2 | 0)) {
     return {
@@ -74,15 +66,11 @@ function bal(l, x, d, r) {
           };
   }
   if (typeof r !== "object") {
-    throw {
-          RE_EXN_ID: "Assert_failure",
-          _1: [
-            "inline_map_demo.res",
-            55,
-            15
-          ],
-          Error: new Error()
-        };
+    throw new Error("Assertion Failure. File: inline_map_demo.res, Line: 55, Col: 15", {
+              cause: {
+                RE_EXN_ID: "Assertion_failure"
+              }
+            });
   }
   var rr = r._3;
   var rd = r._2;
@@ -94,15 +82,11 @@ function bal(l, x, d, r) {
   if (typeof rl === "object") {
     return create(create(l, x, d, rl._0), rl._1, rl._2, create(rl._3, rv, rd, rr));
   }
-  throw {
-        RE_EXN_ID: "Assert_failure",
-        _1: [
-          "inline_map_demo.res",
-          61,
-          19
-        ],
-        Error: new Error()
-      };
+  throw new Error("Assertion Failure. File: inline_map_demo.res, Line: 61, Col: 19", {
+            cause: {
+              RE_EXN_ID: "Assertion_failure"
+            }
+          });
 }
 
 function add(x, data, tree) {
