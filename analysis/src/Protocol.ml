@@ -1,117 +1,117 @@
 type position = {line: int; character: int}
 type range = {start: position; end_: position}
-type markupContent = {kind: string; value: string}
+type markup_content = {kind: string; value: string}
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#command *)
 type command = {title: string; command: string}
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLens *)
-type codeLens = {range: range; command: command option}
+type code_lens = {range: range; command: command option}
 
-type inlayHint = {
+type inlay_hint = {
   position: position;
   label: string;
   kind: int;
-  paddingLeft: bool;
-  paddingRight: bool;
+  padding_left: bool;
+  padding_right: bool;
 }
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#parameterInformation *)
-type parameterInformation = {label: int * int; documentation: markupContent}
+type parameter_information = {label: int * int; documentation: markup_content}
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureInformation *)
-type signatureInformation = {
+type signature_information = {
   label: string;
-  parameters: parameterInformation list;
-  documentation: markupContent option;
+  parameters: parameter_information list;
+  documentation: markup_content option;
 }
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelp *)
-type signatureHelp = {
-  signatures: signatureInformation list;
-  activeSignature: int option;
-  activeParameter: int option;
+type signature_help = {
+  signatures: signature_information list;
+  active_signature: int option;
+  active_parameter: int option;
 }
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#insertTextFormat *)
-type insertTextFormat = Snippet
+type insert_text_format = Snippet
 
-let insertTextFormatToInt f =
+let insert_text_format_to_int f =
   match f with
   | Snippet -> 2
 
-type completionItem = {
+type completion_item = {
   label: string;
   kind: int;
   tags: int list;
   detail: string;
-  sortText: string option;
-  filterText: string option;
-  insertTextFormat: insertTextFormat option;
-  insertText: string option;
-  documentation: markupContent option;
+  sort_text: string option;
+  filter_text: string option;
+  insert_text_format: insert_text_format option;
+  insert_text: string option;
+  documentation: markup_content option;
   data: (string * string) list option;
 }
 
 type location = {uri: string; range: range}
-type documentSymbolItem = {
+type document_symbol_item = {
   name: string;
   kind: int;
   range: range;
-  children: documentSymbolItem list;
+  children: document_symbol_item list;
 }
-type renameFile = {oldUri: string; newUri: string}
-type textEdit = {range: range; newText: string}
+type rename_file = {old_uri: string; new_uri: string}
+type text_edit = {range: range; new_text: string}
 
 type diagnostic = {range: range; message: string; severity: int}
 
-type optionalVersionedTextDocumentIdentifier = {
+type optional_versioned_text_document_identifier = {
   version: int option;
   uri: string;
 }
 
-type textDocumentEdit = {
-  textDocument: optionalVersionedTextDocumentIdentifier;
-  edits: textEdit list;
+type text_document_edit = {
+  text_document: optional_versioned_text_document_identifier;
+  edits: text_edit list;
 }
 
-type createFileOptions = {overwrite: bool option; ignoreIfExists: bool option}
-type createFile = {uri: string; options: createFileOptions option}
+type create_file_options = {overwrite: bool option; ignore_if_exists: bool option}
+type create_file = {uri: string; options: create_file_options option}
 
-type documentChange =
-  | TextDocumentEdit of textDocumentEdit
-  | CreateFile of createFile
+type document_change =
+  | TextDocumentEdit of text_document_edit
+  | CreateFile of create_file
 
-type codeActionEdit = {documentChanges: documentChange list}
-type codeActionKind = RefactorRewrite
+type code_action_edit = {document_changes: document_change list}
+type code_action_kind = RefactorRewrite
 
-type codeAction = {
+type code_action = {
   title: string;
-  codeActionKind: codeActionKind;
-  edit: codeActionEdit;
+  code_action_kind: code_action_kind;
+  edit: code_action_edit;
 }
 
-let wrapInQuotes s = "\"" ^ Json.escape s ^ "\""
+let wrap_in_quotes s = "\"" ^ Json.escape s ^ "\""
 
 let null = "null"
 let array l = "[" ^ String.concat ", " l ^ "]"
 
-let stringifyPosition p =
+let stringify_position p =
   Printf.sprintf {|{"line": %i, "character": %i}|} p.line p.character
 
-let stringifyRange r =
+let stringify_range r =
   Printf.sprintf {|{"start": %s, "end": %s}|}
-    (stringifyPosition r.start)
-    (stringifyPosition r.end_)
+    (stringify_position r.start)
+    (stringify_position r.end_)
 
-let stringifyMarkupContent (m : markupContent) =
-  Printf.sprintf {|{"kind": %s, "value": %s}|} (wrapInQuotes m.kind)
-    (wrapInQuotes m.value)
+let stringify_markup_content (m : markup_content) =
+  Printf.sprintf {|{"kind": %s, "value": %s}|} (wrap_in_quotes m.kind)
+    (wrap_in_quotes m.value)
 
 (** None values are not emitted in the output. *)
-let stringifyObject ?(startOnNewline = false) ?(indentation = 1) properties =
-  let indentationStr = String.make (indentation * 2) ' ' in
-  (if startOnNewline then "\n" ^ indentationStr else "")
+let stringify_object ?(start_on_newline = false) ?(indentation = 1) properties =
+  let indentation_str = String.make (indentation * 2) ' ' in
+  (if start_on_newline then "\n" ^ indentation_str else "")
   ^ {|{
 |}
   ^ (properties
@@ -119,110 +119,110 @@ let stringifyObject ?(startOnNewline = false) ?(indentation = 1) properties =
            match value with
            | None -> None
            | Some v ->
-             Some (Printf.sprintf {|%s  "%s": %s|} indentationStr key v))
+             Some (Printf.sprintf {|%s  "%s": %s|} indentation_str key v))
     |> String.concat ",\n")
-  ^ "\n" ^ indentationStr ^ "}"
+  ^ "\n" ^ indentation_str ^ "}"
 
-let optWrapInQuotes s =
+let opt_wrap_in_quotes s =
   match s with
   | None -> None
-  | Some s -> Some (wrapInQuotes s)
+  | Some s -> Some (wrap_in_quotes s)
 
-let stringifyCompletionItem c =
-  stringifyObject
+let stringify_completion_item c =
+  stringify_object
     [
-      ("label", Some (wrapInQuotes c.label));
+      ("label", Some (wrap_in_quotes c.label));
       ("kind", Some (string_of_int c.kind));
       ("tags", Some (c.tags |> List.map string_of_int |> array));
-      ("detail", Some (wrapInQuotes c.detail));
+      ("detail", Some (wrap_in_quotes c.detail));
       ( "documentation",
         Some
           (match c.documentation with
           | None -> null
-          | Some doc -> stringifyMarkupContent doc) );
-      ("sortText", optWrapInQuotes c.sortText);
-      ("filterText", optWrapInQuotes c.filterText);
-      ("insertText", optWrapInQuotes c.insertText);
+          | Some doc -> stringify_markup_content doc) );
+      ("sortText", opt_wrap_in_quotes c.sort_text);
+      ("filterText", opt_wrap_in_quotes c.filter_text);
+      ("insertText", opt_wrap_in_quotes c.insert_text);
       ( "insertTextFormat",
-        match c.insertTextFormat with
+        match c.insert_text_format with
         | None -> None
-        | Some insertTextFormat ->
-          Some (Printf.sprintf "%i" (insertTextFormatToInt insertTextFormat)) );
+        | Some insert_text_format ->
+          Some (Printf.sprintf "%i" (insert_text_format_to_int insert_text_format)) );
       ( "data",
         match c.data with
         | None -> None
         | Some fields ->
           Some
             (fields
-            |> List.map (fun (key, value) -> (key, Some (wrapInQuotes value)))
-            |> stringifyObject ~indentation:2) );
+            |> List.map (fun (key, value) -> (key, Some (wrap_in_quotes value)))
+            |> stringify_object ~indentation:2) );
     ]
 
-let stringifyHover value =
+let stringify_hover value =
   Printf.sprintf {|{"contents": %s}|}
-    (stringifyMarkupContent {kind = "markdown"; value})
+    (stringify_markup_content {kind = "markdown"; value})
 
-let stringifyLocation (h : location) =
-  Printf.sprintf {|{"uri": %s, "range": %s}|} (wrapInQuotes h.uri)
-    (stringifyRange h.range)
+let stringify_location (h : location) =
+  Printf.sprintf {|{"uri": %s, "range": %s}|} (wrap_in_quotes h.uri)
+    (stringify_range h.range)
 
-let stringifyDocumentSymbolItems items =
+let stringify_document_symbol_items items =
   let buf = Buffer.create 10 in
-  let stringifyName name = Printf.sprintf "\"%s\"" (Json.escape name) in
-  let stringifyKind kind = string_of_int kind in
-  let emitStr = Buffer.add_string buf in
-  let emitSep () = emitStr ",\n" in
-  let rec emitItem ~indent item =
-    let openBrace = Printf.sprintf "%s{\n" indent in
-    let closeBrace = Printf.sprintf "\n%s}" indent in
+  let stringify_name name = Printf.sprintf "\"%s\"" (Json.escape name) in
+  let stringify_kind kind = string_of_int kind in
+  let emit_str = Buffer.add_string buf in
+  let emit_sep () = emit_str ",\n" in
+  let rec emit_item ~indent item =
+    let open_brace = Printf.sprintf "%s{\n" indent in
+    let close_brace = Printf.sprintf "\n%s}" indent in
     let indent = indent ^ "  " in
-    let emitField name s =
-      emitStr (Printf.sprintf "%s\"%s\": %s" indent name s)
+    let emit_field name s =
+      emit_str (Printf.sprintf "%s\"%s\": %s" indent name s)
     in
-    emitStr openBrace;
-    emitField "name" (stringifyName item.name);
-    emitSep ();
-    emitField "kind" (stringifyKind item.kind);
-    emitSep ();
-    emitField "range" (stringifyRange item.range);
-    emitSep ();
-    emitField "selectionRange" (stringifyRange item.range);
+    emit_str open_brace;
+    emit_field "name" (stringify_name item.name);
+    emit_sep ();
+    emit_field "kind" (stringify_kind item.kind);
+    emit_sep ();
+    emit_field "range" (stringify_range item.range);
+    emit_sep ();
+    emit_field "selectionRange" (stringify_range item.range);
     if item.children <> [] then (
-      emitSep ();
-      emitField "children" "[\n";
-      emitBody ~indent (List.rev item.children);
-      emitStr "]");
-    emitStr closeBrace
-  and emitBody ~indent items =
+      emit_sep ();
+      emit_field "children" "[\n";
+      emit_body ~indent (List.rev item.children);
+      emit_str "]");
+    emit_str close_brace
+  and emit_body ~indent items =
     match items with
     | [] -> ()
     | item :: rest ->
-      emitItem ~indent item;
-      if rest <> [] then emitSep ();
-      emitBody ~indent rest
+      emit_item ~indent item;
+      if rest <> [] then emit_sep ();
+      emit_body ~indent rest
   in
   let indent = "" in
-  emitStr "[\n";
-  emitBody ~indent (List.rev items);
-  emitStr "\n]";
+  emit_str "[\n";
+  emit_body ~indent (List.rev items);
+  emit_str "\n]";
   Buffer.contents buf
 
-let stringifyRenameFile {oldUri; newUri} =
+let stringify_rename_file {old_uri; new_uri} =
   Printf.sprintf {|{
   "kind": "rename",
   "oldUri": %s,
   "newUri": %s
 }|}
-    (wrapInQuotes oldUri) (wrapInQuotes newUri)
+    (wrap_in_quotes old_uri) (wrap_in_quotes new_uri)
 
-let stringifyTextEdit (te : textEdit) =
+let stringify_text_edit (te : text_edit) =
   Printf.sprintf {|{
   "range": %s,
   "newText": %s
   }|}
-    (stringifyRange te.range) (wrapInQuotes te.newText)
+    (stringify_range te.range) (wrap_in_quotes te.new_text)
 
-let stringifyoptionalVersionedTextDocumentIdentifier td =
+let stringifyoptional_versioned_text_document_identifier td =
   Printf.sprintf {|{
   "version": %s,
   "uri": %s
@@ -230,59 +230,59 @@ let stringifyoptionalVersionedTextDocumentIdentifier td =
     (match td.version with
     | None -> null
     | Some v -> string_of_int v)
-    (wrapInQuotes td.uri)
+    (wrap_in_quotes td.uri)
 
-let stringifyTextDocumentEdit tde =
+let stringify_text_document_edit tde =
   Printf.sprintf {|{
   "textDocument": %s,
   "edits": %s
   }|}
-    (stringifyoptionalVersionedTextDocumentIdentifier tde.textDocument)
-    (tde.edits |> List.map stringifyTextEdit |> array)
+    (stringifyoptional_versioned_text_document_identifier tde.text_document)
+    (tde.edits |> List.map stringify_text_edit |> array)
 
-let stringifyCreateFile cf =
-  stringifyObject
+let stringify_create_file cf =
+  stringify_object
     [
-      ("kind", Some (wrapInQuotes "create"));
-      ("uri", Some (wrapInQuotes cf.uri));
+      ("kind", Some (wrap_in_quotes "create"));
+      ("uri", Some (wrap_in_quotes cf.uri));
       ( "options",
         match cf.options with
         | None -> None
         | Some options ->
           Some
-            (stringifyObject
+            (stringify_object
                [
                  ( "overwrite",
                    match options.overwrite with
                    | None -> None
                    | Some ov -> Some (string_of_bool ov) );
                  ( "ignoreIfExists",
-                   match options.ignoreIfExists with
+                   match options.ignore_if_exists with
                    | None -> None
                    | Some i -> Some (string_of_bool i) );
                ]) );
     ]
 
-let stringifyDocumentChange dc =
+let stringify_document_change dc =
   match dc with
-  | TextDocumentEdit tde -> stringifyTextDocumentEdit tde
-  | CreateFile cf -> stringifyCreateFile cf
+  | TextDocumentEdit tde -> stringify_text_document_edit tde
+  | CreateFile cf -> stringify_create_file cf
 
-let codeActionKindToString kind =
+let code_action_kind_to_string kind =
   match kind with
   | RefactorRewrite -> "refactor.rewrite"
 
-let stringifyCodeActionEdit cae =
+let stringify_code_action_edit cae =
   Printf.sprintf {|{"documentChanges": %s}|}
-    (cae.documentChanges |> List.map stringifyDocumentChange |> array)
+    (cae.document_changes |> List.map stringify_document_change |> array)
 
-let stringifyCodeAction ca =
+let stringify_code_action ca =
   Printf.sprintf {|{"title": %s, "kind": %s, "edit": %s}|}
-    (wrapInQuotes ca.title)
-    (wrapInQuotes (codeActionKindToString ca.codeActionKind))
-    (ca.edit |> stringifyCodeActionEdit)
+    (wrap_in_quotes ca.title)
+    (wrap_in_quotes (code_action_kind_to_string ca.code_action_kind))
+    (ca.edit |> stringify_code_action_edit)
 
-let stringifyHint hint =
+let stringify_hint hint =
   Printf.sprintf
     {|{
     "position": %s,
@@ -291,66 +291,66 @@ let stringifyHint hint =
     "paddingLeft": %b,
     "paddingRight": %b
 }|}
-    (stringifyPosition hint.position)
-    (wrapInQuotes hint.label) hint.kind hint.paddingLeft hint.paddingRight
+    (stringify_position hint.position)
+    (wrap_in_quotes hint.label) hint.kind hint.padding_left hint.padding_right
 
-let stringifyCommand (command : command) =
+let stringify_command (command : command) =
   Printf.sprintf {|{"title": %s, "command": %s}|}
-    (wrapInQuotes command.title)
-    (wrapInQuotes command.command)
+    (wrap_in_quotes command.title)
+    (wrap_in_quotes command.command)
 
-let stringifyCodeLens (codeLens : codeLens) =
+let stringify_code_lens (code_lens : code_lens) =
   Printf.sprintf
     {|{
         "range": %s,
         "command": %s
     }|}
-    (stringifyRange codeLens.range)
-    (match codeLens.command with
+    (stringify_range code_lens.range)
+    (match code_lens.command with
     | None -> ""
-    | Some command -> stringifyCommand command)
+    | Some command -> stringify_command command)
 
-let stringifyParameterInformation (parameterInformation : parameterInformation)
+let stringify_parameter_information (parameter_information : parameter_information)
     =
   Printf.sprintf {|{"label": %s, "documentation": %s}|}
-    (let line, chr = parameterInformation.label in
+    (let line, chr = parameter_information.label in
      "[" ^ string_of_int line ^ ", " ^ string_of_int chr ^ "]")
-    (stringifyMarkupContent parameterInformation.documentation)
+    (stringify_markup_content parameter_information.documentation)
 
-let stringifySignatureInformation (signatureInformation : signatureInformation)
+let stringify_signature_information (signature_information : signature_information)
     =
   Printf.sprintf
     {|{
     "label": %s,
     "parameters": %s%s
   }|}
-    (wrapInQuotes signatureInformation.label)
-    (signatureInformation.parameters
-    |> List.map stringifyParameterInformation
+    (wrap_in_quotes signature_information.label)
+    (signature_information.parameters
+    |> List.map stringify_parameter_information
     |> array)
-    (match signatureInformation.documentation with
+    (match signature_information.documentation with
     | None -> ""
     | Some docs ->
       Printf.sprintf ",\n    \"documentation\": %s"
-        (stringifyMarkupContent docs))
+        (stringify_markup_content docs))
 
-let stringifySignatureHelp (signatureHelp : signatureHelp) =
+let stringify_signature_help (signature_help : signature_help) =
   Printf.sprintf
     {|{
   "signatures": %s,
   "activeSignature": %s,
   "activeParameter": %s
 }|}
-    (signatureHelp.signatures |> List.map stringifySignatureInformation |> array)
-    (match signatureHelp.activeSignature with
+    (signature_help.signatures |> List.map stringify_signature_information |> array)
+    (match signature_help.active_signature with
     | None -> null
-    | Some activeSignature -> activeSignature |> string_of_int)
-    (match signatureHelp.activeParameter with
+    | Some active_signature -> active_signature |> string_of_int)
+    (match signature_help.active_parameter with
     | None -> null
-    | Some activeParameter -> activeParameter |> string_of_int)
+    | Some active_parameter -> active_parameter |> string_of_int)
 
 (* https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnostic *)
-let stringifyDiagnostic d =
+let stringify_diagnostic d =
   Printf.sprintf
     {|{
   "range": %s,
@@ -358,4 +358,4 @@ let stringifyDiagnostic d =
   "severity": %d,
   "source": "ReScript"
 }|}
-    (stringifyRange d.range) (wrapInQuotes d.message) d.severity
+    (stringify_range d.range) (wrap_in_quotes d.message) d.severity

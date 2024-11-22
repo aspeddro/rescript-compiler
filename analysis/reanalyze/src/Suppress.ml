@@ -1,33 +1,33 @@
 open Common
 
-let checkPrefix prefix_ =
+let check_prefix prefix_ =
   let prefix =
-    match runConfig.projectRoot = "" with
+    match run_config.project_root = "" with
     | true -> prefix_
-    | false -> Filename.concat runConfig.projectRoot prefix_
+    | false -> Filename.concat run_config.project_root prefix_
   in
-  let prefixLen = prefix |> String.length in
-  fun sourceDir ->
-    try String.sub sourceDir 0 prefixLen = prefix
+  let prefix_len = prefix |> String.length in
+  fun source_dir ->
+    try String.sub source_dir 0 prefix_len = prefix
     with Invalid_argument _ -> false
 
-let suppressSourceDir =
+let suppress_source_dir =
   lazy
-    (fun sourceDir ->
-      runConfig.suppress
-      |> List.exists (fun prefix -> checkPrefix prefix sourceDir))
+    (fun source_dir ->
+      run_config.suppress
+      |> List.exists (fun prefix -> check_prefix prefix source_dir))
 
-let unsuppressSourceDir =
+let unsuppress_source_dir =
   lazy
-    (fun sourceDir ->
-      runConfig.unsuppress
-      |> List.exists (fun prefix -> checkPrefix prefix sourceDir))
+    (fun source_dir ->
+      run_config.unsuppress
+      |> List.exists (fun prefix -> check_prefix prefix source_dir))
 
-let posInSuppress (pos : Lexing.position) =
-  pos.pos_fname |> Lazy.force suppressSourceDir
+let pos_in_suppress (pos : Lexing.position) =
+  pos.pos_fname |> Lazy.force suppress_source_dir
 
-let posInUnsuppress (pos : Lexing.position) =
-  pos.pos_fname |> Lazy.force unsuppressSourceDir
+let pos_in_unsuppress (pos : Lexing.position) =
+  pos.pos_fname |> Lazy.force unsuppress_source_dir
 
 (** First suppress list, then override with unsuppress list *)
-let filter pos = (not (posInSuppress pos)) || posInUnsuppress pos
+let filter pos = (not (pos_in_suppress pos)) || pos_in_unsuppress pos

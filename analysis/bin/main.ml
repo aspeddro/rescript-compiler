@@ -88,90 +88,90 @@ Options:
 
 let main () =
   let args = Array.to_list Sys.argv in
-  let debugLevel, args =
+  let debug_level, args =
     match args with
-    | _ :: "debug-dump" :: logLevel :: rest ->
-      ( (match logLevel with
+    | _ :: "debug-dump" :: log_level :: rest ->
+      ( (match log_level with
         | "verbose" -> Debug.Verbose
         | "regular" -> Regular
         | _ -> Off),
         "dummy" :: rest )
     | args -> (Off, args)
   in
-  Debug.debugLevel := debugLevel;
-  let debug = debugLevel <> Debug.Off in
-  let printHeaderInfo path line col =
+  Debug.debug_level := debug_level;
+  let debug = debug_level <> Debug.Off in
+  let print_header_info path line col =
     if debug then
       Printf.printf "Debug level: %s\n%s:%s-%s\n\n"
-        (match debugLevel with
+        (match debug_level with
         | Debug.Verbose -> "verbose"
         | Regular -> "regular"
         | Off -> "off")
         path line col
   in
   match args with
-  | [_; "cache-project"; rootPath] -> (
-    Cfg.readProjectConfigCache := false;
-    let uri = Uri.fromPath rootPath in
-    match Packages.getPackage ~uri with
-    | Some package -> Cache.cacheProject package
+  | [_; "cache-project"; root_path] -> (
+    Cfg.read_project_config_cache := false;
+    let uri = Uri.from_path root_path in
+    match Packages.get_package ~uri with
+    | Some package -> Cache.cache_project package
     | None -> print_endline "\"ERR\"")
-  | [_; "cache-delete"; rootPath] -> (
-    Cfg.readProjectConfigCache := false;
-    let uri = Uri.fromPath rootPath in
-    match Packages.findRoot ~uri (Hashtbl.create 0) with
-    | Some (`Bs rootPath) -> (
-      match BuildSystem.getLibBs rootPath with
+  | [_; "cache-delete"; root_path] -> (
+    Cfg.read_project_config_cache := false;
+    let uri = Uri.from_path root_path in
+    match Packages.find_root ~uri (Hashtbl.create 0) with
+    | Some (`Bs root_path) -> (
+      match BuildSystem.get_lib_bs root_path with
       | None -> print_endline "\"ERR\""
-      | Some libBs ->
-        Cache.deleteCache (Cache.targetFileFromLibBs libBs);
+      | Some lib_bs ->
+        Cache.delete_cache (Cache.target_file_from_lib_bs lib_bs);
         print_endline "\"OK\"")
     | _ -> print_endline "\"ERR: Did not find root \"")
-  | [_; "completion"; path; line; col; currentFile] ->
-    printHeaderInfo path line col;
+  | [_; "completion"; path; line; col; current_file] ->
+    print_header_info path line col;
     Commands.completion ~debug ~path
       ~pos:(int_of_string line, int_of_string col)
-      ~currentFile
-  | [_; "completionResolve"; path; modulePath] ->
-    Commands.completionResolve ~path ~modulePath
+      ~current_file
+  | [_; "completionResolve"; path; module_path] ->
+    Commands.completion_resolve ~path ~module_path
   | [_; "definition"; path; line; col] ->
     Commands.definition ~path
       ~pos:(int_of_string line, int_of_string col)
       ~debug
   | [_; "typeDefinition"; path; line; col] ->
-    Commands.typeDefinition ~path
+    Commands.type_definition ~path
       ~pos:(int_of_string line, int_of_string col)
       ~debug
   | [_; "documentSymbol"; path] -> DocumentSymbol.command ~path
-  | [_; "hover"; path; line; col; currentFile; supportsMarkdownLinks] ->
+  | [_; "hover"; path; line; col; current_file; supports_markdown_links] ->
     Commands.hover ~path
       ~pos:(int_of_string line, int_of_string col)
-      ~currentFile ~debug
-      ~supportsMarkdownLinks:
-        (match supportsMarkdownLinks with
+      ~current_file ~debug
+      ~supports_markdown_links:
+        (match supports_markdown_links with
         | "true" -> true
         | _ -> false)
   | [
-   _; "signatureHelp"; path; line; col; currentFile; allowForConstructorPayloads;
+   _; "signatureHelp"; path; line; col; current_file; allow_for_constructor_payloads;
   ] ->
-    Commands.signatureHelp ~path
+    Commands.signature_help ~path
       ~pos:(int_of_string line, int_of_string col)
-      ~currentFile ~debug
-      ~allowForConstructorPayloads:
-        (match allowForConstructorPayloads with
+      ~current_file ~debug
+      ~allow_for_constructor_payloads:
+        (match allow_for_constructor_payloads with
         | "true" -> true
         | _ -> false)
-  | [_; "inlayHint"; path; line_start; line_end; maxLength] ->
+  | [_; "inlayHint"; path; line_start; line_end; max_length] ->
     Commands.inlayhint ~path
       ~pos:(int_of_string line_start, int_of_string line_end)
-      ~maxLength ~debug
-  | [_; "codeLens"; path] -> Commands.codeLens ~path ~debug
-  | [_; "codeAction"; path; startLine; startCol; endLine; endCol; currentFile]
+      ~max_length ~debug
+  | [_; "codeLens"; path] -> Commands.code_lens ~path ~debug
+  | [_; "codeAction"; path; start_line; start_col; end_line; end_col; current_file]
     ->
-    Commands.codeAction ~path
-      ~startPos:(int_of_string startLine, int_of_string startCol)
-      ~endPos:(int_of_string endLine, int_of_string endCol)
-      ~currentFile ~debug
+    Commands.code_action ~path
+      ~start_pos:(int_of_string start_line, int_of_string start_col)
+      ~end_pos:(int_of_string end_line, int_of_string end_col)
+      ~current_file ~debug
   | [_; "codemod"; path; line; col; typ; hint] ->
     let typ =
       match typ with
@@ -185,7 +185,7 @@ let main () =
       |> Json.escape
     in
     Printf.printf "\"%s\"" res
-  | [_; "diagnosticSyntax"; path] -> Commands.diagnosticSyntax ~path
+  | [_; "diagnosticSyntax"; path] -> Commands.diagnostic_syntax ~path
   | _ :: "reanalyze" :: _ ->
     let len = Array.length Sys.argv in
     for i = 1 to len - 2 do
@@ -197,15 +197,15 @@ let main () =
     Commands.references ~path
       ~pos:(int_of_string line, int_of_string col)
       ~debug
-  | [_; "rename"; path; line; col; newName] ->
+  | [_; "rename"; path; line; col; new_name] ->
     Commands.rename ~path
       ~pos:(int_of_string line, int_of_string col)
-      ~newName ~debug
-  | [_; "semanticTokens"; currentFile] ->
-    SemanticTokens.semanticTokens ~currentFile
-  | [_; "createInterface"; path; cmiFile] ->
+      ~new_name ~debug
+  | [_; "semanticTokens"; current_file] ->
+    SemanticTokens.semantic_tokens ~current_file
+  | [_; "createInterface"; path; cmi_file] ->
     Printf.printf "\"%s\""
-      (Json.escape (CreateInterface.command ~path ~cmiFile))
+      (Json.escape (CreateInterface.command ~path ~cmi_file))
   | [_; "format"; path] ->
     Printf.printf "\"%s\"" (Json.escape (Commands.format ~path))
   | [_; "test"; path] -> Commands.test ~path

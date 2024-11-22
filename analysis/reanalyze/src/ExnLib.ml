@@ -1,239 +1,239 @@
-let raisesLibTable : (Name.t, Exceptions.t) Hashtbl.t =
+let raises_lib_table : (Name.t, Exceptions.t) Hashtbl.t =
   let table = Hashtbl.create 15 in
   let open Exn in
   let array =
     [
-      ("get", [invalidArgument]);
-      ("set", [invalidArgument]);
-      ("make", [invalidArgument]);
-      ("init", [invalidArgument]);
-      ("make_matrix", [invalidArgument]);
-      ("fill", [invalidArgument]);
-      ("blit", [invalidArgument]);
-      ("iter2", [invalidArgument]);
-      ("map2", [invalidArgument]);
+      ("get", [invalid_argument]);
+      ("set", [invalid_argument]);
+      ("make", [invalid_argument]);
+      ("init", [invalid_argument]);
+      ("make_matrix", [invalid_argument]);
+      ("fill", [invalid_argument]);
+      ("blit", [invalid_argument]);
+      ("iter2", [invalid_argument]);
+      ("map2", [invalid_argument]);
     ]
   in
-  let beltArray = [("getExn", [assertFailure]); ("setExn", [assertFailure])] in
-  let beltList =
-    [("getExn", [notFound]); ("headExn", [notFound]); ("tailExn", [notFound])]
+  let belt_array = [("getExn", [assert_failure]); ("setExn", [assert_failure])] in
+  let belt_list =
+    [("getExn", [not_found]); ("headExn", [not_found]); ("tailExn", [not_found])]
   in
-  let beltMap = [("getExn", [notFound])] in
-  let beltMutableMap = beltMap in
-  let beltMutableQueue = [("peekExn", [notFound]); ("popExn", [notFound])] in
-  let beltMutableSet = [("getExn", [notFound])] in
-  let beltOption = [("getExn", [notFound])] in
-  let beltResult = [("getExn", [notFound])] in
-  let beltSet = [("getExn", [notFound])] in
-  let bsJson =
+  let belt_map = [("getExn", [not_found])] in
+  let belt_mutable_map = belt_map in
+  let belt_mutable_queue = [("peekExn", [not_found]); ("popExn", [not_found])] in
+  let belt_mutable_set = [("getExn", [not_found])] in
+  let belt_option = [("getExn", [not_found])] in
+  let belt_result = [("getExn", [not_found])] in
+  let belt_set = [("getExn", [not_found])] in
+  let bs_json =
     (* bs-json *)
     [
-      ("bool", [decodeError]);
-      ("float", [decodeError]);
-      ("int", [decodeError]);
-      ("string", [decodeError]);
-      ("char", [decodeError]);
-      ("date", [decodeError]);
-      ("nullable", [decodeError]);
-      ("nullAs", [decodeError]);
-      ("array", [decodeError]);
-      ("list", [decodeError]);
-      ("pair", [decodeError]);
-      ("tuple2", [decodeError]);
-      ("tuple3", [decodeError]);
-      ("tuple4", [decodeError]);
-      ("dict", [decodeError]);
-      ("field", [decodeError]);
-      ("at", [decodeError; invalidArgument]);
-      ("oneOf", [decodeError]);
-      ("either", [decodeError]);
+      ("bool", [decode_error]);
+      ("float", [decode_error]);
+      ("int", [decode_error]);
+      ("string", [decode_error]);
+      ("char", [decode_error]);
+      ("date", [decode_error]);
+      ("nullable", [decode_error]);
+      ("nullAs", [decode_error]);
+      ("array", [decode_error]);
+      ("list", [decode_error]);
+      ("pair", [decode_error]);
+      ("tuple2", [decode_error]);
+      ("tuple3", [decode_error]);
+      ("tuple4", [decode_error]);
+      ("dict", [decode_error]);
+      ("field", [decode_error]);
+      ("at", [decode_error; invalid_argument]);
+      ("oneOf", [decode_error]);
+      ("either", [decode_error]);
     ]
   in
   let buffer =
     [
-      ("sub", [invalidArgument]);
-      ("blit", [invalidArgument]);
-      ("nth", [invalidArgument]);
-      ("add_substitute", [notFound]);
-      ("add_channel", [endOfFile]);
-      ("truncate", [invalidArgument]);
+      ("sub", [invalid_argument]);
+      ("blit", [invalid_argument]);
+      ("nth", [invalid_argument]);
+      ("add_substitute", [not_found]);
+      ("add_channel", [end_of_file]);
+      ("truncate", [invalid_argument]);
     ]
   in
   let bytes =
     [
-      ("get", [invalidArgument]);
-      ("set", [invalidArgument]);
-      ("create", [invalidArgument]);
-      ("make", [invalidArgument]);
-      ("init", [invalidArgument]);
-      ("sub", [invalidArgument]);
-      ("sub_string", [invalidArgument]);
-      ("extend", [invalidArgument]);
-      ("fill", [invalidArgument]);
-      ("blit", [invalidArgument]);
-      ("blit_string", [invalidArgument]);
+      ("get", [invalid_argument]);
+      ("set", [invalid_argument]);
+      ("create", [invalid_argument]);
+      ("make", [invalid_argument]);
+      ("init", [invalid_argument]);
+      ("sub", [invalid_argument]);
+      ("sub_string", [invalid_argument]);
+      ("extend", [invalid_argument]);
+      ("fill", [invalid_argument]);
+      ("blit", [invalid_argument]);
+      ("blit_string", [invalid_argument]);
       (* ("concat", [invalidArgument]), if longer than {!Sys.max_string_length}
          ("cat", [invalidArgument]), if longer than {!Sys.max_string_length}
          ("escaped", [invalidArgument]), if longer than {!Sys.max_string_length} *)
-      ("index", [notFound]);
-      ("rindex", [notFound]);
-      ("index_from", [invalidArgument; notFound]);
-      ("index_from_opt", [invalidArgument]);
-      ("rindex_from", [invalidArgument; notFound]);
-      ("rindex_from_opt", [invalidArgument]);
-      ("contains_from", [invalidArgument]);
-      ("rcontains_from", [invalidArgument]);
+      ("index", [not_found]);
+      ("rindex", [not_found]);
+      ("index_from", [invalid_argument; not_found]);
+      ("index_from_opt", [invalid_argument]);
+      ("rindex_from", [invalid_argument; not_found]);
+      ("rindex_from_opt", [invalid_argument]);
+      ("contains_from", [invalid_argument]);
+      ("rcontains_from", [invalid_argument]);
     ]
   in
   let filename =
     [
-      ("chop_extension", [invalidArgument]);
-      ("temp_file", [sysError]);
-      ("open_temp_file", [sysError]);
+      ("chop_extension", [invalid_argument]);
+      ("temp_file", [sys_error]);
+      ("open_temp_file", [sys_error]);
     ]
   in
-  let hashtbl = [("find", [notFound])] in
+  let hashtbl = [("find", [not_found])] in
   let list =
     [
       ("hd", [failure]);
       ("tl", [failure]);
-      ("nth", [failure; invalidArgument]);
-      ("nth_opt", [invalidArgument]);
-      ("init", [invalidArgument]);
-      ("iter2", [invalidArgument]);
-      ("map2", [invalidArgument]);
-      ("fold_left2", [invalidArgument]);
-      ("fold_right2", [invalidArgument]);
-      ("for_all2", [invalidArgument]);
-      ("exists2", [invalidArgument]);
-      ("find", [notFound]);
-      ("assoc", [notFound]);
-      ("combine", [invalidArgument]);
+      ("nth", [failure; invalid_argument]);
+      ("nth_opt", [invalid_argument]);
+      ("init", [invalid_argument]);
+      ("iter2", [invalid_argument]);
+      ("map2", [invalid_argument]);
+      ("fold_left2", [invalid_argument]);
+      ("fold_right2", [invalid_argument]);
+      ("for_all2", [invalid_argument]);
+      ("exists2", [invalid_argument]);
+      ("find", [not_found]);
+      ("assoc", [not_found]);
+      ("combine", [invalid_argument]);
     ]
   in
   let string =
     [
-      ("get", [invalidArgument]);
-      ("set", [invalidArgument]);
-      ("create", [invalidArgument]);
-      ("make", [invalidArgument]);
-      ("init", [invalidArgument]);
-      ("sub", [invalidArgument]);
-      ("fill", [invalidArgument]);
+      ("get", [invalid_argument]);
+      ("set", [invalid_argument]);
+      ("create", [invalid_argument]);
+      ("make", [invalid_argument]);
+      ("init", [invalid_argument]);
+      ("sub", [invalid_argument]);
+      ("fill", [invalid_argument]);
       (* ("concat", [invalidArgument]), if longer than {!Sys.max_string_length}
          ("escaped", [invalidArgument]), if longer than {!Sys.max_string_length} *)
-      ("index", [notFound]);
-      ("rindex", [notFound]);
-      ("index_from", [invalidArgument; notFound]);
-      ("index_from_opt", [invalidArgument]);
-      ("rindex_from", [invalidArgument; notFound]);
-      ("rindex_from_opt", [invalidArgument]);
-      ("contains_from", [invalidArgument]);
-      ("rcontains_from", [invalidArgument]);
+      ("index", [not_found]);
+      ("rindex", [not_found]);
+      ("index_from", [invalid_argument; not_found]);
+      ("index_from_opt", [invalid_argument]);
+      ("rindex_from", [invalid_argument; not_found]);
+      ("rindex_from_opt", [invalid_argument]);
+      ("contains_from", [invalid_argument]);
+      ("rcontains_from", [invalid_argument]);
     ]
   in
   let stdlib =
     [
-      ("invalid_arg", [invalidArgument]);
+      ("invalid_arg", [invalid_argument]);
       ("failwith", [failure]);
-      ("/", [divisionByZero]);
-      ("mod", [divisionByZero]);
-      ("char_of_int", [invalidArgument]);
-      ("bool_of_string", [invalidArgument]);
+      ("/", [division_by_zero]);
+      ("mod", [division_by_zero]);
+      ("char_of_int", [invalid_argument]);
+      ("bool_of_string", [invalid_argument]);
       ("int_of_string", [failure]);
       ("float_of_string", [failure]);
       ("read_int", [failure]);
-      ("output", [invalidArgument]);
-      ("close_out", [sysError]);
-      ("input_char", [endOfFile]);
-      ("input_line", [endOfFile]);
-      ("input", [invalidArgument]);
-      ("really_input", [endOfFile; invalidArgument]);
-      ("really_input_string", [endOfFile]);
-      ("input_byte", [endOfFile]);
-      ("input_binary_int", [endOfFile]);
-      ("close_in", [sysError]);
+      ("output", [invalid_argument]);
+      ("close_out", [sys_error]);
+      ("input_char", [end_of_file]);
+      ("input_line", [end_of_file]);
+      ("input", [invalid_argument]);
+      ("really_input", [end_of_file; invalid_argument]);
+      ("really_input_string", [end_of_file]);
+      ("input_byte", [end_of_file]);
+      ("input_binary_int", [end_of_file]);
+      ("close_in", [sys_error]);
       ("exit", [exit]);
     ]
   in
   let str =
     [
-      ("search_forward", [notFound]);
-      ("search_backward", [notFound]);
-      ("matched_group", [notFound]);
-      ("group_beginning", [notFound; invalidArgument]);
-      ("group_end", [notFound; invalidArgument]);
+      ("search_forward", [not_found]);
+      ("search_backward", [not_found]);
+      ("matched_group", [not_found]);
+      ("group_beginning", [not_found; invalid_argument]);
+      ("group_end", [not_found; invalid_argument]);
     ]
   in
-  let yojsonBasic = [("from_string", [yojsonJsonError])] in
-  let yojsonBasicUtil =
+  let yojson_basic = [("from_string", [yojson_json_error])] in
+  let yojson_basic_util =
     [
-      ("member", [yojsonTypeError]);
-      ("to_assoc", [yojsonTypeError]);
-      ("to_bool", [yojsonTypeError]);
-      ("to_bool_option", [yojsonTypeError]);
-      ("to_float", [yojsonTypeError]);
-      ("to_float_option", [yojsonTypeError]);
-      ("to_int", [yojsonTypeError]);
-      ("to_list", [yojsonTypeError]);
-      ("to_number", [yojsonTypeError]);
-      ("to_number_option", [yojsonTypeError]);
-      ("to_string", [yojsonTypeError]);
-      ("to_string_option", [yojsonTypeError]);
+      ("member", [yojson_type_error]);
+      ("to_assoc", [yojson_type_error]);
+      ("to_bool", [yojson_type_error]);
+      ("to_bool_option", [yojson_type_error]);
+      ("to_float", [yojson_type_error]);
+      ("to_float_option", [yojson_type_error]);
+      ("to_int", [yojson_type_error]);
+      ("to_list", [yojson_type_error]);
+      ("to_number", [yojson_type_error]);
+      ("to_number_option", [yojson_type_error]);
+      ("to_string", [yojson_type_error]);
+      ("to_string_option", [yojson_type_error]);
     ]
   in
   [
     ("Array", array);
-    ("Belt.Array", beltArray);
-    ("Belt_Array", beltArray);
-    ("Belt.List", beltList);
-    ("Belt_List", beltList);
-    ("Belt.Map", beltMap);
-    ("Belt.Map.Int", beltMap);
-    ("Belt.Map.String", beltMap);
-    ("Belt_Map", beltMap);
-    ("Belt_Map.Int", beltMap);
-    ("Belt_Map.String", beltMap);
-    ("Belt_MapInt", beltMap);
-    ("Belt_MapString", beltMap);
-    ("Belt.MutableMap", beltMutableMap);
-    ("Belt.MutableMap.Int", beltMutableMap);
-    ("Belt.MutableMap.String", beltMutableMap);
-    ("Belt_MutableMap", beltMutableMap);
-    ("Belt_MutableMap.Int", beltMutableMap);
-    ("Belt_MutableMap.String", beltMutableMap);
-    ("Belt_MutableMapInt", beltMutableMap);
-    ("Belt_MutableMapString", beltMutableMap);
-    ("Belt.MutableQueue", beltMutableQueue);
-    ("Belt_MutableQueue", beltMutableQueue);
-    ("Belt.Option", beltOption);
-    ("Belt_Option", beltOption);
-    ("Belt.Result", beltResult);
-    ("Belt_Result", beltResult);
-    ("Belt.Set", beltSet);
-    ("Belt.Set.Int", beltSet);
-    ("Belt.Set.String", beltSet);
-    ("Belt_Set", beltSet);
-    ("Belt_Set.Int", beltSet);
-    ("Belt_Set.String", beltSet);
-    ("Belt_SetInt", beltSet);
-    ("Belt_SetString", beltSet);
-    ("Belt.MutableSet", beltMutableSet);
-    ("Belt.MutableSet.Int", beltMutableSet);
-    ("Belt.MutableSet.String", beltMutableSet);
-    ("MutableSet", beltMutableSet);
-    ("MutableSet.Int", beltMutableSet);
-    ("MutableSet.String", beltMutableSet);
-    ("Belt_MutableSetInt", beltMutableSet);
-    ("Belt_MutableSetString", beltMutableSet);
+    ("Belt.Array", belt_array);
+    ("Belt_Array", belt_array);
+    ("Belt.List", belt_list);
+    ("Belt_List", belt_list);
+    ("Belt.Map", belt_map);
+    ("Belt.Map.Int", belt_map);
+    ("Belt.Map.String", belt_map);
+    ("Belt_Map", belt_map);
+    ("Belt_Map.Int", belt_map);
+    ("Belt_Map.String", belt_map);
+    ("Belt_MapInt", belt_map);
+    ("Belt_MapString", belt_map);
+    ("Belt.MutableMap", belt_mutable_map);
+    ("Belt.MutableMap.Int", belt_mutable_map);
+    ("Belt.MutableMap.String", belt_mutable_map);
+    ("Belt_MutableMap", belt_mutable_map);
+    ("Belt_MutableMap.Int", belt_mutable_map);
+    ("Belt_MutableMap.String", belt_mutable_map);
+    ("Belt_MutableMapInt", belt_mutable_map);
+    ("Belt_MutableMapString", belt_mutable_map);
+    ("Belt.MutableQueue", belt_mutable_queue);
+    ("Belt_MutableQueue", belt_mutable_queue);
+    ("Belt.Option", belt_option);
+    ("Belt_Option", belt_option);
+    ("Belt.Result", belt_result);
+    ("Belt_Result", belt_result);
+    ("Belt.Set", belt_set);
+    ("Belt.Set.Int", belt_set);
+    ("Belt.Set.String", belt_set);
+    ("Belt_Set", belt_set);
+    ("Belt_Set.Int", belt_set);
+    ("Belt_Set.String", belt_set);
+    ("Belt_SetInt", belt_set);
+    ("Belt_SetString", belt_set);
+    ("Belt.MutableSet", belt_mutable_set);
+    ("Belt.MutableSet.Int", belt_mutable_set);
+    ("Belt.MutableSet.String", belt_mutable_set);
+    ("MutableSet", belt_mutable_set);
+    ("MutableSet.Int", belt_mutable_set);
+    ("MutableSet.String", belt_mutable_set);
+    ("Belt_MutableSetInt", belt_mutable_set);
+    ("Belt_MutableSetString", belt_mutable_set);
     ("Buffer", buffer);
     ("Bytes", bytes);
-    ("Char", [("chr", [invalidArgument])]);
+    ("Char", [("chr", [invalid_argument])]);
     ("Filename", filename);
     ("Hashtbl", hashtbl);
-    ("Js.Json", [("parseExn", [jsExnError])]);
-    ("Json_decode", bsJson);
-    ("Json.Decode", bsJson);
+    ("Js.Json", [("parseExn", [js_exn_error])]);
+    ("Json_decode", bs_json);
+    ("Json.Decode", bs_json);
     ("List", list);
     ("Pervasives", stdlib);
     ("Stdlib", stdlib);
@@ -247,16 +247,16 @@ let raisesLibTable : (Name.t, Exceptions.t) Hashtbl.t =
     ("Stdlib.String", string);
     ("Str", str);
     ("String", string);
-    ("Yojson.Basic", yojsonBasic);
-    ("Yojson.Basic.Util", yojsonBasicUtil);
+    ("Yojson.Basic", yojson_basic);
+    ("Yojson.Basic.Util", yojson_basic_util);
   ]
   |> List.iter (fun (name, group) ->
          group
          |> List.iter (fun (s, e) ->
                 Hashtbl.add table
                   (name ^ "." ^ s |> Name.create)
-                  (e |> Exceptions.fromList)));
+                  (e |> Exceptions.from_list)));
   table
 
 let find (path : Common.Path.t) =
-  Hashtbl.find_opt raisesLibTable (path |> Common.Path.toName)
+  Hashtbl.find_opt raises_lib_table (path |> Common.Path.to_name)

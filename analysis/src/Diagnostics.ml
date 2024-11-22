@@ -8,7 +8,7 @@ let document_syntax ~path =
            let _, endline, endcol =
              Location.get_pos_info (Res_diagnostics.get_end_pos diagnostic)
            in
-           Protocol.stringifyDiagnostic
+           Protocol.stringify_diagnostic
              {
                range =
                  {
@@ -19,16 +19,16 @@ let document_syntax ~path =
                severity = 1;
              })
   in
-  if FindFiles.isImplementation path then
-    let parseImplementation =
+  if FindFiles.is_implementation path then
+    let parse_implementation =
       Res_driver.parsing_engine.parse_implementation ~for_printer:false
         ~filename:path
     in
-    get_diagnostics parseImplementation.diagnostics
-  else if FindFiles.isInterface path then
-    let parseInterface =
+    get_diagnostics parse_implementation.diagnostics
+  else if FindFiles.is_interface path then
+    let parse_interface =
       Res_driver.parsing_engine.parse_interface ~for_printer:false
         ~filename:path
     in
-    get_diagnostics parseInterface.diagnostics
+    get_diagnostics parse_interface.diagnostics
   else []

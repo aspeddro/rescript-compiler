@@ -1,9 +1,9 @@
 type t
 
-val fromPath : string -> t
-val isInterface : t -> bool
-val stripPath : bool ref
-val toPath : t -> string
-val toString : t -> string
-val toTopLevelLoc : t -> Location.t
-val encodeURIComponent : string -> string
+val from_path : string -> t
+val is_interface : t -> bool
+val strip_path : bool ref
+val to_path : t -> string
+val to_string : t -> string
+val to_top_level_loc : t -> Location.t
+val encode_u_r_i_component : string -> string

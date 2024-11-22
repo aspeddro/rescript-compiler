@@ -1,7 +1,7 @@
 open SharedTypes
 
 (* TODO should I hang on to location? *)
-let rec findDocAttribute attributes =
+let rec find_doc_attribute attributes =
   let open Parsetree in
   match attributes with
   | [] -> None
@@ -15,9 +15,9 @@ let rec findDocAttribute attributes =
         ] )
     :: _ ->
     Some doc
-  | _ :: rest -> findDocAttribute rest
+  | _ :: rest -> find_doc_attribute rest
 
-let rec findDeprecatedAttribute attributes =
+let rec find_deprecated_attribute attributes =
   let open Parsetree in
   match attributes with
   | [] -> None
@@ -32,18 +32,18 @@ let rec findDeprecatedAttribute attributes =
     :: _ ->
     Some msg
   | ({Asttypes.txt = "deprecated"}, _) :: _ -> Some ""
-  | _ :: rest -> findDeprecatedAttribute rest
+  | _ :: rest -> find_deprecated_attribute rest
 
-let newDeclared ~item ~extent ~name ~stamp ~modulePath isExported attributes =
+let new_declared ~item ~extent ~name ~stamp ~module_path is_exported attributes =
   {
     Declared.name;
     stamp;
-    extentLoc = extent;
-    isExported;
-    modulePath;
-    deprecated = findDeprecatedAttribute attributes;
+    extent_loc = extent;
+    is_exported;
+    module_path;
+    deprecated = find_deprecated_attribute attributes;
     docstring =
-      (match findDocAttribute attributes with
+      (match find_doc_attribute attributes with
       | None -> []
       | Some d -> [d]);
     item;

@@ -1,39 +1,39 @@
 open SharedTypes
 
-let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
-    ~(contextPath : Completable.contextPath) ~posAfterFunExpr
-    ~firstCharBeforeCursorNoWhite ~charBeforeCursor ~isPipedExpr =
-  let fnHasCursor =
-    posAfterFunExpr <= posBeforeCursor && posBeforeCursor < endPos
+let find_arg_completables ~(args : arg list) ~end_pos ~pos_before_cursor
+    ~(context_path : Completable.context_path) ~pos_after_fun_expr
+    ~first_char_before_cursor_no_white ~char_before_cursor ~is_piped_expr =
+  let fn_has_cursor =
+    pos_after_fun_expr <= pos_before_cursor && pos_before_cursor < end_pos
   in
-  let allNames =
+  let all_names =
     List.fold_right
-      (fun arg allLabels ->
+      (fun arg all_labels ->
         match arg with
-        | {label = Some labelled} -> labelled.name :: allLabels
-        | {label = None} -> allLabels)
+        | {label = Some labelled} -> labelled.name :: all_labels
+        | {label = None} -> all_labels)
       args []
   in
-  let unlabelledCount = ref (if isPipedExpr then 1 else 0) in
-  let someArgHadEmptyExprLoc = ref false in
+  let unlabelled_count = ref (if is_piped_expr then 1 else 0) in
+  let some_arg_had_empty_expr_loc = ref false in
   let rec loop args =
     match args with
     | {label = Some labelled; exp} :: rest ->
       if
-        labelled.posStart <= posBeforeCursor
-        && posBeforeCursor < labelled.posEnd
+        labelled.pos_start <= pos_before_cursor
+        && pos_before_cursor < labelled.pos_end
       then (
         if Debug.verbose () then
           print_endline "[findArgCompletables] Completing named arg #2";
-        Some (Completable.CnamedArg (contextPath, labelled.name, allNames)))
-      else if exp.pexp_loc |> Loc.hasPos ~pos:posBeforeCursor then (
+        Some (Completable.CnamedArg (context_path, labelled.name, all_names)))
+      else if exp.pexp_loc |> Loc.has_pos ~pos:pos_before_cursor then (
         if Debug.verbose () then
           print_endline
             "[findArgCompletables] Completing in the assignment of labelled \
              argument";
         match
-          CompletionExpressions.traverseExpr exp ~exprPath:[]
-            ~pos:posBeforeCursor ~firstCharBeforeCursorNoWhite
+          CompletionExpressions.traverse_expr exp ~expr_path:[]
+            ~pos:pos_before_cursor ~first_char_before_cursor_no_white
         with
         | None -> None
         | Some (prefix, nested) ->
@@ -43,26 +43,26 @@ let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
           Some
             (Cexpression
                {
-                 contextPath =
+                 context_path =
                    CArgument
                      {
-                       functionContextPath = contextPath;
-                       argumentLabel = Labelled labelled.name;
+                       function_context_path = context_path;
+                       argument_label = Labelled labelled.name;
                      };
                  prefix;
                  nested = List.rev nested;
                }))
-      else if CompletionExpressions.isExprHole exp then (
+      else if CompletionExpressions.is_expr_hole exp then (
         if Debug.verbose () then
           print_endline "[findArgCompletables] found exprhole";
         Some
           (Cexpression
              {
-               contextPath =
+               context_path =
                  CArgument
                    {
-                     functionContextPath = contextPath;
-                     argumentLabel = Labelled labelled.name;
+                     function_context_path = context_path;
+                     argument_label = Labelled labelled.name;
                    };
                prefix = "";
                nested = [];
@@ -71,20 +71,20 @@ let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
     | {label = None; exp} :: rest ->
       if Debug.verbose () then
         Printf.printf "[findArgCompletable] unlabelled arg expr is: %s \n"
-          (DumpAst.printExprItem ~pos:posBeforeCursor ~indentation:0 exp);
+          (DumpAst.print_expr_item ~pos:pos_before_cursor ~indentation:0 exp);
 
       (* Track whether there was an arg with an empty loc (indicates parser error)*)
-      if CursorPosition.locIsEmpty exp.pexp_loc ~pos:posBeforeCursor then
-        someArgHadEmptyExprLoc := true;
+      if CursorPosition.loc_is_empty exp.pexp_loc ~pos:pos_before_cursor then
+        some_arg_had_empty_expr_loc := true;
 
       if Res_parsetree_viewer.is_template_literal exp then None
-      else if exp.pexp_loc |> Loc.hasPos ~pos:posBeforeCursor then (
+      else if exp.pexp_loc |> Loc.has_pos ~pos:pos_before_cursor then (
         if Debug.verbose () then
           print_endline
             "[findArgCompletables] Completing in an unlabelled argument";
         match
-          CompletionExpressions.traverseExpr exp ~pos:posBeforeCursor
-            ~firstCharBeforeCursorNoWhite ~exprPath:[]
+          CompletionExpressions.traverse_expr exp ~pos:pos_before_cursor
+            ~first_char_before_cursor_no_white ~expr_path:[]
         with
         | None ->
           if Debug.verbose () then
@@ -98,46 +98,46 @@ let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
           Some
             (Cexpression
                {
-                 contextPath =
+                 context_path =
                    CArgument
                      {
-                       functionContextPath = contextPath;
-                       argumentLabel =
-                         Unlabelled {argumentPosition = !unlabelledCount};
+                       function_context_path = context_path;
+                       argument_label =
+                         Unlabelled {argument_position = !unlabelled_count};
                      };
                  prefix;
                  nested = List.rev nested;
                }))
-      else if CompletionExpressions.isExprHole exp then (
+      else if CompletionExpressions.is_expr_hole exp then (
         if Debug.verbose () then
           print_endline "[findArgCompletables] found an exprhole #2";
         Some
           (Cexpression
              {
-               contextPath =
+               context_path =
                  CArgument
                    {
-                     functionContextPath = contextPath;
-                     argumentLabel =
-                       Unlabelled {argumentPosition = !unlabelledCount};
+                     function_context_path = context_path;
+                     argument_label =
+                       Unlabelled {argument_position = !unlabelled_count};
                    };
                prefix = "";
                nested = [];
              }))
       else (
-        unlabelledCount := !unlabelledCount + 1;
+        unlabelled_count := !unlabelled_count + 1;
         loop rest)
     | [] ->
-      let hadEmptyExpLoc = !someArgHadEmptyExprLoc in
-      if fnHasCursor then (
+      let had_empty_exp_loc = !some_arg_had_empty_expr_loc in
+      if fn_has_cursor then (
         if Debug.verbose () then
           print_endline "[findArgCompletables] Function has cursor";
-        match charBeforeCursor with
+        match char_before_cursor with
         | Some '~' ->
           if Debug.verbose () then
             print_endline "[findArgCompletables] '~' is before cursor";
-          Some (Completable.CnamedArg (contextPath, "", allNames))
-        | _ when hadEmptyExpLoc ->
+          Some (Completable.CnamedArg (context_path, "", all_names))
+        | _ when had_empty_exp_loc ->
           (* Special case: `Console.log(arr->)`, completing on the pipe.
              This match branch happens when the fn call has the cursor and:
              - there's no argument label or expr that has the cursor
@@ -156,8 +156,8 @@ let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
                arg had empty loc";
           None
         | _
-          when firstCharBeforeCursorNoWhite = Some '('
-               || firstCharBeforeCursorNoWhite = Some ',' ->
+          when first_char_before_cursor_no_white = Some '('
+               || first_char_before_cursor_no_white = Some ',' ->
           (* Checks to ensure that completing for empty unlabelled arg makes
              sense by checking what's left of the cursor. *)
           if Debug.verbose () then
@@ -165,16 +165,16 @@ let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
               "[findArgCompletables] Completing for unlabelled argument value \
                because nothing matched and is not labelled argument name \
                completion. isPipedExpr: %b\n"
-              isPipedExpr;
+              is_piped_expr;
           Some
             (Cexpression
                {
-                 contextPath =
+                 context_path =
                    CArgument
                      {
-                       functionContextPath = contextPath;
-                       argumentLabel =
-                         Unlabelled {argumentPosition = !unlabelledCount};
+                       function_context_path = context_path;
+                       argument_label =
+                         Unlabelled {argument_position = !unlabelled_count};
                      };
                  prefix = "";
                  nested = [];
@@ -187,26 +187,26 @@ let findArgCompletables ~(args : arg list) ~endPos ~posBeforeCursor
   | [
    {label = None; exp = {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}};
   ]
-    when fnHasCursor ->
+    when fn_has_cursor ->
     if Debug.verbose () then
       print_endline "[findArgCompletables] Completing for unit argument";
     Some
       (Completable.Cexpression
          {
-           contextPath =
+           context_path =
              CArgument
                {
-                 functionContextPath = contextPath;
-                 argumentLabel =
+                 function_context_path = context_path;
+                 argument_label =
                    Unlabelled
-                     {argumentPosition = (if isPipedExpr then 1 else 0)};
+                     {argument_position = (if is_piped_expr then 1 else 0)};
                };
            prefix = "";
            nested = [];
          })
   | _ -> loop args
 
-let rec exprToContextPathInner (e : Parsetree.expression) =
+let rec expr_to_context_path_inner (e : Parsetree.expression) =
   match e.pexp_desc with
   | Pexp_constant (Pconst_string _) -> Some Completable.CPString
   | Pexp_constant (Pconst_integer _) -> Some CPInt
@@ -217,14 +217,14 @@ let rec exprToContextPathInner (e : Parsetree.expression) =
       (CPArray
          (match exprs with
          | [] -> None
-         | exp :: _ -> exprToContextPath exp))
+         | exp :: _ -> expr_to_context_path exp))
   | Pexp_ident {txt = Lident ("|." | "|.u")} -> None
   | Pexp_ident {txt; loc} ->
     Some
-      (CPId {path = Utils.flattenLongIdent txt; completionContext = Value; loc})
+      (CPId {path = Utils.flatten_long_ident txt; completion_context = Value; loc})
   | Pexp_field (e1, {txt = Lident name}) -> (
-    match exprToContextPath e1 with
-    | Some contextPath -> Some (CPField (contextPath, name))
+    match expr_to_context_path e1 with
+    | Some context_path -> Some (CPField (context_path, name))
     | _ -> None)
   | Pexp_field (_, {loc; txt = Ldot (lid, name)}) ->
     (* Case x.M.field ignore the x part *)
@@ -232,15 +232,15 @@ let rec exprToContextPathInner (e : Parsetree.expression) =
       (CPField
          ( CPId
              {
-               path = Utils.flattenLongIdent lid;
-               completionContext = Module;
+               path = Utils.flatten_long_ident lid;
+               completion_context = Module;
                loc;
              },
            name ))
   | Pexp_send (e1, {txt}) -> (
-    match exprToContextPath e1 with
+    match expr_to_context_path e1 with
     | None -> None
-    | Some contexPath -> Some (CPObj (contexPath, txt)))
+    | Some contex_path -> Some (CPObj (contex_path, txt)))
   | Pexp_apply
       ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
         [
@@ -248,7 +248,7 @@ let rec exprToContextPathInner (e : Parsetree.expression) =
           (_, {pexp_desc = Pexp_apply (d, args); pexp_loc; pexp_attributes});
         ] ) ->
     (* Transform away pipe with apply call *)
-    exprToContextPath
+    expr_to_context_path
       {
         pexp_desc = Pexp_apply (d, (Nolabel, lhs) :: args);
         pexp_loc;
@@ -259,7 +259,7 @@ let rec exprToContextPathInner (e : Parsetree.expression) =
         [(_, lhs); (_, {pexp_desc = Pexp_ident id; pexp_loc; pexp_attributes})]
       ) ->
     (* Transform away pipe with identifier *)
-    exprToContextPath
+    expr_to_context_path
       {
         pexp_desc =
           Pexp_apply
@@ -269,26 +269,26 @@ let rec exprToContextPathInner (e : Parsetree.expression) =
         pexp_attributes;
       }
   | Pexp_apply (e1, args) -> (
-    match exprToContextPath e1 with
+    match expr_to_context_path e1 with
     | None -> None
-    | Some contexPath -> Some (CPApply (contexPath, args |> List.map fst)))
+    | Some contex_path -> Some (CPApply (contex_path, args |> List.map fst)))
   | Pexp_tuple exprs ->
-    let exprsAsContextPaths = exprs |> List.filter_map exprToContextPath in
-    if List.length exprs = List.length exprsAsContextPaths then
-      Some (CTuple exprsAsContextPaths)
+    let exprs_as_context_paths = exprs |> List.filter_map expr_to_context_path in
+    if List.length exprs = List.length exprs_as_context_paths then
+      Some (CTuple exprs_as_context_paths)
     else None
   | _ -> None
 
-and exprToContextPath (e : Parsetree.expression) =
+and expr_to_context_path (e : Parsetree.expression) =
   match
     ( Res_parsetree_viewer.has_await_attribute e.pexp_attributes,
-      exprToContextPathInner e )
+      expr_to_context_path_inner e )
   with
-  | true, Some ctxPath -> Some (CPAwait ctxPath)
-  | false, Some ctxPath -> Some ctxPath
+  | true, Some ctx_path -> Some (CPAwait ctx_path)
+  | false, Some ctx_path -> Some ctx_path
   | _, None -> None
 
-let completePipeChain (exp : Parsetree.expression) =
+let complete_pipe_chain (exp : Parsetree.expression) =
   (* Complete the end of pipe chains by reconstructing the pipe chain as a single pipe,
      so it can be completed.
      Example:
@@ -302,85 +302,85 @@ let completePipeChain (exp : Parsetree.expression) =
   | Pexp_apply
       ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
         [_; (_, {pexp_desc = Pexp_apply (d, _)})] ) ->
-    exprToContextPath exp |> Option.map (fun ctxPath -> (ctxPath, d.pexp_loc))
+    expr_to_context_path exp |> Option.map (fun ctx_path -> (ctx_path, d.pexp_loc))
     (* When the left side of the pipe we're completing is an identifier application.
        Example: someArray->filterAllTheGoodStuff-> *)
   | Pexp_apply
       ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
         [_; (_, {pexp_desc = Pexp_ident _; pexp_loc})] ) ->
-    exprToContextPath exp |> Option.map (fun ctxPath -> (ctxPath, pexp_loc))
+    expr_to_context_path exp |> Option.map (fun ctx_path -> (ctx_path, pexp_loc))
   | _ -> None
 
-let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
-    ?findThisExprLoc text =
-  let offsetNoWhite = Utils.skipWhite text (offset - 1) in
-  let posNoWhite =
-    let line, col = posCursor in
-    (line, max 0 col - offset + offsetNoWhite)
+let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
+    ?find_this_expr_loc text =
+  let offset_no_white = Utils.skip_white text (offset - 1) in
+  let pos_no_white =
+    let line, col = pos_cursor in
+    (line, max 0 col - offset + offset_no_white)
   in
   (* Identifies the first character before the cursor that's not white space.
      Should be used very sparingly, but can be used to drive completion triggering
      in scenarios where the parser eats things we'd need to complete.
      Example: let {whatever,     <cursor>}, char is ','. *)
-  let firstCharBeforeCursorNoWhite =
-    if offsetNoWhite < String.length text && offsetNoWhite >= 0 then
-      Some text.[offsetNoWhite]
+  let first_char_before_cursor_no_white =
+    if offset_no_white < String.length text && offset_no_white >= 0 then
+      Some text.[offset_no_white]
     else None
   in
-  let charAtCursor =
+  let char_at_cursor =
     if offset < String.length text then text.[offset] else '\n'
   in
-  let posBeforeCursor = Pos.posBeforeCursor posCursor in
-  let charBeforeCursor, blankAfterCursor =
-    match Pos.positionToOffset text posCursor with
+  let pos_before_cursor = Pos.pos_before_cursor pos_cursor in
+  let char_before_cursor, blank_after_cursor =
+    match Pos.position_to_offset text pos_cursor with
     | Some offset when offset > 0 -> (
-      let charBeforeCursor = text.[offset - 1] in
-      match charAtCursor with
+      let char_before_cursor = text.[offset - 1] in
+      match char_at_cursor with
       | ' ' | '\t' | '\r' | '\n' ->
-        (Some charBeforeCursor, Some charBeforeCursor)
-      | _ -> (Some charBeforeCursor, None))
+        (Some char_before_cursor, Some char_before_cursor)
+      | _ -> (Some char_before_cursor, None))
     | _ -> (None, None)
   in
-  let flattenLidCheckDot ?(jsx = true) (lid : Longident.t Location.loc) =
+  let flatten_lid_check_dot ?(jsx = true) (lid : Longident.t Location.loc) =
     (* Flatten an identifier keeping track of whether the current cursor
        is after a "." in the id followed by a blank character.
        In that case, cut the path after ".". *)
-    let cutAtOffset =
-      let idStart = Loc.start lid.loc in
-      match blankAfterCursor with
+    let cut_at_offset =
+      let id_start = Loc.start lid.loc in
+      match blank_after_cursor with
       | Some '.' ->
-        if fst posBeforeCursor = fst idStart then
-          Some (snd posBeforeCursor - snd idStart)
+        if fst pos_before_cursor = fst id_start then
+          Some (snd pos_before_cursor - snd id_start)
         else None
       | _ -> None
     in
-    Utils.flattenLongIdent ~cutAtOffset ~jsx lid.txt
+    Utils.flatten_long_ident ~cut_at_offset ~jsx lid.txt
   in
 
-  let currentCtxPath = ref None in
-  let processingFun = ref None in
-  let setCurrentCtxPath ctxPath =
-    if !Cfg.debugFollowCtxPath then
+  let current_ctx_path = ref None in
+  let processing_fun = ref None in
+  let set_current_ctx_path ctx_path =
+    if !Cfg.debug_follow_ctx_path then
       Printf.printf "setting current ctxPath: %s\n"
-        (Completable.contextPathToString ctxPath);
-    currentCtxPath := Some ctxPath
+        (Completable.context_path_to_string ctx_path);
+    current_ctx_path := Some ctx_path
   in
-  let resetCurrentCtxPath ctxPath =
-    (match (!currentCtxPath, ctxPath) with
+  let reset_current_ctx_path ctx_path =
+    (match (!current_ctx_path, ctx_path) with
     | None, None -> ()
     | _ ->
-      if !Cfg.debugFollowCtxPath then
+      if !Cfg.debug_follow_ctx_path then
         Printf.printf "resetting current ctxPath to: %s\n"
-          (match ctxPath with
+          (match ctx_path with
           | None -> "None"
-          | Some ctxPath -> Completable.contextPathToString ctxPath));
-    currentCtxPath := ctxPath
+          | Some ctx_path -> Completable.context_path_to_string ctx_path));
+    current_ctx_path := ctx_path
   in
 
   let found = ref false in
   let result = ref None in
   let scope = ref (Scope.create ()) in
-  let setResultOpt x =
+  let set_result_opt x =
     if !result = None then
       match x with
       | None ->
@@ -391,209 +391,209 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
       | Some x ->
         if Debug.verbose () then
           Printf.printf "[set_result] set new result to %s\n"
-            (Completable.toString x);
+            (Completable.to_string x);
         result := Some (x, !scope)
   in
-  let setResult x = setResultOpt (Some x) in
-  let scopeValueDescription (vd : Parsetree.value_description) =
+  let set_result x = set_result_opt (Some x) in
+  let scope_value_description (vd : Parsetree.value_description) =
     scope :=
-      !scope |> Scope.addValue ~name:vd.pval_name.txt ~loc:vd.pval_name.loc
+      !scope |> Scope.add_value ~name:vd.pval_name.txt ~loc:vd.pval_name.loc
   in
-  let rec scopePattern ?contextPath
-      ?(patternPath : Completable.nestedPath list = [])
+  let rec scope_pattern ?context_path
+      ?(pattern_path : Completable.nested_path list = [])
       (pat : Parsetree.pattern) =
-    let contextPathToSave =
-      match (contextPath, patternPath) with
-      | maybeContextPath, [] -> maybeContextPath
-      | Some contextPath, patternPath ->
+    let context_path_to_save =
+      match (context_path, pattern_path) with
+      | maybe_context_path, [] -> maybe_context_path
+      | Some context_path, pattern_path ->
         Some
           (Completable.CPatternPath
-             {rootCtxPath = contextPath; nested = List.rev patternPath})
+             {root_ctx_path = context_path; nested = List.rev pattern_path})
       | _ -> None
     in
     match pat.ppat_desc with
     | Ppat_any -> ()
     | Ppat_var {txt; loc} ->
       scope :=
-        !scope |> Scope.addValue ~name:txt ~loc ?contextPath:contextPathToSave
-    | Ppat_alias (p, asA) ->
-      scopePattern p ~patternPath ?contextPath;
-      let ctxPath =
-        if contextPathToSave = None then
+        !scope |> Scope.add_value ~name:txt ~loc ?context_path:context_path_to_save
+    | Ppat_alias (p, as_a) ->
+      scope_pattern p ~pattern_path ?context_path;
+      let ctx_path =
+        if context_path_to_save = None then
           match p with
           | {ppat_desc = Ppat_var {txt; loc}} ->
             Some
-              (Completable.CPId {path = [txt]; completionContext = Value; loc})
+              (Completable.CPId {path = [txt]; completion_context = Value; loc})
           | _ -> None
         else None
       in
       scope :=
-        !scope |> Scope.addValue ~name:asA.txt ~loc:asA.loc ?contextPath:ctxPath
+        !scope |> Scope.add_value ~name:as_a.txt ~loc:as_a.loc ?context_path:ctx_path
     | Ppat_constant _ | Ppat_interval _ -> ()
     | Ppat_tuple pl ->
       pl
       |> List.iteri (fun index p ->
-             scopePattern p
-               ~patternPath:(NTupleItem {itemNum = index} :: patternPath)
-               ?contextPath)
+             scope_pattern p
+               ~pattern_path:(NTupleItem {item_num = index} :: pattern_path)
+               ?context_path)
     | Ppat_construct (_, None) -> ()
     | Ppat_construct ({txt}, Some {ppat_desc = Ppat_tuple pl}) ->
       pl
       |> List.iteri (fun index p ->
-             scopePattern p
-               ~patternPath:
+             scope_pattern p
+               ~pattern_path:
                  (NVariantPayload
                     {
-                      itemNum = index;
-                      constructorName = Utils.getUnqualifiedName txt;
+                      item_num = index;
+                      constructor_name = Utils.get_unqualified_name txt;
                     }
-                 :: patternPath)
-               ?contextPath)
+                 :: pattern_path)
+               ?context_path)
     | Ppat_construct ({txt}, Some p) ->
-      scopePattern
-        ~patternPath:
+      scope_pattern
+        ~pattern_path:
           (NVariantPayload
-             {itemNum = 0; constructorName = Utils.getUnqualifiedName txt}
-          :: patternPath)
-        ?contextPath p
+             {item_num = 0; constructor_name = Utils.get_unqualified_name txt}
+          :: pattern_path)
+        ?context_path p
     | Ppat_variant (_, None) -> ()
     | Ppat_variant (txt, Some {ppat_desc = Ppat_tuple pl}) ->
       pl
       |> List.iteri (fun index p ->
-             scopePattern p
-               ~patternPath:
-                 (NPolyvariantPayload {itemNum = index; constructorName = txt}
-                 :: patternPath)
-               ?contextPath)
+             scope_pattern p
+               ~pattern_path:
+                 (NPolyvariantPayload {item_num = index; constructor_name = txt}
+                 :: pattern_path)
+               ?context_path)
     | Ppat_variant (txt, Some p) ->
-      scopePattern
-        ~patternPath:
-          (NPolyvariantPayload {itemNum = 0; constructorName = txt}
-          :: patternPath)
-        ?contextPath p
+      scope_pattern
+        ~pattern_path:
+          (NPolyvariantPayload {item_num = 0; constructor_name = txt}
+          :: pattern_path)
+        ?context_path p
     | Ppat_record (fields, _) ->
       fields
       |> List.iter (fun (fname, p) ->
              match fname with
              | {Location.txt = Longident.Lident fname} ->
-               scopePattern
-                 ~patternPath:
-                   (Completable.NFollowRecordField {fieldName = fname}
-                   :: patternPath)
-                 ?contextPath p
+               scope_pattern
+                 ~pattern_path:
+                   (Completable.NFollowRecordField {field_name = fname}
+                   :: pattern_path)
+                 ?context_path p
              | _ -> ())
     | Ppat_array pl ->
       pl
       |> List.iter
-           (scopePattern ~patternPath:(NArray :: patternPath) ?contextPath)
-    | Ppat_or (p1, _) -> scopePattern ~patternPath ?contextPath p1
-    | Ppat_constraint (p, coreType) ->
-      scopePattern ~patternPath
-        ?contextPath:(TypeUtils.contextPathFromCoreType coreType)
+           (scope_pattern ~pattern_path:(NArray :: pattern_path) ?context_path)
+    | Ppat_or (p1, _) -> scope_pattern ~pattern_path ?context_path p1
+    | Ppat_constraint (p, core_type) ->
+      scope_pattern ~pattern_path
+        ?context_path:(TypeUtils.context_path_from_core_type core_type)
         p
     | Ppat_type _ -> ()
-    | Ppat_lazy p -> scopePattern ~patternPath ?contextPath p
+    | Ppat_lazy p -> scope_pattern ~pattern_path ?context_path p
     | Ppat_unpack {txt; loc} ->
       scope :=
-        !scope |> Scope.addValue ~name:txt ~loc ?contextPath:contextPathToSave
-    | Ppat_exception p -> scopePattern ~patternPath ?contextPath p
+        !scope |> Scope.add_value ~name:txt ~loc ?context_path:context_path_to_save
+    | Ppat_exception p -> scope_pattern ~pattern_path ?context_path p
     | Ppat_extension _ -> ()
-    | Ppat_open (_, p) -> scopePattern ~patternPath ?contextPath p
+    | Ppat_open (_, p) -> scope_pattern ~pattern_path ?context_path p
   in
-  let locHasCursor = CursorPosition.locHasCursor ~pos:posBeforeCursor in
-  let locIsEmpty = CursorPosition.locIsEmpty ~pos:posBeforeCursor in
-  let completePattern ?contextPath (pat : Parsetree.pattern) =
+  let loc_has_cursor = CursorPosition.loc_has_cursor ~pos:pos_before_cursor in
+  let loc_is_empty = CursorPosition.loc_is_empty ~pos:pos_before_cursor in
+  let complete_pattern ?context_path (pat : Parsetree.pattern) =
     match
       ( pat
-        |> CompletionPatterns.traversePattern ~patternPath:[] ~locHasCursor
-             ~firstCharBeforeCursorNoWhite ~posBeforeCursor,
-        contextPath )
+        |> CompletionPatterns.traverse_pattern ~pattern_path:[] ~loc_has_cursor
+             ~first_char_before_cursor_no_white ~pos_before_cursor,
+        context_path )
     with
-    | Some (prefix, nestedPattern), Some ctxPath ->
+    | Some (prefix, nested_pattern), Some ctx_path ->
       if Debug.verbose () then
         Printf.printf "[completePattern] found pattern that can be completed\n";
-      setResult
+      set_result
         (Completable.Cpattern
            {
-             contextPath = ctxPath;
+             context_path = ctx_path;
              prefix;
-             nested = List.rev nestedPattern;
+             nested = List.rev nested_pattern;
              fallback = None;
-             patternMode = Default;
+             pattern_mode = Default;
            })
     | _ -> ()
   in
-  let scopeValueBinding (vb : Parsetree.value_binding) =
-    let contextPath =
+  let scope_value_binding (vb : Parsetree.value_binding) =
+    let context_path =
       (* Pipe chains get special treatment here, because when assigning values
          we want the return of the entire pipe chain as a function call, rather
          than as a pipe completion call. *)
-      match completePipeChain vb.pvb_expr with
-      | Some (ctxPath, _) -> Some ctxPath
-      | None -> exprToContextPath vb.pvb_expr
+      match complete_pipe_chain vb.pvb_expr with
+      | Some (ctx_path, _) -> Some ctx_path
+      | None -> expr_to_context_path vb.pvb_expr
     in
-    scopePattern ?contextPath vb.pvb_pat
+    scope_pattern ?context_path vb.pvb_pat
   in
-  let scopeTypeKind (tk : Parsetree.type_kind) =
+  let scope_type_kind (tk : Parsetree.type_kind) =
     match tk with
-    | Ptype_variant constrDecls ->
-      constrDecls
+    | Ptype_variant constr_decls ->
+      constr_decls
       |> List.iter (fun (cd : Parsetree.constructor_declaration) ->
              scope :=
                !scope
-               |> Scope.addConstructor ~name:cd.pcd_name.txt ~loc:cd.pcd_loc)
-    | Ptype_record labelDecls ->
-      labelDecls
+               |> Scope.add_constructor ~name:cd.pcd_name.txt ~loc:cd.pcd_loc)
+    | Ptype_record label_decls ->
+      label_decls
       |> List.iter (fun (ld : Parsetree.label_declaration) ->
              scope :=
-               !scope |> Scope.addField ~name:ld.pld_name.txt ~loc:ld.pld_loc)
+               !scope |> Scope.add_field ~name:ld.pld_name.txt ~loc:ld.pld_loc)
     | _ -> ()
   in
-  let scopeTypeDeclaration (td : Parsetree.type_declaration) =
+  let scope_type_declaration (td : Parsetree.type_declaration) =
     scope :=
-      !scope |> Scope.addType ~name:td.ptype_name.txt ~loc:td.ptype_name.loc;
-    scopeTypeKind td.ptype_kind
+      !scope |> Scope.add_type ~name:td.ptype_name.txt ~loc:td.ptype_name.loc;
+    scope_type_kind td.ptype_kind
   in
-  let scopeModuleBinding (mb : Parsetree.module_binding) =
+  let scope_module_binding (mb : Parsetree.module_binding) =
     scope :=
-      !scope |> Scope.addModule ~name:mb.pmb_name.txt ~loc:mb.pmb_name.loc
+      !scope |> Scope.add_module ~name:mb.pmb_name.txt ~loc:mb.pmb_name.loc
   in
-  let scopeModuleDeclaration (md : Parsetree.module_declaration) =
+  let scope_module_declaration (md : Parsetree.module_declaration) =
     scope :=
-      !scope |> Scope.addModule ~name:md.pmd_name.txt ~loc:md.pmd_name.loc
+      !scope |> Scope.add_module ~name:md.pmd_name.txt ~loc:md.pmd_name.loc
   in
-  let inJsxContext = ref false in
+  let in_jsx_context = ref false in
   (* Identifies expressions where we can do typed pattern or expr completion. *)
-  let typedCompletionExpr (exp : Parsetree.expression) =
-    let debugTypedCompletionExpr = false in
-    if exp.pexp_loc |> CursorPosition.locHasCursor ~pos:posBeforeCursor then (
-      if Debug.verbose () && debugTypedCompletionExpr then
+  let typed_completion_expr (exp : Parsetree.expression) =
+    let debug_typed_completion_expr = false in
+    if exp.pexp_loc |> CursorPosition.loc_has_cursor ~pos:pos_before_cursor then (
+      if Debug.verbose () && debug_typed_completion_expr then
         print_endline "[typedCompletionExpr] Has cursor";
       match exp.pexp_desc with
       (* No cases means there's no `|` yet in the switch *)
       | Pexp_match (({pexp_desc = Pexp_ident _} as expr), []) ->
-        if Debug.verbose () && debugTypedCompletionExpr then
+        if Debug.verbose () && debug_typed_completion_expr then
           print_endline "[typedCompletionExpr] No cases, with ident";
-        if locHasCursor expr.pexp_loc then (
-          if Debug.verbose () && debugTypedCompletionExpr then
+        if loc_has_cursor expr.pexp_loc then (
+          if Debug.verbose () && debug_typed_completion_expr then
             print_endline "[typedCompletionExpr] No cases - has cursor";
           (* We can do exhaustive switch completion if this is an ident we can
              complete from. *)
-          match exprToContextPath expr with
+          match expr_to_context_path expr with
           | None -> ()
-          | Some contextPath ->
-            setResult (CexhaustiveSwitch {contextPath; exprLoc = exp.pexp_loc}))
+          | Some context_path ->
+            set_result (CexhaustiveSwitch {context_path; expr_loc = exp.pexp_loc}))
       | Pexp_match (_expr, []) ->
         (* switch x { } *)
-        if Debug.verbose () && debugTypedCompletionExpr then
+        if Debug.verbose () && debug_typed_completion_expr then
           print_endline "[typedCompletionExpr] No cases, rest";
         ()
       | Pexp_match (expr, [{pc_lhs; pc_rhs}])
-        when locHasCursor expr.pexp_loc
-             && CompletionExpressions.isExprHole pc_rhs
-             && CompletionPatterns.isPatternHole pc_lhs ->
+        when loc_has_cursor expr.pexp_loc
+             && CompletionExpressions.is_expr_hole pc_rhs
+             && CompletionPatterns.is_pattern_hole pc_lhs ->
         (* switch x { | } when we're in the switch expr itself. *)
-        if Debug.verbose () && debugTypedCompletionExpr then
+        if Debug.verbose () && debug_typed_completion_expr then
           print_endline
             "[typedCompletionExpr] No cases (expr and pat holes), rest";
         ()
@@ -609,94 +609,94 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
               };
             ] ) -> (
         (* A single case that's a pattern hole typically means `switch x { | }`. Complete as the pattern itself with nothing nested. *)
-        match exprToContextPath exp with
+        match expr_to_context_path exp with
         | None -> ()
-        | Some ctxPath ->
-          setResult
+        | Some ctx_path ->
+          set_result
             (Completable.Cpattern
                {
-                 contextPath = ctxPath;
+                 context_path = ctx_path;
                  nested = [];
                  prefix = "";
                  fallback = None;
-                 patternMode = Default;
+                 pattern_mode = Default;
                }))
       | Pexp_match (exp, cases) -> (
-        if Debug.verbose () && debugTypedCompletionExpr then
+        if Debug.verbose () && debug_typed_completion_expr then
           print_endline "[typedCompletionExpr] Has cases";
         (* If there's more than one case, or the case isn't a pattern hole, figure out if we're completing another
            broken parser case (`switch x { | true => () | <com> }` for example). *)
-        match exp |> exprToContextPath with
+        match exp |> expr_to_context_path with
         | None ->
-          if Debug.verbose () && debugTypedCompletionExpr then
+          if Debug.verbose () && debug_typed_completion_expr then
             print_endline "[typedCompletionExpr] Has cases - no ctx path"
-        | Some ctxPath -> (
-          if Debug.verbose () && debugTypedCompletionExpr then
+        | Some ctx_path -> (
+          if Debug.verbose () && debug_typed_completion_expr then
             print_endline "[typedCompletionExpr] Has cases - has ctx path";
-          let hasCaseWithCursor =
+          let has_case_with_cursor =
             cases
             |> List.find_opt (fun case ->
-                   locHasCursor case.Parsetree.pc_lhs.ppat_loc)
+                   loc_has_cursor case.Parsetree.pc_lhs.ppat_loc)
             |> Option.is_some
           in
-          let hasCaseWithEmptyLoc =
+          let has_case_with_empty_loc =
             cases
             |> List.find_opt (fun case ->
-                   locIsEmpty case.Parsetree.pc_lhs.ppat_loc)
+                   loc_is_empty case.Parsetree.pc_lhs.ppat_loc)
             |> Option.is_some
           in
-          if Debug.verbose () && debugTypedCompletionExpr then
+          if Debug.verbose () && debug_typed_completion_expr then
             Printf.printf
               "[typedCompletionExpr] Has cases - has ctx path - \
                hasCaseWithEmptyLoc: %b, hasCaseWithCursor: %b\n"
-              hasCaseWithEmptyLoc hasCaseWithCursor;
-          match (hasCaseWithEmptyLoc, hasCaseWithCursor) with
+              has_case_with_empty_loc has_case_with_cursor;
+          match (has_case_with_empty_loc, has_case_with_cursor) with
           | _, true ->
             (* Always continue if there's a case with the cursor *)
             ()
           | true, false ->
             (* If there's no case with the cursor, but a broken parser case, complete for the top level. *)
-            setResult
+            set_result
               (Completable.Cpattern
                  {
-                   contextPath = ctxPath;
+                   context_path = ctx_path;
                    nested = [];
                    prefix = "";
                    fallback = None;
-                   patternMode = Default;
+                   pattern_mode = Default;
                  })
           | false, false -> ()))
       | _ -> ())
   in
   let structure (iterator : Ast_iterator.iterator)
       (structure : Parsetree.structure) =
-    let oldScope = !scope in
+    let old_scope = !scope in
     Ast_iterator.default_iterator.structure iterator structure;
-    scope := oldScope
+    scope := old_scope
   in
   let structure_item (iterator : Ast_iterator.iterator)
       (item : Parsetree.structure_item) =
     let processed = ref false in
     (match item.pstr_desc with
     | Pstr_open {popen_lid} ->
-      scope := !scope |> Scope.addOpen ~lid:popen_lid.txt
-    | Pstr_primitive vd -> scopeValueDescription vd
-    | Pstr_value (recFlag, bindings) ->
-      if recFlag = Recursive then bindings |> List.iter scopeValueBinding;
+      scope := !scope |> Scope.add_open ~lid:popen_lid.txt
+    | Pstr_primitive vd -> scope_value_description vd
+    | Pstr_value (rec_flag, bindings) ->
+      if rec_flag = Recursive then bindings |> List.iter scope_value_binding;
       bindings |> List.iter (fun vb -> iterator.value_binding iterator vb);
-      if recFlag = Nonrecursive then bindings |> List.iter scopeValueBinding;
+      if rec_flag = Nonrecursive then bindings |> List.iter scope_value_binding;
       processed := true
-    | Pstr_type (recFlag, decls) ->
-      if recFlag = Recursive then decls |> List.iter scopeTypeDeclaration;
+    | Pstr_type (rec_flag, decls) ->
+      if rec_flag = Recursive then decls |> List.iter scope_type_declaration;
       decls |> List.iter (fun td -> iterator.type_declaration iterator td);
-      if recFlag = Nonrecursive then decls |> List.iter scopeTypeDeclaration;
+      if rec_flag = Nonrecursive then decls |> List.iter scope_type_declaration;
       processed := true
     | Pstr_module mb ->
       iterator.module_binding iterator mb;
-      scopeModuleBinding mb;
+      scope_module_binding mb;
       processed := true
     | Pstr_recmodule mbs ->
-      mbs |> List.iter scopeModuleBinding;
+      mbs |> List.iter scope_module_binding;
       mbs |> List.iter (fun b -> iterator.module_binding iterator b);
       processed := true
     | _ -> ());
@@ -705,26 +705,26 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
   in
   let value_binding (iterator : Ast_iterator.iterator)
       (value_binding : Parsetree.value_binding) =
-    let oldInJsxContext = !inJsxContext in
-    if Utils.isJsxComponent value_binding then inJsxContext := true;
+    let old_in_jsx_context = !in_jsx_context in
+    if Utils.is_jsx_component value_binding then in_jsx_context := true;
     (match value_binding with
-    | {pvb_pat = {ppat_desc = Ppat_constraint (_pat, coreType)}; pvb_expr}
-      when locHasCursor pvb_expr.pexp_loc -> (
+    | {pvb_pat = {ppat_desc = Ppat_constraint (_pat, core_type)}; pvb_expr}
+      when loc_has_cursor pvb_expr.pexp_loc -> (
       (* Expression with derivable type annotation.
          E.g: let x: someRecord = {<com>} *)
       match
-        ( TypeUtils.contextPathFromCoreType coreType,
+        ( TypeUtils.context_path_from_core_type core_type,
           pvb_expr
-          |> CompletionExpressions.traverseExpr ~exprPath:[]
-               ~pos:posBeforeCursor ~firstCharBeforeCursorNoWhite )
+          |> CompletionExpressions.traverse_expr ~expr_path:[]
+               ~pos:pos_before_cursor ~first_char_before_cursor_no_white )
       with
-      | Some ctxPath, Some (prefix, nested) ->
-        setResult
+      | Some ctx_path, Some (prefix, nested) ->
+        set_result
           (Completable.Cexpression
-             {contextPath = ctxPath; prefix; nested = List.rev nested})
+             {context_path = ctx_path; prefix; nested = List.rev nested})
       | _ -> ())
     | {pvb_pat = {ppat_desc = Ppat_var {loc}}; pvb_expr}
-      when locHasCursor pvb_expr.pexp_loc -> (
+      when loc_has_cursor pvb_expr.pexp_loc -> (
       (* Expression without a type annotation. We can complete this if this
          has compiled previously and there's a type available for the identifier itself.
          This is nice because the type is assigned even if the assignment isn't complete.
@@ -732,82 +732,82 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
          E.g: let x = {name: "name", <com>}, when `x` has compiled. *)
       match
         pvb_expr
-        |> CompletionExpressions.traverseExpr ~exprPath:[] ~pos:posBeforeCursor
-             ~firstCharBeforeCursorNoWhite
+        |> CompletionExpressions.traverse_expr ~expr_path:[] ~pos:pos_before_cursor
+             ~first_char_before_cursor_no_white
       with
       | Some (prefix, nested) ->
         (* This completion should be low prio, so let any deeper completion
            hit first, and only set this TypeAtPos completion if nothing else
            here hit. *)
         Ast_iterator.default_iterator.value_binding iterator value_binding;
-        setResult
+        set_result
           (Completable.Cexpression
-             {contextPath = CTypeAtPos loc; prefix; nested = List.rev nested})
+             {context_path = CTypeAtPos loc; prefix; nested = List.rev nested})
       | _ -> ())
     | {
-     pvb_pat = {ppat_desc = Ppat_constraint (_pat, coreType); ppat_loc};
+     pvb_pat = {ppat_desc = Ppat_constraint (_pat, core_type); ppat_loc};
      pvb_expr;
     }
-      when locHasCursor value_binding.pvb_loc
-           && locHasCursor ppat_loc = false
-           && locHasCursor pvb_expr.pexp_loc = false
-           && CompletionExpressions.isExprHole pvb_expr -> (
+      when loc_has_cursor value_binding.pvb_loc
+           && loc_has_cursor ppat_loc = false
+           && loc_has_cursor pvb_expr.pexp_loc = false
+           && CompletionExpressions.is_expr_hole pvb_expr -> (
       (* Expression with derivable type annotation, when the expression is empty (expr hole).
          E.g: let x: someRecord = <com> *)
-      match TypeUtils.contextPathFromCoreType coreType with
-      | Some ctxPath ->
-        setResult
+      match TypeUtils.context_path_from_core_type core_type with
+      | Some ctx_path ->
+        set_result
           (Completable.Cexpression
-             {contextPath = ctxPath; prefix = ""; nested = []})
+             {context_path = ctx_path; prefix = ""; nested = []})
       | _ -> ())
-    | {pvb_pat; pvb_expr} when locHasCursor pvb_pat.ppat_loc -> (
+    | {pvb_pat; pvb_expr} when loc_has_cursor pvb_pat.ppat_loc -> (
       (* Completing a destructuring.
          E.g: let {<com>} = someVar *)
       match
         ( pvb_pat
-          |> CompletionPatterns.traversePattern ~patternPath:[] ~locHasCursor
-               ~firstCharBeforeCursorNoWhite ~posBeforeCursor,
-          exprToContextPath pvb_expr )
+          |> CompletionPatterns.traverse_pattern ~pattern_path:[] ~loc_has_cursor
+               ~first_char_before_cursor_no_white ~pos_before_cursor,
+          expr_to_context_path pvb_expr )
       with
-      | Some (prefix, nested), Some ctxPath ->
-        setResult
+      | Some (prefix, nested), Some ctx_path ->
+        set_result
           (Completable.Cpattern
              {
-               contextPath = ctxPath;
+               context_path = ctx_path;
                prefix;
                nested = List.rev nested;
                fallback = None;
-               patternMode = Destructuring;
+               pattern_mode = Destructuring;
              })
       | _ -> ())
     | _ -> ());
     Ast_iterator.default_iterator.value_binding iterator value_binding;
-    inJsxContext := oldInJsxContext
+    in_jsx_context := old_in_jsx_context
   in
   let signature (iterator : Ast_iterator.iterator)
       (signature : Parsetree.signature) =
-    let oldScope = !scope in
+    let old_scope = !scope in
     Ast_iterator.default_iterator.signature iterator signature;
-    scope := oldScope
+    scope := old_scope
   in
   let signature_item (iterator : Ast_iterator.iterator)
       (item : Parsetree.signature_item) =
     let processed = ref false in
     (match item.psig_desc with
     | Psig_open {popen_lid} ->
-      scope := !scope |> Scope.addOpen ~lid:popen_lid.txt
-    | Psig_value vd -> scopeValueDescription vd
-    | Psig_type (recFlag, decls) ->
-      if recFlag = Recursive then decls |> List.iter scopeTypeDeclaration;
+      scope := !scope |> Scope.add_open ~lid:popen_lid.txt
+    | Psig_value vd -> scope_value_description vd
+    | Psig_type (rec_flag, decls) ->
+      if rec_flag = Recursive then decls |> List.iter scope_type_declaration;
       decls |> List.iter (fun td -> iterator.type_declaration iterator td);
-      if recFlag = Nonrecursive then decls |> List.iter scopeTypeDeclaration;
+      if rec_flag = Nonrecursive then decls |> List.iter scope_type_declaration;
       processed := true
     | Psig_module md ->
       iterator.module_declaration iterator md;
-      scopeModuleDeclaration md;
+      scope_module_declaration md;
       processed := true
     | Psig_recmodule mds ->
-      mds |> List.iter scopeModuleDeclaration;
+      mds |> List.iter scope_module_declaration;
       mds |> List.iter (fun d -> iterator.module_declaration iterator d);
       processed := true
     | _ -> ());
@@ -819,17 +819,17 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
     (if String.length id.txt >= 4 && String.sub id.txt 0 4 = "res." then
        (* skip: internal parser attribute *) ()
      else if id.loc.loc_ghost then ()
-     else if id.loc |> Loc.hasPos ~pos:posBeforeCursor then
-       let posStart, posEnd = Loc.range id.loc in
+     else if id.loc |> Loc.has_pos ~pos:pos_before_cursor then
+       let pos_start, pos_end = Loc.range id.loc in
        match
-         (Pos.positionToOffset text posStart, Pos.positionToOffset text posEnd)
+         (Pos.position_to_offset text pos_start, Pos.position_to_offset text pos_end)
        with
-       | Some offsetStart, Some offsetEnd ->
+       | Some offset_start, Some offset_end ->
          (* Can't trust the parser's location
             E.g. @foo. let x... gives as label @foo.let *)
          let label =
-           let rawLabel =
-             String.sub text offsetStart (offsetEnd - offsetStart)
+           let raw_label =
+             String.sub text offset_start (offset_end - offset_start)
            in
            let ( ++ ) x y =
              match (x, y) with
@@ -839,13 +839,13 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
            in
            let label =
              match
-               String.index_opt rawLabel ' '
-               ++ String.index_opt rawLabel '\t'
-               ++ String.index_opt rawLabel '\r'
-               ++ String.index_opt rawLabel '\n'
+               String.index_opt raw_label ' '
+               ++ String.index_opt raw_label '\t'
+               ++ String.index_opt raw_label '\r'
+               ++ String.index_opt raw_label '\n'
              with
-             | None -> rawLabel
-             | Some i -> String.sub rawLabel 0 i
+             | None -> raw_label
+             | Some i -> String.sub raw_label 0 i
            in
            if label <> "" && label.[0] = '@' then
              String.sub label 1 (String.length label - 1)
@@ -854,8 +854,8 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
          found := true;
          if debug then
            Printf.printf "Attribute id:%s:%s label:%s\n" id.txt
-             (Loc.toString id.loc) label;
-         setResult (Completable.Cdecorator label)
+             (Loc.to_string id.loc) label;
+         set_result (Completable.Cdecorator label)
        | _ -> ()
      else if id.txt = "module" then
        match payload with
@@ -868,10 +868,10 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
                      _ );
              };
            ]
-         when locHasCursor pexp_loc ->
+         when loc_has_cursor pexp_loc ->
          if Debug.verbose () then
            print_endline "[decoratorCompletion] Found @module";
-         setResult (Completable.CdecoratorPayload (Module s))
+         set_result (Completable.CdecoratorPayload (Module s))
        | PStr
            [
              {
@@ -879,48 +879,48 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
                  Pstr_eval
                    ( {
                        pexp_desc =
-                         Pexp_record (({txt = Lident "from"}, fromExpr) :: _, _);
+                         Pexp_record (({txt = Lident "from"}, from_expr) :: _, _);
                      },
                      _ );
              };
            ]
-         when locHasCursor fromExpr.pexp_loc
-              || locIsEmpty fromExpr.pexp_loc
-                 && CompletionExpressions.isExprHole fromExpr -> (
+         when loc_has_cursor from_expr.pexp_loc
+              || loc_is_empty from_expr.pexp_loc
+                 && CompletionExpressions.is_expr_hole from_expr -> (
          if Debug.verbose () then
            print_endline
              "[decoratorCompletion] Found @module with import attributes and \
               cursor on \"from\"";
          match
-           ( locHasCursor fromExpr.pexp_loc,
-             locIsEmpty fromExpr.pexp_loc,
-             CompletionExpressions.isExprHole fromExpr,
-             fromExpr )
+           ( loc_has_cursor from_expr.pexp_loc,
+             loc_is_empty from_expr.pexp_loc,
+             CompletionExpressions.is_expr_hole from_expr,
+             from_expr )
          with
          | true, _, _, {pexp_desc = Pexp_constant (Pconst_string (s, _))} ->
            if Debug.verbose () then
              print_endline
                "[decoratorCompletion] @module `from` payload was string";
-           setResult (Completable.CdecoratorPayload (Module s))
+           set_result (Completable.CdecoratorPayload (Module s))
          | false, true, true, _ ->
            if Debug.verbose () then
              print_endline
                "[decoratorCompletion] @module `from` payload was expr hole";
-           setResult (Completable.CdecoratorPayload (Module ""))
+           set_result (Completable.CdecoratorPayload (Module ""))
          | _ -> ())
        | PStr [{pstr_desc = Pstr_eval (expr, _)}] -> (
          if Debug.verbose () then
            print_endline
              "[decoratorCompletion] Found @module with non-string payload";
          match
-           CompletionExpressions.traverseExpr expr ~exprPath:[]
-             ~pos:posBeforeCursor ~firstCharBeforeCursorNoWhite
+           CompletionExpressions.traverse_expr expr ~expr_path:[]
+             ~pos:pos_before_cursor ~first_char_before_cursor_no_white
          with
          | None -> ()
          | Some (prefix, nested) ->
            if Debug.verbose () then
              print_endline "[decoratorCompletion] Found @module record path";
-           setResult
+           set_result
              (Completable.CdecoratorPayload
                 (ModuleWithImportAttributes {nested = List.rev nested; prefix}))
          )
@@ -931,534 +931,534 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
          if Debug.verbose () then
            print_endline "[decoratorCompletion] Found @jsxConfig";
          match
-           CompletionExpressions.traverseExpr expr ~exprPath:[]
-             ~pos:posBeforeCursor ~firstCharBeforeCursorNoWhite
+           CompletionExpressions.traverse_expr expr ~expr_path:[]
+             ~pos:pos_before_cursor ~first_char_before_cursor_no_white
          with
          | None -> ()
          | Some (prefix, nested) ->
            if Debug.verbose () then
              print_endline "[decoratorCompletion] Found @jsxConfig path!";
-           setResult
+           set_result
              (Completable.CdecoratorPayload
                 (JsxConfig {nested = List.rev nested; prefix})))
        | _ -> ());
     Ast_iterator.default_iterator.attribute iterator (id, payload)
   in
-  let rec iterateFnArguments ~args ~iterator ~isPipe
-      (argCompletable : Completable.t option) =
-    match argCompletable with
+  let rec iterate_fn_arguments ~args ~iterator ~is_pipe
+      (arg_completable : Completable.t option) =
+    match arg_completable with
     | None -> (
-      match !currentCtxPath with
+      match !current_ctx_path with
       | None -> ()
-      | Some functionContextPath ->
-        let currentUnlabelledCount = ref (if isPipe then 1 else 0) in
+      | Some function_context_path ->
+        let current_unlabelled_count = ref (if is_pipe then 1 else 0) in
         args
         |> List.iter (fun (arg : arg) ->
-               let previousCtxPath = !currentCtxPath in
-               setCurrentCtxPath
+               let previous_ctx_path = !current_ctx_path in
+               set_current_ctx_path
                  (CArgument
                     {
-                      functionContextPath;
-                      argumentLabel =
+                      function_context_path;
+                      argument_label =
                         (match arg with
                         | {label = None} ->
-                          let current = !currentUnlabelledCount in
-                          currentUnlabelledCount := current + 1;
-                          Unlabelled {argumentPosition = current}
+                          let current = !current_unlabelled_count in
+                          current_unlabelled_count := current + 1;
+                          Unlabelled {argument_position = current}
                         | {label = Some {name; opt = true}} -> Optional name
                         | {label = Some {name; opt = false}} -> Labelled name);
                     });
                expr iterator arg.exp;
-               resetCurrentCtxPath previousCtxPath))
-    | Some argCompletable -> setResult argCompletable
-  and iterateJsxProps ~iterator (props : CompletionJsx.jsxProps) =
+               reset_current_ctx_path previous_ctx_path))
+    | Some arg_completable -> set_result arg_completable
+  and iterate_jsx_props ~iterator (props : CompletionJsx.jsx_props) =
     props.props
     |> List.iter (fun (prop : CompletionJsx.prop) ->
-           let previousCtxPath = !currentCtxPath in
-           setCurrentCtxPath
+           let previous_ctx_path = !current_ctx_path in
+           set_current_ctx_path
              (CJsxPropValue
                 {
-                  pathToComponent =
-                    Utils.flattenLongIdent ~jsx:true props.compName.txt;
-                  propName = prop.name;
-                  emptyJsxPropNameHint = None;
+                  path_to_component =
+                    Utils.flatten_long_ident ~jsx:true props.comp_name.txt;
+                  prop_name = prop.name;
+                  empty_jsx_prop_name_hint = None;
                 });
            expr iterator prop.exp;
-           resetCurrentCtxPath previousCtxPath)
+           reset_current_ctx_path previous_ctx_path)
   and expr (iterator : Ast_iterator.iterator) (expr : Parsetree.expression) =
-    let oldInJsxContext = !inJsxContext in
+    let old_in_jsx_context = !in_jsx_context in
     let processed = ref false in
-    let setFound () =
+    let set_found () =
       found := true;
       if debug then
         Printf.printf "posCursor:[%s] posNoWhite:[%s] Found expr:%s\n"
-          (Pos.toString posCursor) (Pos.toString posNoWhite)
-          (Loc.toString expr.pexp_loc)
+          (Pos.to_string pos_cursor) (Pos.to_string pos_no_white)
+          (Loc.to_string expr.pexp_loc)
     in
-    (match findThisExprLoc with
+    (match find_this_expr_loc with
     | Some loc when expr.pexp_loc = loc -> (
-      match exprToContextPath expr with
+      match expr_to_context_path expr with
       | None -> ()
-      | Some ctxPath -> setResult (Cpath ctxPath))
+      | Some ctx_path -> set_result (Cpath ctx_path))
     | _ -> ());
-    let setPipeResult ~(lhs : Parsetree.expression) ~id =
-      match completePipeChain lhs with
+    let set_pipe_result ~(lhs : Parsetree.expression) ~id =
+      match complete_pipe_chain lhs with
       | None -> (
-        match exprToContextPath lhs with
+        match expr_to_context_path lhs with
         | Some pipe ->
-          setResult
+          set_result
             (Cpath
                (CPPipe
                   {
-                    contextPath = pipe;
+                    context_path = pipe;
                     id;
-                    lhsLoc = lhs.pexp_loc;
-                    inJsx = !inJsxContext;
+                    lhs_loc = lhs.pexp_loc;
+                    in_jsx = !in_jsx_context;
                   }));
           true
         | None -> false)
-      | Some (pipe, lhsLoc) ->
-        setResult
+      | Some (pipe, lhs_loc) ->
+        set_result
           (Cpath
-             (CPPipe {contextPath = pipe; id; lhsLoc; inJsx = !inJsxContext}));
+             (CPPipe {context_path = pipe; id; lhs_loc; in_jsx = !in_jsx_context}));
         true
     in
-    typedCompletionExpr expr;
+    typed_completion_expr expr;
     match expr.pexp_desc with
     | Pexp_match (expr, cases)
       when cases <> []
-           && locHasCursor expr.pexp_loc = false
-           && Option.is_none findThisExprLoc ->
+           && loc_has_cursor expr.pexp_loc = false
+           && Option.is_none find_this_expr_loc ->
       if Debug.verbose () then
         print_endline "[completionFrontend] Checking each case";
-      let ctxPath = exprToContextPath expr in
-      let oldCtxPath = !currentCtxPath in
+      let ctx_path = expr_to_context_path expr in
+      let old_ctx_path = !current_ctx_path in
       cases
       |> List.iter (fun (case : Parsetree.case) ->
-             let oldScope = !scope in
+             let old_scope = !scope in
              if
-               locHasCursor case.pc_rhs.pexp_loc = false
-               && locHasCursor case.pc_lhs.ppat_loc
-             then completePattern ?contextPath:ctxPath case.pc_lhs;
-             scopePattern ?contextPath:ctxPath case.pc_lhs;
+               loc_has_cursor case.pc_rhs.pexp_loc = false
+               && loc_has_cursor case.pc_lhs.ppat_loc
+             then complete_pattern ?context_path:ctx_path case.pc_lhs;
+             scope_pattern ?context_path:ctx_path case.pc_lhs;
              Ast_iterator.default_iterator.case iterator case;
-             scope := oldScope);
-      resetCurrentCtxPath oldCtxPath
+             scope := old_scope);
+      reset_current_ctx_path old_ctx_path
     | Pexp_apply
-        ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u"); loc = opLoc}},
+        ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u"); loc = op_loc}},
           [
             (_, lhs);
             (_, {pexp_desc = Pexp_extension _; pexp_loc = {loc_ghost = true}});
           ] )
-      when opLoc |> Loc.hasPos ~pos:posBeforeCursor ->
+      when op_loc |> Loc.has_pos ~pos:pos_before_cursor ->
       (* Case foo-> when the parser adds a ghost expression to the rhs
          so the apply expression does not include the cursor *)
-      if setPipeResult ~lhs ~id:"" then setFound ()
+      if set_pipe_result ~lhs ~id:"" then set_found ()
     | _ -> (
-      if expr.pexp_loc |> Loc.hasPos ~pos:posNoWhite && !result = None then (
-        setFound ();
+      if expr.pexp_loc |> Loc.has_pos ~pos:pos_no_white && !result = None then (
+        set_found ();
         match expr.pexp_desc with
-        | Pexp_extension ({txt}, _) -> setResult (CextensionNode txt)
-        | Pexp_constant _ -> setResult Cnone
+        | Pexp_extension ({txt}, _) -> set_result (CextensionNode txt)
+        | Pexp_constant _ -> set_result Cnone
         | Pexp_ident lid ->
-          let lidPath = flattenLidCheckDot lid in
+          let lid_path = flatten_lid_check_dot lid in
           if debug then
             Printf.printf "Pexp_ident %s:%s\n"
-              (lidPath |> String.concat ".")
-              (Loc.toString lid.loc);
-          if lid.loc |> Loc.hasPos ~pos:posBeforeCursor then
-            let isLikelyModulePath =
-              match lidPath with
+              (lid_path |> String.concat ".")
+              (Loc.to_string lid.loc);
+          if lid.loc |> Loc.has_pos ~pos:pos_before_cursor then
+            let is_likely_module_path =
+              match lid_path with
               | head :: _
                 when String.length head > 0
                      && head.[0] == Char.uppercase_ascii head.[0] ->
                 true
               | _ -> false
             in
-            setResult
+            set_result
               (Cpath
                  (CPId
                     {
                       loc = lid.loc;
-                      path = lidPath;
-                      completionContext =
+                      path = lid_path;
+                      completion_context =
                         (if
-                           isLikelyModulePath
+                           is_likely_module_path
                            && expr |> Res_parsetree_viewer.is_braced_expr
                          then ValueOrField
                          else Value);
                     }))
         | Pexp_construct ({txt = Lident ("::" | "()")}, _) ->
           (* Ignore list expressions, used in JSX, unit, and more *) ()
-        | Pexp_construct (lid, eOpt) -> (
-          let lidPath = flattenLidCheckDot lid in
+        | Pexp_construct (lid, e_opt) -> (
+          let lid_path = flatten_lid_check_dot lid in
           if debug && lid.txt <> Lident "Function$" then
             Printf.printf "Pexp_construct %s:%s %s\n"
-              (lidPath |> String.concat "\n")
-              (Loc.toString lid.loc)
-              (match eOpt with
+              (lid_path |> String.concat "\n")
+              (Loc.to_string lid.loc)
+              (match e_opt with
               | None -> "None"
-              | Some e -> Loc.toString e.pexp_loc);
+              | Some e -> Loc.to_string e.pexp_loc);
           if
-            eOpt = None && (not lid.loc.loc_ghost)
-            && lid.loc |> Loc.hasPos ~pos:posBeforeCursor
+            e_opt = None && (not lid.loc.loc_ghost)
+            && lid.loc |> Loc.has_pos ~pos:pos_before_cursor
           then
-            setResult
+            set_result
               (Cpath
                  (CPId
-                    {loc = lid.loc; path = lidPath; completionContext = Value}))
+                    {loc = lid.loc; path = lid_path; completion_context = Value}))
           else
-            match eOpt with
-            | Some e when locHasCursor e.pexp_loc -> (
+            match e_opt with
+            | Some e when loc_has_cursor e.pexp_loc -> (
               match
-                CompletionExpressions.completeConstructorPayload
-                  ~posBeforeCursor ~firstCharBeforeCursorNoWhite lid e
+                CompletionExpressions.complete_constructor_payload
+                  ~pos_before_cursor ~first_char_before_cursor_no_white lid e
               with
               | Some result ->
                 (* Check if anything else more important completes before setting this completion. *)
                 Ast_iterator.default_iterator.expr iterator e;
-                setResult result
+                set_result result
               | None -> ())
             | _ -> ())
-        | Pexp_field (e, fieldName) -> (
+        | Pexp_field (e, field_name) -> (
           if debug then
-            Printf.printf "Pexp_field %s %s:%s\n" (Loc.toString e.pexp_loc)
-              (Utils.flattenLongIdent fieldName.txt |> String.concat ".")
-              (Loc.toString fieldName.loc);
-          if fieldName.loc |> Loc.hasPos ~pos:posBeforeCursor then
-            match fieldName.txt with
+            Printf.printf "Pexp_field %s %s:%s\n" (Loc.to_string e.pexp_loc)
+              (Utils.flatten_long_ident field_name.txt |> String.concat ".")
+              (Loc.to_string field_name.loc);
+          if field_name.loc |> Loc.has_pos ~pos:pos_before_cursor then
+            match field_name.txt with
             | Lident name -> (
-              match exprToContextPath e with
-              | Some contextPath ->
-                let contextPath = Completable.CPField (contextPath, name) in
-                setResult (Cpath contextPath)
+              match expr_to_context_path e with
+              | Some context_path ->
+                let context_path = Completable.CPField (context_path, name) in
+                set_result (Cpath context_path)
               | None -> ())
             | Ldot (id, name) ->
               (* Case x.M.field ignore the x part *)
-              let contextPath =
+              let context_path =
                 Completable.CPField
                   ( CPId
                       {
-                        loc = fieldName.loc;
-                        path = Utils.flattenLongIdent id;
-                        completionContext = Module;
+                        loc = field_name.loc;
+                        path = Utils.flatten_long_ident id;
+                        completion_context = Module;
                       },
-                    if blankAfterCursor = Some '.' then
+                    if blank_after_cursor = Some '.' then
                       (* x.M. field  --->  M. *) ""
                     else if name = "_" then ""
                     else name )
               in
-              setResult (Cpath contextPath)
+              set_result (Cpath context_path)
             | Lapply _ -> ()
-          else if Loc.end_ e.pexp_loc = posBeforeCursor then
-            match exprToContextPath e with
-            | Some contextPath -> setResult (Cpath (CPField (contextPath, "")))
+          else if Loc.end_ e.pexp_loc = pos_before_cursor then
+            match expr_to_context_path e with
+            | Some context_path -> set_result (Cpath (CPField (context_path, "")))
             | None -> ())
-        | Pexp_apply ({pexp_desc = Pexp_ident compName}, args)
+        | Pexp_apply ({pexp_desc = Pexp_ident comp_name}, args)
           when Res_parsetree_viewer.is_jsx_expression expr ->
-          inJsxContext := true;
-          let jsxProps = CompletionJsx.extractJsxProps ~compName ~args in
-          let compNamePath = flattenLidCheckDot ~jsx:true compName in
+          in_jsx_context := true;
+          let jsx_props = CompletionJsx.extract_jsx_props ~comp_name ~args in
+          let comp_name_path = flatten_lid_check_dot ~jsx:true comp_name in
           if debug then
             Printf.printf "JSX <%s:%s %s> _children:%s\n"
-              (compNamePath |> String.concat ".")
-              (Loc.toString compName.loc)
-              (jsxProps.props
+              (comp_name_path |> String.concat ".")
+              (Loc.to_string comp_name.loc)
+              (jsx_props.props
               |> List.map
-                   (fun ({name; posStart; posEnd; exp} : CompletionJsx.prop) ->
+                   (fun ({name; pos_start; pos_end; exp} : CompletionJsx.prop) ->
                      Printf.sprintf "%s[%s->%s]=...%s" name
-                       (Pos.toString posStart) (Pos.toString posEnd)
-                       (Loc.toString exp.pexp_loc))
+                       (Pos.to_string pos_start) (Pos.to_string pos_end)
+                       (Loc.to_string exp.pexp_loc))
               |> String.concat " ")
-              (match jsxProps.childrenStart with
+              (match jsx_props.children_start with
               | None -> "None"
-              | Some childrenPosStart -> Pos.toString childrenPosStart);
-          let jsxCompletable =
-            CompletionJsx.findJsxPropsCompletable ~jsxProps
-              ~endPos:(Loc.end_ expr.pexp_loc) ~posBeforeCursor
-              ~posAfterCompName:(Loc.end_ compName.loc)
-              ~firstCharBeforeCursorNoWhite ~charAtCursor
+              | Some children_pos_start -> Pos.to_string children_pos_start);
+          let jsx_completable =
+            CompletionJsx.find_jsx_props_completable ~jsx_props
+              ~end_pos:(Loc.end_ expr.pexp_loc) ~pos_before_cursor
+              ~pos_after_comp_name:(Loc.end_ comp_name.loc)
+              ~first_char_before_cursor_no_white ~char_at_cursor
           in
-          if jsxCompletable <> None then setResultOpt jsxCompletable
-          else if compName.loc |> Loc.hasPos ~pos:posBeforeCursor then
-            setResult
-              (match compNamePath with
+          if jsx_completable <> None then set_result_opt jsx_completable
+          else if comp_name.loc |> Loc.has_pos ~pos:pos_before_cursor then
+            set_result
+              (match comp_name_path with
               | [prefix] when Char.lowercase_ascii prefix.[0] = prefix.[0] ->
                 ChtmlElement {prefix}
               | _ ->
                 Cpath
                   (CPId
                      {
-                       loc = compName.loc;
-                       path = compNamePath;
-                       completionContext = Module;
+                       loc = comp_name.loc;
+                       path = comp_name_path;
+                       completion_context = Module;
                      }))
-          else iterateJsxProps ~iterator jsxProps
+          else iterate_jsx_props ~iterator jsx_props
         | Pexp_apply
             ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
               [
                 (_, lhs);
                 (_, {pexp_desc = Pexp_ident {txt = Longident.Lident id; loc}});
               ] )
-          when loc |> Loc.hasPos ~pos:posBeforeCursor ->
+          when loc |> Loc.has_pos ~pos:pos_before_cursor ->
           if Debug.verbose () then print_endline "[expr_iter] Case foo->id";
-          setPipeResult ~lhs ~id |> ignore
+          set_pipe_result ~lhs ~id |> ignore
         | Pexp_apply
-            ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u"); loc = opLoc}},
+            ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u"); loc = op_loc}},
               [(_, lhs); _] )
-          when Loc.end_ opLoc = posCursor ->
+          when Loc.end_ op_loc = pos_cursor ->
           if Debug.verbose () then print_endline "[expr_iter] Case foo->";
-          setPipeResult ~lhs ~id:"" |> ignore
+          set_pipe_result ~lhs ~id:"" |> ignore
         | Pexp_apply
             ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
-              [_; (_, {pexp_desc = Pexp_apply (funExpr, args)})] )
+              [_; (_, {pexp_desc = Pexp_apply (fun_expr, args)})] )
           when (* Normally named arg completion fires when the cursor is right after the expression.
                   E.g in foo(~<---there
                   But it should not fire in foo(~a)<---there *)
                not
-                 (Loc.end_ expr.pexp_loc = posCursor
-                 && charBeforeCursor = Some ')') -> (
+                 (Loc.end_ expr.pexp_loc = pos_cursor
+                 && char_before_cursor = Some ')') -> (
           (* Complete fn argument values and named args when the fn call is piped. E.g. someVar->someFn(<com>). *)
           if Debug.verbose () then
             print_endline "[expr_iter] Complete fn arguments (piped)";
-          let args = extractExpApplyArgs ~args in
-          let funCtxPath = exprToContextPath funExpr in
-          let argCompletable =
-            match funCtxPath with
-            | Some contextPath ->
-              findArgCompletables ~contextPath ~args
-                ~endPos:(Loc.end_ expr.pexp_loc) ~posBeforeCursor
-                ~posAfterFunExpr:(Loc.end_ funExpr.pexp_loc)
-                ~charBeforeCursor ~isPipedExpr:true
-                ~firstCharBeforeCursorNoWhite
+          let args = extract_exp_apply_args ~args in
+          let fun_ctx_path = expr_to_context_path fun_expr in
+          let arg_completable =
+            match fun_ctx_path with
+            | Some context_path ->
+              find_arg_completables ~context_path ~args
+                ~end_pos:(Loc.end_ expr.pexp_loc) ~pos_before_cursor
+                ~pos_after_fun_expr:(Loc.end_ fun_expr.pexp_loc)
+                ~char_before_cursor ~is_piped_expr:true
+                ~first_char_before_cursor_no_white
             | None -> None
           in
-          match argCompletable with
+          match arg_completable with
           | None -> (
-            match funCtxPath with
+            match fun_ctx_path with
             | None -> ()
-            | Some funCtxPath ->
-              let oldCtxPath = !currentCtxPath in
-              setCurrentCtxPath funCtxPath;
-              argCompletable |> iterateFnArguments ~isPipe:true ~args ~iterator;
-              resetCurrentCtxPath oldCtxPath)
-          | Some argCompletable -> setResult argCompletable)
+            | Some fun_ctx_path ->
+              let old_ctx_path = !current_ctx_path in
+              set_current_ctx_path fun_ctx_path;
+              arg_completable |> iterate_fn_arguments ~is_pipe:true ~args ~iterator;
+              reset_current_ctx_path old_ctx_path)
+          | Some arg_completable -> set_result arg_completable)
         | Pexp_apply
             ({pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}}, [_; _]) ->
           (* Ignore any other pipe. *)
           ()
-        | Pexp_apply (funExpr, args)
+        | Pexp_apply (fun_expr, args)
           when not
-                 (Loc.end_ expr.pexp_loc = posCursor
-                 && charBeforeCursor = Some ')') -> (
+                 (Loc.end_ expr.pexp_loc = pos_cursor
+                 && char_before_cursor = Some ')') -> (
           (* Complete fn argument values and named args when the fn call is _not_ piped. E.g. someFn(<com>). *)
           if Debug.verbose () then
             print_endline "[expr_iter] Complete fn arguments (not piped)";
-          let args = extractExpApplyArgs ~args in
+          let args = extract_exp_apply_args ~args in
           if debug then
             Printf.printf "Pexp_apply ...%s (%s)\n"
-              (Loc.toString funExpr.pexp_loc)
+              (Loc.to_string fun_expr.pexp_loc)
               (args
               |> List.map (fun {label; exp} ->
                      Printf.sprintf "%s...%s"
                        (match label with
                        | None -> ""
-                       | Some {name; opt; posStart; posEnd} ->
-                         "~" ^ name ^ Pos.toString posStart ^ "->"
-                         ^ Pos.toString posEnd ^ "="
+                       | Some {name; opt; pos_start; pos_end} ->
+                         "~" ^ name ^ Pos.to_string pos_start ^ "->"
+                         ^ Pos.to_string pos_end ^ "="
                          ^ if opt then "?" else "")
-                       (Loc.toString exp.pexp_loc))
+                       (Loc.to_string exp.pexp_loc))
               |> String.concat ", ");
 
-          let funCtxPath = exprToContextPath funExpr in
-          let argCompletable =
-            match funCtxPath with
-            | Some contextPath ->
-              findArgCompletables ~contextPath ~args
-                ~endPos:(Loc.end_ expr.pexp_loc) ~posBeforeCursor
-                ~posAfterFunExpr:(Loc.end_ funExpr.pexp_loc)
-                ~charBeforeCursor ~isPipedExpr:false
-                ~firstCharBeforeCursorNoWhite
+          let fun_ctx_path = expr_to_context_path fun_expr in
+          let arg_completable =
+            match fun_ctx_path with
+            | Some context_path ->
+              find_arg_completables ~context_path ~args
+                ~end_pos:(Loc.end_ expr.pexp_loc) ~pos_before_cursor
+                ~pos_after_fun_expr:(Loc.end_ fun_expr.pexp_loc)
+                ~char_before_cursor ~is_piped_expr:false
+                ~first_char_before_cursor_no_white
             | None -> None
           in
-          match argCompletable with
+          match arg_completable with
           | None -> (
-            match funCtxPath with
+            match fun_ctx_path with
             | None -> ()
-            | Some funCtxPath ->
-              let oldCtxPath = !currentCtxPath in
-              setCurrentCtxPath funCtxPath;
-              argCompletable |> iterateFnArguments ~isPipe:false ~args ~iterator;
-              resetCurrentCtxPath oldCtxPath)
-          | Some argCompletable -> setResult argCompletable)
+            | Some fun_ctx_path ->
+              let old_ctx_path = !current_ctx_path in
+              set_current_ctx_path fun_ctx_path;
+              arg_completable |> iterate_fn_arguments ~is_pipe:false ~args ~iterator;
+              reset_current_ctx_path old_ctx_path)
+          | Some arg_completable -> set_result arg_completable)
         | Pexp_send (lhs, {txt; loc}) -> (
           (* e["txt"]
              If the string for txt is not closed, it could go over several lines.
              Only take the first like to represent the label *)
-          let txtLines = txt |> String.split_on_char '\n' in
-          let label = List.hd txtLines in
+          let txt_lines = txt |> String.split_on_char '\n' in
+          let label = List.hd txt_lines in
           let label =
             if label <> "" && label.[String.length label - 1] = '\r' then
               String.sub label 0 (String.length label - 1)
             else label
           in
-          let labelRange =
+          let label_range =
             let l, c = Loc.start loc in
             ((l, c + 1), (l, c + 1 + String.length label))
           in
           if debug then
             Printf.printf "Pexp_send %s%s e:%s\n" label
-              (Range.toString labelRange)
-              (Loc.toString lhs.pexp_loc);
+              (Range.to_string label_range)
+              (Loc.to_string lhs.pexp_loc);
           if
-            labelRange |> Range.hasPos ~pos:posBeforeCursor
-            || (label = "" && posCursor = fst labelRange)
+            label_range |> Range.has_pos ~pos:pos_before_cursor
+            || (label = "" && pos_cursor = fst label_range)
           then
-            match exprToContextPath lhs with
-            | Some contextPath -> setResult (Cpath (CPObj (contextPath, label)))
+            match expr_to_context_path lhs with
+            | Some context_path -> set_result (Cpath (CPObj (context_path, label)))
             | None -> ())
-        | Pexp_fun (lbl, defaultExpOpt, pat, e) ->
-          let oldScope = !scope in
-          (match (!processingFun, !currentCtxPath) with
-          | None, Some ctxPath -> processingFun := Some (ctxPath, 0)
+        | Pexp_fun (lbl, default_exp_opt, pat, e) ->
+          let old_scope = !scope in
+          (match (!processing_fun, !current_ctx_path) with
+          | None, Some ctx_path -> processing_fun := Some (ctx_path, 0)
           | _ -> ());
-          let argContextPath =
-            match !processingFun with
+          let arg_context_path =
+            match !processing_fun with
             | None -> None
-            | Some (ctxPath, currentUnlabelledCount) ->
-              (processingFun :=
+            | Some (ctx_path, current_unlabelled_count) ->
+              (processing_fun :=
                  match lbl with
-                 | Nolabel -> Some (ctxPath, currentUnlabelledCount + 1)
-                 | _ -> Some (ctxPath, currentUnlabelledCount));
+                 | Nolabel -> Some (ctx_path, current_unlabelled_count + 1)
+                 | _ -> Some (ctx_path, current_unlabelled_count));
               if Debug.verbose () then
                 print_endline "[expr_iter] Completing for argument value";
               Some
                 (Completable.CArgument
                    {
-                     functionContextPath = ctxPath;
-                     argumentLabel =
+                     function_context_path = ctx_path;
+                     argument_label =
                        (match lbl with
                        | Nolabel ->
-                         Unlabelled {argumentPosition = currentUnlabelledCount}
+                         Unlabelled {argument_position = current_unlabelled_count}
                        | Optional name -> Optional name
                        | Labelled name -> Labelled name);
                    })
           in
-          (match defaultExpOpt with
+          (match default_exp_opt with
           | None -> ()
-          | Some defaultExp -> iterator.expr iterator defaultExp);
-          if locHasCursor e.pexp_loc = false then
-            completePattern ?contextPath:argContextPath pat;
-          scopePattern ?contextPath:argContextPath pat;
+          | Some default_exp -> iterator.expr iterator default_exp);
+          if loc_has_cursor e.pexp_loc = false then
+            complete_pattern ?context_path:arg_context_path pat;
+          scope_pattern ?context_path:arg_context_path pat;
           iterator.pat iterator pat;
           iterator.expr iterator e;
-          scope := oldScope;
+          scope := old_scope;
           processed := true
-        | Pexp_let (recFlag, bindings, e) ->
-          let oldScope = !scope in
-          if recFlag = Recursive then bindings |> List.iter scopeValueBinding;
+        | Pexp_let (rec_flag, bindings, e) ->
+          let old_scope = !scope in
+          if rec_flag = Recursive then bindings |> List.iter scope_value_binding;
           bindings |> List.iter (fun vb -> iterator.value_binding iterator vb);
-          if recFlag = Nonrecursive then bindings |> List.iter scopeValueBinding;
+          if rec_flag = Nonrecursive then bindings |> List.iter scope_value_binding;
           iterator.expr iterator e;
-          scope := oldScope;
+          scope := old_scope;
           processed := true
-        | Pexp_letmodule (name, modExpr, modBody) ->
-          let oldScope = !scope in
+        | Pexp_letmodule (name, mod_expr, mod_body) ->
+          let old_scope = !scope in
           iterator.location iterator name.loc;
-          iterator.module_expr iterator modExpr;
-          scope := !scope |> Scope.addModule ~name:name.txt ~loc:name.loc;
-          iterator.expr iterator modBody;
-          scope := oldScope;
+          iterator.module_expr iterator mod_expr;
+          scope := !scope |> Scope.add_module ~name:name.txt ~loc:name.loc;
+          iterator.expr iterator mod_body;
+          scope := old_scope;
           processed := true
         | Pexp_open (_, lid, e) ->
-          let oldScope = !scope in
+          let old_scope = !scope in
           iterator.location iterator lid.loc;
-          scope := !scope |> Scope.addOpen ~lid:lid.txt;
+          scope := !scope |> Scope.add_open ~lid:lid.txt;
           iterator.expr iterator e;
-          scope := oldScope;
+          scope := old_scope;
           processed := true
         | _ -> ());
       if not !processed then Ast_iterator.default_iterator.expr iterator expr;
-      inJsxContext := oldInJsxContext;
+      in_jsx_context := old_in_jsx_context;
       match expr.pexp_desc with
       | Pexp_fun _ -> ()
-      | _ -> processingFun := None)
+      | _ -> processing_fun := None)
   in
   let typ (iterator : Ast_iterator.iterator) (core_type : Parsetree.core_type) =
-    if core_type.ptyp_loc |> Loc.hasPos ~pos:posNoWhite then (
+    if core_type.ptyp_loc |> Loc.has_pos ~pos:pos_no_white then (
       found := true;
       if debug then
         Printf.printf "posCursor:[%s] posNoWhite:[%s] Found type:%s\n"
-          (Pos.toString posCursor) (Pos.toString posNoWhite)
-          (Loc.toString core_type.ptyp_loc);
+          (Pos.to_string pos_cursor) (Pos.to_string pos_no_white)
+          (Loc.to_string core_type.ptyp_loc);
       match core_type.ptyp_desc with
       | Ptyp_constr (lid, _args) ->
-        let lidPath = flattenLidCheckDot lid in
+        let lid_path = flatten_lid_check_dot lid in
         if debug then
           Printf.printf "Ptyp_constr %s:%s\n"
-            (lidPath |> String.concat ".")
-            (Loc.toString lid.loc);
-        if lid.loc |> Loc.hasPos ~pos:posBeforeCursor then
-          setResult
+            (lid_path |> String.concat ".")
+            (Loc.to_string lid.loc);
+        if lid.loc |> Loc.has_pos ~pos:pos_before_cursor then
+          set_result
             (Cpath
-               (CPId {loc = lid.loc; path = lidPath; completionContext = Type}))
+               (CPId {loc = lid.loc; path = lid_path; completion_context = Type}))
       | _ -> ());
     Ast_iterator.default_iterator.typ iterator core_type
   in
   let pat (iterator : Ast_iterator.iterator) (pat : Parsetree.pattern) =
-    if pat.ppat_loc |> Loc.hasPos ~pos:posNoWhite then (
+    if pat.ppat_loc |> Loc.has_pos ~pos:pos_no_white then (
       found := true;
       if debug then
         Printf.printf "posCursor:[%s] posNoWhite:[%s] Found pattern:%s\n"
-          (Pos.toString posCursor) (Pos.toString posNoWhite)
-          (Loc.toString pat.ppat_loc);
+          (Pos.to_string pos_cursor) (Pos.to_string pos_no_white)
+          (Loc.to_string pat.ppat_loc);
       (match pat.ppat_desc with
       | Ppat_construct (lid, _) -> (
-        let lidPath = flattenLidCheckDot lid in
+        let lid_path = flatten_lid_check_dot lid in
         if debug then
           Printf.printf "Ppat_construct %s:%s\n"
-            (lidPath |> String.concat ".")
-            (Loc.toString lid.loc);
+            (lid_path |> String.concat ".")
+            (Loc.to_string lid.loc);
         let completion =
           Completable.Cpath
-            (CPId {loc = lid.loc; path = lidPath; completionContext = Value})
+            (CPId {loc = lid.loc; path = lid_path; completion_context = Value})
         in
         match !result with
         | Some (Completable.Cpattern p, scope) ->
           result := Some (Cpattern {p with fallback = Some completion}, scope)
-        | _ -> setResult completion)
+        | _ -> set_result completion)
       | _ -> ());
       Ast_iterator.default_iterator.pat iterator pat)
   in
   let module_expr (iterator : Ast_iterator.iterator)
       (me : Parsetree.module_expr) =
     (match me.pmod_desc with
-    | Pmod_ident lid when lid.loc |> Loc.hasPos ~pos:posBeforeCursor ->
-      let lidPath = flattenLidCheckDot lid in
+    | Pmod_ident lid when lid.loc |> Loc.has_pos ~pos:pos_before_cursor ->
+      let lid_path = flatten_lid_check_dot lid in
       if debug then
         Printf.printf "Pmod_ident %s:%s\n"
-          (lidPath |> String.concat ".")
-          (Loc.toString lid.loc);
+          (lid_path |> String.concat ".")
+          (Loc.to_string lid.loc);
       found := true;
-      setResult
+      set_result
         (Cpath
-           (CPId {loc = lid.loc; path = lidPath; completionContext = Module}))
+           (CPId {loc = lid.loc; path = lid_path; completion_context = Module}))
     | _ -> ());
     Ast_iterator.default_iterator.module_expr iterator me
   in
   let module_type (iterator : Ast_iterator.iterator)
       (mt : Parsetree.module_type) =
     (match mt.pmty_desc with
-    | Pmty_ident lid when lid.loc |> Loc.hasPos ~pos:posBeforeCursor ->
-      let lidPath = flattenLidCheckDot lid in
+    | Pmty_ident lid when lid.loc |> Loc.has_pos ~pos:pos_before_cursor ->
+      let lid_path = flatten_lid_check_dot lid in
       if debug then
         Printf.printf "Pmty_ident %s:%s\n"
-          (lidPath |> String.concat ".")
-          (Loc.toString lid.loc);
+          (lid_path |> String.concat ".")
+          (Loc.to_string lid.loc);
       found := true;
-      setResult
+      set_result
         (Cpath
-           (CPId {loc = lid.loc; path = lidPath; completionContext = Module}))
+           (CPId {loc = lid.loc; path = lid_path; completion_context = Module}))
     | _ -> ());
     Ast_iterator.default_iterator.module_type iterator mt
   in
@@ -1466,29 +1466,29 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
       (type_kind : Parsetree.type_kind) =
     (match type_kind with
     | Ptype_variant [decl]
-      when decl.pcd_name.loc |> Loc.hasPos ~pos:posNoWhite
+      when decl.pcd_name.loc |> Loc.has_pos ~pos:pos_no_white
            && decl.pcd_args = Pcstr_tuple [] ->
       (* "type t = Pre" could signal the intent to complete variant "Prelude",
          or the beginning of "Prefix.t" *)
       if debug then
         Printf.printf "Ptype_variant unary %s:%s\n" decl.pcd_name.txt
-          (Loc.toString decl.pcd_name.loc);
+          (Loc.to_string decl.pcd_name.loc);
       found := true;
-      setResult
+      set_result
         (Cpath
            (CPId
               {
                 loc = decl.pcd_name.loc;
                 path = [decl.pcd_name.txt];
-                completionContext = Value;
+                completion_context = Value;
               }))
     | _ -> ());
     Ast_iterator.default_iterator.type_kind iterator type_kind
   in
 
-  let lastScopeBeforeCursor = ref (Scope.create ()) in
+  let last_scope_before_cursor = ref (Scope.create ()) in
   let location (_iterator : Ast_iterator.iterator) (loc : Location.t) =
-    if Loc.end_ loc <= posCursor then lastScopeBeforeCursor := !scope
+    if Loc.end_ loc <= pos_cursor then last_scope_before_cursor := !scope
   in
 
   let iterator =
@@ -1514,41 +1514,41 @@ let completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor
     let parser =
       Res_driver.parsing_engine.parse_implementation ~for_printer:false
     in
-    let {Res_driver.parsetree = str} = parser ~filename:currentFile in
+    let {Res_driver.parsetree = str} = parser ~filename:current_file in
     iterator.structure iterator str |> ignore;
-    if blankAfterCursor = Some ' ' || blankAfterCursor = Some '\n' then (
-      scope := !lastScopeBeforeCursor;
-      setResult
+    if blank_after_cursor = Some ' ' || blank_after_cursor = Some '\n' then (
+      scope := !last_scope_before_cursor;
+      set_result
         (Cpath
-           (CPId {loc = Location.none; path = [""]; completionContext = Value})));
+           (CPId {loc = Location.none; path = [""]; completion_context = Value})));
     if !found = false then if debug then Printf.printf "XXX Not found!\n";
     !result)
   else if Filename.check_suffix path ".resi" then (
     let parser = Res_driver.parsing_engine.parse_interface ~for_printer:false in
-    let {Res_driver.parsetree = signature} = parser ~filename:currentFile in
+    let {Res_driver.parsetree = signature} = parser ~filename:current_file in
     iterator.signature iterator signature |> ignore;
-    if blankAfterCursor = Some ' ' || blankAfterCursor = Some '\n' then (
-      scope := !lastScopeBeforeCursor;
-      setResult
+    if blank_after_cursor = Some ' ' || blank_after_cursor = Some '\n' then (
+      scope := !last_scope_before_cursor;
+      set_result
         (Cpath
-           (CPId {loc = Location.none; path = [""]; completionContext = Type})));
+           (CPId {loc = Location.none; path = [""]; completion_context = Type})));
     if !found = false then if debug then Printf.printf "XXX Not found!\n";
     !result)
   else None
 
-let completionWithParser ~debug ~path ~posCursor ~currentFile ~text =
-  match Pos.positionToOffset text posCursor with
+let completion_with_parser ~debug ~path ~pos_cursor ~current_file ~text =
+  match Pos.position_to_offset text pos_cursor with
   | Some offset ->
-    completionWithParser1 ~currentFile ~debug ~offset ~path ~posCursor text
+    completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor text
   | None -> None
 
-let findTypeOfExpressionAtLoc ~debug ~path ~posCursor ~currentFile loc =
-  let textOpt = Files.readFile currentFile in
-  match textOpt with
+let find_type_of_expression_at_loc ~debug ~path ~pos_cursor ~current_file loc =
+  let text_opt = Files.read_file current_file in
+  match text_opt with
   | None | Some "" -> None
   | Some text -> (
-    match Pos.positionToOffset text posCursor with
+    match Pos.position_to_offset text pos_cursor with
     | Some offset ->
-      completionWithParser1 ~findThisExprLoc:loc ~currentFile ~debug ~offset
-        ~path ~posCursor text
+      completion_with_parser1 ~find_this_expr_loc:loc ~current_file ~debug ~offset
+        ~path ~pos_cursor text
     | None -> None)

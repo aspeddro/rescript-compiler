@@ -2,8 +2,8 @@ open Common
 
 module Color = struct
   let color_enabled = lazy (Unix.isatty Unix.stdout)
-  let forceColor = ref false
-  let get_color_enabled () = !forceColor || Lazy.force color_enabled
+  let force_color = ref false
+  let get_color_enabled () = !force_color || Lazy.force color_enabled
 
   type color = Red | Yellow | Magenta | Cyan
   type style = FG of color | Bold | Dim
@@ -16,13 +16,13 @@ module Color = struct
     | Bold -> "1"
     | Dim -> "2"
 
-  let getStringTag s =
+  let get_string_tag s =
     match s with
     | Format.String_tag s -> s
     | _ -> ""
 
   let style_of_tag s =
-    match s |> getStringTag with
+    match s |> get_string_tag with
     | "error" -> [Bold; FG Red]
     | "warning" -> [Bold; FG Magenta]
     | "info" -> [Bold; FG Yellow]
@@ -37,16 +37,16 @@ module Color = struct
 
   let reset_lit = "\027[0m"
 
-  let setOpenCloseTag openTag closeTag =
+  let set_open_close_tag open_tag close_tag =
     {
-      Format.mark_open_stag = openTag;
-      mark_close_stag = closeTag;
+      Format.mark_open_stag = open_tag;
+      mark_close_stag = close_tag;
       print_open_stag = (fun _ -> ());
       print_close_stag = (fun _ -> ());
     }
 
   let color_functions =
-    setOpenCloseTag
+    set_open_close_tag
       (fun s -> if get_color_enabled () then ansi_of_tag s else "")
       (fun _ -> if get_color_enabled () then reset_lit else "")
 
@@ -65,10 +65,10 @@ module Loc = struct
   let print_loc ppf (loc : Location.t) =
     (* Change the range so it's on a single line.
        In this way, the line number is clickable in vscode. *)
-    let startChar = loc.loc_start.pos_cnum - loc.loc_start.pos_bol in
-    let endChar = startChar + loc.loc_end.pos_cnum - loc.loc_start.pos_cnum in
+    let start_char = loc.loc_start.pos_cnum - loc.loc_start.pos_bol in
+    let end_char = start_char + loc.loc_end.pos_cnum - loc.loc_start.pos_cnum in
     let line = loc.loc_start.pos_lnum in
-    let processPos char (pos : Lexing.position) : Lexing.position =
+    let process_pos char (pos : Lexing.position) : Lexing.position =
       {
         pos_lnum = line;
         pos_bol = 0;
@@ -84,8 +84,8 @@ module Loc = struct
     Location.print_loc ppf
       {
         loc with
-        loc_start = loc.loc_start |> processPos startChar;
-        loc_end = loc.loc_end |> processPos endChar;
+        loc_start = loc.loc_start |> process_pos start_char;
+        loc_end = loc.loc_end |> process_pos end_char;
       }
 
   let print ppf (loc : Location.t) = Format.fprintf ppf "@[%a@]" print_loc loc
@@ -97,39 +97,39 @@ let item x =
   Format.fprintf Format.std_formatter "  ";
   Format.fprintf Format.std_formatter x
 
-let missingRaiseInfoToText {missingAnnotations; locFull} =
-  let missingTxt =
-    Format.asprintf "%a" (Exceptions.pp ~exnTable:None) missingAnnotations
+let missing_raise_info_to_text {missing_annotations; loc_full} =
+  let missing_txt =
+    Format.asprintf "%a" (Exceptions.pp ~exn_table:None) missing_annotations
   in
   if !Cli.json then
-    EmitJson.emitAnnotate ~action:"Add @raises annotation"
-      ~pos:(EmitJson.locToPos locFull)
-      ~text:(Format.asprintf "@raises(%s)\\n" missingTxt)
+    EmitJson.emit_annotate ~action:"Add @raises annotation"
+      ~pos:(EmitJson.loc_to_pos loc_full)
+      ~text:(Format.asprintf "@raises(%s)\\n" missing_txt)
   else ""
 
-let logAdditionalInfo ~(description : description) =
+let log_additional_info ~(description : description) =
   match description with
-  | DeadWarning {lineAnnotation; shouldWriteLineAnnotation} ->
-    if shouldWriteLineAnnotation then
-      WriteDeadAnnotations.lineAnnotationToString lineAnnotation
+  | DeadWarning {line_annotation; should_write_line_annotation} ->
+    if should_write_line_annotation then
+      WriteDeadAnnotations.line_annotation_to_string line_annotation
     else ""
-  | ExceptionAnalysisMissing missingRaiseInfo ->
-    missingRaiseInfoToText missingRaiseInfo
+  | ExceptionAnalysisMissing missing_raise_info ->
+    missing_raise_info_to_text missing_raise_info
   | _ -> ""
 
-let missingRaiseInfoToMessage {exnTable; exnName; missingAnnotations; raiseSet}
+let missing_raise_info_to_message {exn_table; exn_name; missing_annotations; raise_set}
     =
-  let raisesTxt =
-    Format.asprintf "%a" (Exceptions.pp ~exnTable:(Some exnTable)) raiseSet
+  let raises_txt =
+    Format.asprintf "%a" (Exceptions.pp ~exn_table:(Some exn_table)) raise_set
   in
-  let missingTxt =
-    Format.asprintf "%a" (Exceptions.pp ~exnTable:None) missingAnnotations
+  let missing_txt =
+    Format.asprintf "%a" (Exceptions.pp ~exn_table:None) missing_annotations
   in
   Format.asprintf
-    "@{<info>%s@} might raise %s and is not annotated with @raises(%s)" exnName
-    raisesTxt missingTxt
+    "@{<info>%s@} might raise %s and is not annotated with @raises(%s)" exn_name
+    raises_txt missing_txt
 
-let descriptionToMessage (description : description) =
+let description_to_message (description : description) =
   match description with
   | Circular {message} -> message
   | DeadModule {message} -> message
@@ -137,58 +137,58 @@ let descriptionToMessage (description : description) =
   | DeadWarning {path; message} ->
     Format.asprintf "@{<info>%s@} %s" path message
   | ExceptionAnalysis {message} -> message
-  | ExceptionAnalysisMissing missingRaiseInfo ->
-    missingRaiseInfoToMessage missingRaiseInfo
+  | ExceptionAnalysisMissing missing_raise_info ->
+    missing_raise_info_to_message missing_raise_info
   | Termination {message} -> message
 
-let descriptionToName (description : description) =
+let description_to_name (description : description) =
   match description with
-  | Circular _ -> Issues.warningDeadAnalysisCycle
-  | DeadModule _ -> Issues.warningDeadModule
-  | DeadOptional {deadOptional = WarningUnusedArgument} ->
-    Issues.warningUnusedArgument
-  | DeadOptional {deadOptional = WarningRedundantOptionalArgument} ->
-    Issues.warningRedundantOptionalArgument
-  | DeadWarning {deadWarning = WarningDeadException} ->
-    Issues.warningDeadException
-  | DeadWarning {deadWarning = WarningDeadType} -> Issues.warningDeadType
-  | DeadWarning {deadWarning = WarningDeadValue} -> Issues.warningDeadValue
-  | DeadWarning {deadWarning = WarningDeadValueWithSideEffects} ->
-    Issues.warningDeadValueWithSideEffects
-  | DeadWarning {deadWarning = IncorrectDeadAnnotation} ->
-    Issues.incorrectDeadAnnotation
-  | ExceptionAnalysis _ -> Issues.exceptionAnalysis
-  | ExceptionAnalysisMissing _ -> Issues.exceptionAnalysis
-  | Termination {termination = ErrorHygiene} -> Issues.errorHygiene
+  | Circular _ -> Issues.warning_dead_analysis_cycle
+  | DeadModule _ -> Issues.warning_dead_module
+  | DeadOptional {dead_optional = WarningUnusedArgument} ->
+    Issues.warning_unused_argument
+  | DeadOptional {dead_optional = WarningRedundantOptionalArgument} ->
+    Issues.warning_redundant_optional_argument
+  | DeadWarning {dead_warning = WarningDeadException} ->
+    Issues.warning_dead_exception
+  | DeadWarning {dead_warning = WarningDeadType} -> Issues.warning_dead_type
+  | DeadWarning {dead_warning = WarningDeadValue} -> Issues.warning_dead_value
+  | DeadWarning {dead_warning = WarningDeadValueWithSideEffects} ->
+    Issues.warning_dead_value_with_side_effects
+  | DeadWarning {dead_warning = IncorrectDeadAnnotation} ->
+    Issues.incorrect_dead_annotation
+  | ExceptionAnalysis _ -> Issues.exception_analysis
+  | ExceptionAnalysisMissing _ -> Issues.exception_analysis
+  | Termination {termination = ErrorHygiene} -> Issues.error_hygiene
   | Termination {termination = ErrorNotImplemented} ->
-    Issues.errorNotImplemented
-  | Termination {termination = ErrorTermination} -> Issues.errorTermination
+    Issues.error_not_implemented
+  | Termination {termination = ErrorTermination} -> Issues.error_termination
   | Termination {termination = TerminationAnalysisInternal} ->
-    Issues.terminationAnalysisInternal
+    Issues.termination_analysis_internal
 
-let logIssue ~(issue : issue) =
+let log_issue ~(issue : issue) =
   let open Format in
   let loc = issue.loc in
   if !Cli.json then
     let file = Json.escape loc.loc_start.pos_fname in
-    let startLine = loc.loc_start.pos_lnum - 1 in
-    let startCharacter = loc.loc_start.pos_cnum - loc.loc_start.pos_bol in
-    let endLine = loc.loc_end.pos_lnum - 1 in
-    let endCharacter = loc.loc_end.pos_cnum - loc.loc_start.pos_bol in
-    let message = Json.escape (descriptionToMessage issue.description) in
+    let start_line = loc.loc_start.pos_lnum - 1 in
+    let start_character = loc.loc_start.pos_cnum - loc.loc_start.pos_bol in
+    let end_line = loc.loc_end.pos_lnum - 1 in
+    let end_character = loc.loc_end.pos_cnum - loc.loc_start.pos_bol in
+    let message = Json.escape (description_to_message issue.description) in
     Format.asprintf "%a%s%s"
       (fun ppf () ->
-        EmitJson.emitItem ~ppf ~name:issue.name
+        EmitJson.emit_item ~ppf ~name:issue.name
           ~kind:
             (match issue.severity with
             | Warning -> "warning"
             | Error -> "error")
           ~file
-          ~range:(startLine, startCharacter, endLine, endCharacter)
+          ~range:(start_line, start_character, end_line, end_character)
           ~message)
       ()
-      (logAdditionalInfo ~description:issue.description)
-      (if !Cli.json then EmitJson.emitClose () else "")
+      (log_additional_info ~description:issue.description)
+      (if !Cli.json then EmitJson.emit_close () else "")
   else
     let color =
       match issue.severity with
@@ -196,15 +196,15 @@ let logIssue ~(issue : issue) =
       | Error -> Color.error
     in
     asprintf "@.  %a@.  %a@.  %s%s@." color issue.name Loc.print issue.loc
-      (descriptionToMessage issue.description)
-      (logAdditionalInfo ~description:issue.description)
+      (description_to_message issue.description)
+      (log_additional_info ~description:issue.description)
 
 module Stats = struct
   let issues = ref []
-  let addIssue (issue : issue) = issues := issue :: !issues
+  let add_issue (issue : issue) = issues := issue :: !issues
   let clear () = issues := []
 
-  let getSortedIssues () =
+  let get_sorted_issues () =
     let counters2 = Hashtbl.create 1 in
     !issues
     |> List.iter (fun (issue : issue) ->
@@ -217,38 +217,38 @@ module Stats = struct
                counter
            in
            incr counter);
-    let issues, nIssues =
+    let issues, n_issues =
       Hashtbl.fold
-        (fun name cnt (issues, nIssues) ->
-          ((name, cnt) :: issues, nIssues + !cnt))
+        (fun name cnt (issues, n_issues) ->
+          ((name, cnt) :: issues, n_issues + !cnt))
         counters2 ([], 0)
     in
-    (issues |> List.sort (fun (n1, _) (n2, _) -> String.compare n1 n2), nIssues)
+    (issues |> List.sort (fun (n1, _) (n2, _) -> String.compare n1 n2), n_issues)
 
   let report () =
     !issues |> List.rev
-    |> List.iter (fun issue -> logIssue ~issue |> print_string);
-    let sortedIssues, nIssues = getSortedIssues () in
+    |> List.iter (fun issue -> log_issue ~issue |> print_string);
+    let sorted_issues, n_issues = get_sorted_issues () in
     if not !Cli.json then (
-      if sortedIssues <> [] then item "@.";
-      item "Analysis reported %d issues%s@." nIssues
-        (match sortedIssues with
+      if sorted_issues <> [] then item "@.";
+      item "Analysis reported %d issues%s@." n_issues
+        (match sorted_issues with
         | [] -> ""
         | _ :: _ ->
           " ("
-          ^ (sortedIssues
+          ^ (sorted_issues
             |> List.map (fun (name, cnt) -> name ^ ":" ^ string_of_int !cnt)
             |> String.concat ", ")
           ^ ")"))
 end
 
-let logIssue ~forStats ~severity ~(loc : Location.t) description =
-  let name = descriptionToName description in
+let log_issue ~for_stats ~severity ~(loc : Location.t) description =
+  let name = description_to_name description in
   if Suppress.filter loc.loc_start then
-    if forStats then Stats.addIssue {name; severity; loc; description}
+    if for_stats then Stats.add_issue {name; severity; loc; description}
 
-let warning ?(forStats = true) ~loc description =
-  description |> logIssue ~severity:Warning ~forStats ~loc
+let warning ?(for_stats = true) ~loc description =
+  description |> log_issue ~severity:Warning ~for_stats ~loc
 
 let error ~loc description =
-  description |> logIssue ~severity:Error ~forStats:true ~loc
+  description |> log_issue ~severity:Error ~for_stats:true ~loc

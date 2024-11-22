@@ -1,20 +1,20 @@
 type t = {
-  mutable bsbProjectRoot: string;
+  mutable bsb_project_root: string;
   mutable dce: bool;
   mutable exception_: bool;
-  mutable projectRoot: string;
+  mutable project_root: string;
   mutable suppress: string list;
   mutable termination: bool;
   mutable transitive: bool;
   mutable unsuppress: string list;
 }
 
-let runConfig =
+let run_config =
   {
-    bsbProjectRoot = "";
+    bsb_project_root = "";
     dce = false;
     exception_ = false;
-    projectRoot = "";
+    project_root = "";
     suppress = [];
     termination = false;
     transitive = false;
@@ -22,12 +22,12 @@ let runConfig =
   }
 
 let all () =
-  runConfig.dce <- true;
-  runConfig.exception_ <- true;
-  runConfig.termination <- true
+  run_config.dce <- true;
+  run_config.exception_ <- true;
+  run_config.termination <- true
 
-let dce () = runConfig.dce <- true
-let exception_ () = runConfig.exception_ <- true
-let termination () = runConfig.termination <- true
+let dce () = run_config.dce <- true
+let exception_ () = run_config.exception_ <- true
+let termination () = run_config.termination <- true
 
-let transitive b = runConfig.transitive <- b
+let transitive b = run_config.transitive <- b

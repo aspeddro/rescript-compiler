@@ -178,17 +178,17 @@ let white n =
   done;
   Buffer.contents buffer
 
-let rec stringifyPretty ?(indent = 0) t =
+let rec stringify_pretty ?(indent = 0) t =
   match t with
   | String value -> "\"" ^ escape value ^ "\""
   | Number num -> string_of_number num
   | Array [] -> "[]"
-  | Array [(String _ as contents)] -> "[" ^ stringifyPretty contents ^ "]"
+  | Array [(String _ as contents)] -> "[" ^ stringify_pretty contents ^ "]"
   | Array items ->
     "[\n" ^ white indent
     ^ String.concat
         (",\n" ^ white indent)
-        (List.map (stringifyPretty ~indent:(indent + 2)) items)
+        (List.map (stringify_pretty ~indent:(indent + 2)) items)
     ^ "\n"
     ^ white (indent - 2)
     ^ "]"
@@ -200,7 +200,7 @@ let rec stringifyPretty ?(indent = 0) t =
         (List.map
            (fun (k, v) ->
              "\"" ^ String.escaped k ^ "\": "
-             ^ stringifyPretty ~indent:(indent + 2) v)
+             ^ stringify_pretty ~indent:(indent + 2) v)
            items)
     ^ "\n"
     ^ white (indent - 2)
@@ -247,28 +247,28 @@ module Parser = struct
     in
     failwith string
 
-  let rec skipToNewline text pos =
+  let rec skip_to_newline text pos =
     if pos >= String.length text then pos
     else if text.[pos] = '\n' then pos + 1
-    else skipToNewline text (pos + 1)
+    else skip_to_newline text (pos + 1)
 
-  let stringTail text =
+  let string_tail text =
     let len = String.length text in
     if len > 1 then String.sub text 1 (len - 1) else ""
 
-  let rec skipToCloseMultilineComment text pos =
+  let rec skip_to_close_multiline_comment text pos =
     if pos + 1 >= String.length text then failwith "Unterminated comment"
     else if text.[pos] = '*' && text.[pos + 1] = '/' then pos + 2
-    else skipToCloseMultilineComment text (pos + 1)
+    else skip_to_close_multiline_comment text (pos + 1)
 
-  let rec skipWhite text pos =
+  let rec skip_white text pos =
     if
       pos < String.length text
       && (text.[pos] = ' '
          || text.[pos] = '\t'
          || text.[pos] = '\n'
          || text.[pos] = '\r')
-    then skipWhite text (pos + 1)
+    then skip_white text (pos + 1)
     else pos
 
   (* from https://stackoverflow.com/a/42431362 *)
@@ -282,7 +282,7 @@ module Parser = struct
     in
     ienc 0 "" (int_of_string ("0x" ^ s))
 
-  let parseString text pos =
+  let parse_string text pos =
     (* let i = ref(pos); *)
     let buffer = Buffer.create (String.length text) in
     let ln = String.length text in
@@ -316,7 +316,7 @@ module Parser = struct
     let final = loop pos in
     (Buffer.contents buffer, final)
 
-  let parseDigits text pos =
+  let parse_digits text pos =
     let len = String.length text in
     let rec loop i =
       if i >= len then i
@@ -327,15 +327,15 @@ module Parser = struct
     in
     loop (pos + 1)
 
-  let parseWithDecimal text pos =
-    let pos = parseDigits text pos in
+  let parse_with_decimal text pos =
+    let pos = parse_digits text pos in
     if pos < String.length text && text.[pos] = '.' then
-      let pos = parseDigits text (pos + 1) in
+      let pos = parse_digits text (pos + 1) in
       pos
     else pos
 
-  let parseNumber text pos =
-    let pos = parseWithDecimal text pos in
+  let parse_number text pos =
+    let pos = parse_with_decimal text pos in
     let ln = String.length text in
     if pos < ln - 1 && (text.[pos] = 'E' || text.[pos] = 'e') then
       let pos =
@@ -343,13 +343,13 @@ module Parser = struct
         | '-' | '+' -> pos + 2
         | _ -> pos + 1
       in
-      parseDigits text pos
+      parse_digits text pos
     else pos
 
-  let parseNegativeNumber text pos =
+  let parse_negative_number text pos =
     let final =
-      if text.[pos] = '-' then parseNumber text (pos + 1)
-      else parseNumber text pos
+      if text.[pos] = '-' then parse_number text (pos + 1)
+      else parse_number text pos
     in
     (Number (float_of_string (String.sub text pos (final - pos))), final)
 
@@ -357,27 +357,27 @@ module Parser = struct
     if text.[pos] <> char then fail text pos ("Expected: " ^ message)
     else pos + 1
 
-  let parseComment : 'a. string -> int -> (string -> int -> 'a) -> 'a =
+  let parse_comment : 'a. string -> int -> (string -> int -> 'a) -> 'a =
    fun text pos next ->
     if text.[pos] <> '/' then
       if text.[pos] = '*' then
-        next text (skipToCloseMultilineComment text (pos + 1))
+        next text (skip_to_close_multiline_comment text (pos + 1))
       else failwith "Invalid syntax"
-    else next text (skipToNewline text (pos + 1))
+    else next text (skip_to_newline text (pos + 1))
 
-  let maybeSkipComment text pos =
+  let maybe_skip_comment text pos =
     if pos < String.length text && text.[pos] = '/' then
       if pos + 1 < String.length text && text.[pos + 1] = '/' then
-        skipToNewline text (pos + 1)
+        skip_to_newline text (pos + 1)
       else if pos + 1 < String.length text && text.[pos + 1] = '*' then
-        skipToCloseMultilineComment text (pos + 1)
+        skip_to_close_multiline_comment text (pos + 1)
       else fail text pos "Invalid synatx"
     else pos
 
   let rec skip text pos =
     if pos = String.length text then pos
     else
-      let n = skipWhite text pos |> maybeSkipComment text in
+      let n = skip_white text pos |> maybe_skip_comment text in
       if n > pos then skip text n else n
 
   let rec parse text pos =
@@ -385,9 +385,9 @@ module Parser = struct
       fail text pos "Reached end of file without being done parsing"
     else
       match text.[pos] with
-      | '/' -> parseComment text (pos + 1) parse
-      | '[' -> parseArray text (pos + 1)
-      | '{' -> parseObject text (pos + 1)
+      | '/' -> parse_comment text (pos + 1) parse
+      | '[' -> parse_array text (pos + 1)
+      | '{' -> parse_object text (pos + 1)
       | 'n' ->
         if String.sub text pos 4 = "null" then (Null, pos + 4)
         else fail text pos "unexpected character"
@@ -397,14 +397,14 @@ module Parser = struct
       | 'f' ->
         if String.sub text pos 5 = "false" then (False, pos + 5)
         else fail text pos "unexpected character"
-      | '\n' | '\t' | ' ' | '\r' -> parse text (skipWhite text pos)
+      | '\n' | '\t' | ' ' | '\r' -> parse text (skip_white text pos)
       | '"' ->
-        let s, pos = parseString text (pos + 1) in
+        let s, pos = parse_string text (pos + 1) in
         (String s, pos)
-      | '-' | '0' .. '9' -> parseNegativeNumber text pos
+      | '-' | '0' .. '9' -> parse_negative_number text pos
       | _ -> fail text pos "unexpected character"
 
-  and parseArrayValue text pos =
+  and parse_array_value text pos =
     let pos = skip text pos in
     let value, pos = parse text pos in
     let pos = skip text pos in
@@ -413,24 +413,24 @@ module Parser = struct
       let pos = skip text (pos + 1) in
       if text.[pos] = ']' then ([value], pos + 1)
       else
-        let rest, pos = parseArrayValue text pos in
+        let rest, pos = parse_array_value text pos in
         (value :: rest, pos)
     | ']' -> ([value], pos + 1)
     | _ -> fail text pos "unexpected character"
 
-  and parseArray text pos =
+  and parse_array text pos =
     let pos = skip text pos in
     match text.[pos] with
     | ']' -> (Array [], pos + 1)
     | _ ->
-      let items, pos = parseArrayValue text pos in
+      let items, pos = parse_array_value text pos in
       (Array items, pos)
 
-  and parseObjectValue text pos =
+  and parse_object_value text pos =
     let pos = skip text pos in
     if text.[pos] <> '"' then fail text pos "Expected string"
     else
-      let key, pos = parseString text (pos + 1) in
+      let key, pos = parse_string text (pos + 1) in
       let pos = skip text pos in
       let pos = expect ':' text pos "Colon" in
       let value, pos = parse text pos in
@@ -440,18 +440,18 @@ module Parser = struct
         let pos = skip text (pos + 1) in
         if text.[pos] = '}' then ([(key, value)], pos + 1)
         else
-          let rest, pos = parseObjectValue text pos in
+          let rest, pos = parse_object_value text pos in
           ((key, value) :: rest, pos)
       | '}' -> ([(key, value)], pos + 1)
       | _ ->
-        let rest, pos = parseObjectValue text pos in
+        let rest, pos = parse_object_value text pos in
         ((key, value) :: rest, pos)
 
-  and parseObject text pos =
+  and parse_object text pos =
     let pos = skip text pos in
     if text.[pos] = '}' then (Object [], pos + 1)
     else
-      let pairs, pos = parseObjectValue text pos in
+      let pairs, pos = parse_object_value text pos in
       (Object pairs, pos)
 end
 [@@nodoc]
@@ -514,13 +514,13 @@ let null t =
   | Null -> Some ()
   | _ -> None
 
-let rec parsePath keyList t =
-  match keyList with
+let rec parse_path key_list t =
+  match key_list with
   | [] -> Some t
   | head :: rest -> (
     match get head t with
     | None -> None
-    | Some value -> parsePath rest value)
+    | Some value -> parse_path rest value)
 
 (** Get a deeply nested value from an object `t`.
  * ```
@@ -530,6 +530,6 @@ let rec parsePath keyList t =
  * assert(num == Some(2.))
  * ```
  *)
-let getPath path t =
+let get_path path t =
   let keys = Parser.split_by (fun c -> c = '.') path in
-  parsePath keys t
+  parse_path keys t

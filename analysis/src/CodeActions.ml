@@ -1,27 +1,27 @@
 (* This is the return that's expected when resolving code actions *)
-type result = Protocol.codeAction list
+type result = Protocol.code_action list
 
-let stringifyCodeActions codeActions =
+let stringify_code_actions code_actions =
   Printf.sprintf {|%s|}
-    (codeActions |> List.map Protocol.stringifyCodeAction |> Protocol.array)
+    (code_actions |> List.map Protocol.stringify_code_action |> Protocol.array)
 
-let make ~title ~kind ~uri ~newText ~range =
-  let uri = uri |> Uri.fromPath |> Uri.toString in
+let make ~title ~kind ~uri ~new_text ~range =
+  let uri = uri |> Uri.from_path |> Uri.to_string in
   {
     Protocol.title;
-    codeActionKind = kind;
+    code_action_kind = kind;
     edit =
       {
-        documentChanges =
+        document_changes =
           [
             TextDocumentEdit
               {
-                Protocol.textDocument = {version = None; uri};
-                edits = [{newText; range}];
+                Protocol.text_document = {version = None; uri};
+                edits = [{new_text; range}];
               };
           ];
       };
   }
 
-let makeWithDocumentChanges ~title ~kind ~documentChanges =
-  {Protocol.title; codeActionKind = kind; edit = {documentChanges}}
+let make_with_document_changes ~title ~kind ~document_changes =
+  {Protocol.title; code_action_kind = kind; edit = {document_changes}}

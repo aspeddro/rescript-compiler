@@ -1,8 +1,8 @@
 type t = {path: string; uri: string}
 
-let stripPath = ref false (* for use in tests *)
+let strip_path = ref false (* for use in tests *)
 
-let pathToUri path =
+let path_to_uri path =
   if Sys.os_type = "Unix" then "file://" ^ path
   else
     "file://"
@@ -11,24 +11,24 @@ let pathToUri path =
              let name = Str.matched_group 1 text in
              "/" ^ String.lowercase_ascii name ^ "%3A"))
 
-let fromPath path = {path; uri = pathToUri path}
-let isInterface {path} = Filename.check_suffix path "i"
-let toPath {path} = path
+let from_path path = {path; uri = path_to_uri path}
+let is_interface {path} = Filename.check_suffix path "i"
+let to_path {path} = path
 
-let toTopLevelLoc {path} =
-  let topPos =
+let to_top_level_loc {path} =
+  let top_pos =
     {Lexing.pos_fname = path; pos_lnum = 1; pos_bol = 0; pos_cnum = 0}
   in
-  {Location.loc_start = topPos; Location.loc_end = topPos; loc_ghost = false}
+  {Location.loc_start = top_pos; Location.loc_end = top_pos; loc_ghost = false}
 
-let toString {uri} = if !stripPath then Filename.basename uri else uri
+let to_string {uri} = if !strip_path then Filename.basename uri else uri
 
 (* Light weight, hopefully-enough-for-the-purpose fn to encode URI components.
    Built to handle the reserved characters listed in
    https://en.wikipedia.org/wiki/Percent-encoding. Note that this function is not
    general purpose, rather it's currently only for URL encoding the argument list
    passed to command links in markdown. *)
-let encodeURIComponent text =
+let encode_u_r_i_component text =
   let ln = String.length text in
   let buf = Buffer.create ln in
   let rec loop i =

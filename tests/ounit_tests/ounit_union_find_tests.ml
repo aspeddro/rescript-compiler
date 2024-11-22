@@ -1,7 +1,7 @@
 let ( >:: ), ( >::: ) = OUnit.(( >:: ), ( >::: ))
 
 let ( =~ ) = OUnit.assert_equal
-let tinyUF =
+let tiny_u_f =
   {|10
                4 3
                3 8
@@ -15,7 +15,7 @@ let tinyUF =
                1 0
                6 7
              |}
-let mediumUF =
+let medium_u_f =
   {|625
                  528 503
                  548 523
@@ -919,8 +919,8 @@ let mediumUF =
                  403 402
                |}
 
-let process_str tinyUF =
-  match Ext_string.split tinyUF '\n' with
+let process_str tiny_u_f =
+  match Ext_string.split tiny_u_f '\n' with
   | number :: rest ->
     let n = int_of_string number in
     let store = Union_find.init n in
@@ -966,8 +966,8 @@ let process_file file =
 let suites =
   __FILE__
   >::: [
-         (__LOC__ >:: fun _ -> OUnit.assert_equal (process_str tinyUF) 2);
-         (__LOC__ >:: fun _ -> OUnit.assert_equal (process_str mediumUF) 3);
+         (__LOC__ >:: fun _ -> OUnit.assert_equal (process_str tiny_u_f) 2);
+         (__LOC__ >:: fun _ -> OUnit.assert_equal (process_str medium_u_f) 3);
          (*
    __LOC__ >:: begin fun _ ->
       OUnit.assert_equal (process_file "largeUF.txt") 6

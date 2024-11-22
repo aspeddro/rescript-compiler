@@ -1,24 +1,24 @@
 open SharedTypes
 
-let showModuleTopLevel ~docstring ~isType ~name (topLevel : Module.item list) =
+let show_module_top_level ~docstring ~is_type ~name (top_level : Module.item list) =
   let contents =
-    topLevel
+    top_level
     |> List.map (fun item ->
            match item.Module.kind with
            (* TODO pretty print module contents *)
-           | Type ({decl}, recStatus) ->
-             "  " ^ (decl |> Shared.declToString ~recStatus item.name)
+           | Type ({decl}, rec_status) ->
+             "  " ^ (decl |> Shared.decl_to_string ~rec_status item.name)
            | Module _ -> "  module " ^ item.name
            | Value typ ->
-             "  let " ^ item.name ^ ": " ^ (typ |> Shared.typeToString))
+             "  let " ^ item.name ^ ": " ^ (typ |> Shared.type_to_string))
     (* TODO indent *)
     |> String.concat "\n"
   in
-  let name = Utils.cutAfterDash name in
+  let name = Utils.cut_after_dash name in
   let full =
-    Markdown.codeBlock
+    Markdown.code_block
       ("module "
-      ^ (if isType then "type " ^ name ^ " = " else name ^ ": ")
+      ^ (if is_type then "type " ^ name ^ " = " else name ^ ": ")
       ^ "{" ^ "\n" ^ contents ^ "\n}")
   in
   let doc =
@@ -28,28 +28,28 @@ let showModuleTopLevel ~docstring ~isType ~name (topLevel : Module.item list) =
   in
   Some (doc ^ full)
 
-let rec showModule ~docstring ~(file : File.t) ~package ~name
+let rec show_module ~docstring ~(file : File.t) ~package ~name
     (declared : Module.t Declared.t option) =
   match declared with
   | None ->
-    showModuleTopLevel ~docstring ~isType:false ~name file.structure.items
-  | Some {item = Structure {items}; modulePath} ->
-    let isType =
-      match modulePath with
-      | ExportedModule {isType} -> isType
+    show_module_top_level ~docstring ~is_type:false ~name file.structure.items
+  | Some {item = Structure {items}; module_path} ->
+    let is_type =
+      match module_path with
+      | ExportedModule {is_type} -> is_type
       | _ -> false
     in
-    showModuleTopLevel ~docstring ~isType ~name items
-  | Some ({item = Constraint (_moduleItem, moduleTypeItem)} as declared) ->
+    show_module_top_level ~docstring ~is_type ~name items
+  | Some ({item = Constraint (_moduleItem, module_type_item)} as declared) ->
     (* show the interface *)
-    showModule ~docstring ~file ~name ~package
-      (Some {declared with item = moduleTypeItem})
+    show_module ~docstring ~file ~name ~package
+      (Some {declared with item = module_type_item})
   | Some ({item = Ident path} as declared) -> (
-    match References.resolveModuleReference ~file ~package declared with
+    match References.resolve_module_reference ~file ~package declared with
     | None -> Some ("Unable to resolve module reference " ^ Path.name path)
-    | Some (_, declared) -> showModule ~docstring ~file ~name ~package declared)
+    | Some (_, declared) -> show_module ~docstring ~file ~name ~package declared)
 
-type extractedType = {
+type extracted_type = {
   name: string;
   path: Path.t;
   decl: Types.type_declaration;
@@ -57,169 +57,169 @@ type extractedType = {
   loc: Warnings.loc;
 }
 
-let findRelevantTypesFromType ~file ~package typ =
+let find_relevant_types_from_type ~file ~package typ =
   (* Expand definitions of types mentioned in typ.
      If typ itself is a record or variant, search its body *)
-  let env = QueryEnv.fromFile file in
-  let envToSearch, typesToSearch =
-    match typ |> Shared.digConstructor with
+  let env = QueryEnv.from_file file in
+  let env_to_search, types_to_search =
+    match typ |> Shared.dig_constructor with
     | Some path -> (
-      let labelDeclarationsTypes lds =
+      let label_declarations_types lds =
         lds |> List.map (fun (ld : Types.label_declaration) -> ld.ld_type)
       in
-      match References.digConstructor ~env ~package path with
+      match References.dig_constructor ~env ~package path with
       | None -> (env, [typ])
       | Some (env1, {item = {decl}}) -> (
         match decl.type_kind with
-        | Type_record (lds, _) -> (env1, typ :: (lds |> labelDeclarationsTypes))
+        | Type_record (lds, _) -> (env1, typ :: (lds |> label_declarations_types))
         | Type_variant cds ->
           ( env1,
             cds
             |> List.map (fun (cd : Types.constructor_declaration) ->
-                   let fromArgs =
+                   let from_args =
                      match cd.cd_args with
                      | Cstr_tuple ts -> ts
-                     | Cstr_record lds -> lds |> labelDeclarationsTypes
+                     | Cstr_record lds -> lds |> label_declarations_types
                    in
                    typ
                    ::
                    (match cd.cd_res with
-                   | None -> fromArgs
-                   | Some t -> t :: fromArgs))
+                   | None -> from_args
+                   | Some t -> t :: from_args))
             |> List.flatten )
         | _ -> (env, [typ])))
     | None -> (env, [typ])
   in
-  let fromConstructorPath ~env path =
-    match References.digConstructor ~env ~package path with
+  let from_constructor_path ~env path =
+    match References.dig_constructor ~env ~package path with
     | None -> None
-    | Some (env, {name = {txt}; extentLoc; item = {decl}}) ->
-      if Utils.isUncurriedInternal path then None
-      else Some {name = txt; env; loc = extentLoc; decl; path}
+    | Some (env, {name = {txt}; extent_loc; item = {decl}}) ->
+      if Utils.is_uncurried_internal path then None
+      else Some {name = txt; env; loc = extent_loc; decl; path}
   in
-  let constructors = Shared.findTypeConstructors typesToSearch in
-  constructors |> List.filter_map (fromConstructorPath ~env:envToSearch)
+  let constructors = Shared.find_type_constructors types_to_search in
+  constructors |> List.filter_map (from_constructor_path ~env:env_to_search)
 
-let expandTypes ~file ~package ~supportsMarkdownLinks typ =
-  findRelevantTypesFromType typ ~file ~package
+let expand_types ~file ~package ~supports_markdown_links typ =
+  find_relevant_types_from_type typ ~file ~package
   |> List.map (fun {decl; env; loc; path} ->
-         let linkToTypeDefinitionStr =
-           if supportsMarkdownLinks then
-             Markdown.goToDefinitionText ~env ~pos:loc.Warnings.loc_start
+         let link_to_type_definition_str =
+           if supports_markdown_links then
+             Markdown.go_to_definition_text ~env ~pos:loc.Warnings.loc_start
            else ""
          in
          Markdown.divider
-         ^ (if supportsMarkdownLinks then Markdown.spacing else "")
-         ^ Markdown.codeBlock
+         ^ (if supports_markdown_links then Markdown.spacing else "")
+         ^ Markdown.code_block
              (decl
-             |> Shared.declToString ~printNameAsIs:true
-                  (SharedTypes.pathIdentToString path))
-         ^ linkToTypeDefinitionStr ^ "\n")
+             |> Shared.decl_to_string ~print_name_as_is:true
+                  (SharedTypes.path_ident_to_string path))
+         ^ link_to_type_definition_str ^ "\n")
 
 (* Produces a hover with relevant types expanded in the main type being hovered. *)
-let hoverWithExpandedTypes ~file ~package ~supportsMarkdownLinks typ =
-  let typeString = Markdown.codeBlock (typ |> Shared.typeToString) in
-  typeString :: expandTypes ~file ~package ~supportsMarkdownLinks typ
+let hover_with_expanded_types ~file ~package ~supports_markdown_links typ =
+  let type_string = Markdown.code_block (typ |> Shared.type_to_string) in
+  type_string :: expand_types ~file ~package ~supports_markdown_links typ
   |> String.concat "\n"
 
 (* Leverages autocomplete functionality to produce a hover for a position. This
    makes it (most often) work with unsaved content. *)
-let getHoverViaCompletions ~debug ~path ~pos ~currentFile ~forHover
-    ~supportsMarkdownLinks =
-  match Completions.getCompletions ~debug ~path ~pos ~currentFile ~forHover with
+let get_hover_via_completions ~debug ~path ~pos ~current_file ~for_hover
+    ~supports_markdown_links =
+  match Completions.get_completions ~debug ~path ~pos ~current_file ~for_hover with
   | None -> None
   | Some (completions, ({file; package} as full), scope) -> (
-    let rawOpens = Scope.getRawOpens scope in
+    let raw_opens = Scope.get_raw_opens scope in
     match completions with
-    | {kind = Label typString; docstring} :: _ ->
+    | {kind = Label typ_string; docstring} :: _ ->
       let parts =
         docstring
-        @ if typString = "" then [] else [Markdown.codeBlock typString]
+        @ if typ_string = "" then [] else [Markdown.code_block typ_string]
       in
 
-      Some (Protocol.stringifyHover (String.concat "\n\n" parts))
+      Some (Protocol.stringify_hover (String.concat "\n\n" parts))
     | {kind = Field _; env; docstring} :: _ -> (
-      let opens = CompletionBackEnd.getOpens ~debug ~rawOpens ~package ~env in
+      let opens = CompletionBackEnd.get_opens ~debug ~raw_opens ~package ~env in
       match
-        CompletionBackEnd.completionsGetTypeEnv2 ~debug ~full ~rawOpens ~opens
+        CompletionBackEnd.completions_get_type_env2 ~debug ~full ~raw_opens ~opens
           ~pos completions
       with
       | Some (typ, _env) ->
-        let typeString =
-          hoverWithExpandedTypes ~file ~package ~supportsMarkdownLinks typ
+        let type_string =
+          hover_with_expanded_types ~file ~package ~supports_markdown_links typ
         in
-        let parts = docstring @ [typeString] in
-        Some (Protocol.stringifyHover (String.concat "\n\n" parts))
+        let parts = docstring @ [type_string] in
+        Some (Protocol.stringify_hover (String.concat "\n\n" parts))
       | None -> None)
     | {env} :: _ -> (
-      let opens = CompletionBackEnd.getOpens ~debug ~rawOpens ~package ~env in
+      let opens = CompletionBackEnd.get_opens ~debug ~raw_opens ~package ~env in
       match
-        CompletionBackEnd.completionsGetTypeEnv2 ~debug ~full ~rawOpens ~opens
+        CompletionBackEnd.completions_get_type_env2 ~debug ~full ~raw_opens ~opens
           ~pos completions
       with
       | Some (typ, _env) ->
-        let typeString =
-          hoverWithExpandedTypes ~file ~package ~supportsMarkdownLinks typ
+        let type_string =
+          hover_with_expanded_types ~file ~package ~supports_markdown_links typ
         in
-        Some (Protocol.stringifyHover typeString)
+        Some (Protocol.stringify_hover type_string)
       | None -> None)
     | _ -> None)
 
-let newHover ~full:{file; package} ~supportsMarkdownLinks locItem =
-  match locItem.locType with
+let new_hover ~full:{file; package} ~supports_markdown_links loc_item =
+  match loc_item.loc_type with
   | TypeDefinition (name, decl, _stamp) -> (
-    let typeDef = Markdown.codeBlock (Shared.declToString name decl) in
+    let type_def = Markdown.code_block (Shared.decl_to_string name decl) in
     match decl.type_manifest with
-    | None -> Some typeDef
+    | None -> Some type_def
     | Some typ ->
       Some
-        (typeDef :: expandTypes ~file ~package ~supportsMarkdownLinks typ
+        (type_def :: expand_types ~file ~package ~supports_markdown_links typ
         |> String.concat "\n"))
   | LModule (Definition (stamp, _tip)) | LModule (LocalReference (stamp, _tip))
     -> (
-    match Stamps.findModule file.stamps stamp with
+    match Stamps.find_module file.stamps stamp with
     | None -> None
     | Some md -> (
-      match References.resolveModuleReference ~file ~package md with
+      match References.resolve_module_reference ~file ~package md with
       | None -> None
       | Some (file, declared) ->
         let name, docstring =
           match declared with
           | Some d -> (d.name.txt, d.docstring)
-          | None -> (file.moduleName, file.structure.docstring)
+          | None -> (file.module_name, file.structure.docstring)
         in
-        showModule ~docstring ~name ~file declared ~package))
-  | LModule (GlobalReference (moduleName, path, tip)) -> (
-    match ProcessCmt.fileForModule ~package moduleName with
+        show_module ~docstring ~name ~file declared ~package))
+  | LModule (GlobalReference (module_name, path, tip)) -> (
+    match ProcessCmt.file_for_module ~package module_name with
     | None -> None
     | Some file -> (
-      let env = QueryEnv.fromFile file in
-      match References.exportedForTip ~env ~path ~package ~tip with
+      let env = QueryEnv.from_file file in
+      match References.exported_for_tip ~env ~path ~package ~tip with
       | None -> None
       | Some (_env, _name, stamp) -> (
-        match Stamps.findModule file.stamps stamp with
+        match Stamps.find_module file.stamps stamp with
         | None -> None
         | Some md -> (
-          match References.resolveModuleReference ~file ~package md with
+          match References.resolve_module_reference ~file ~package md with
           | None -> None
           | Some (file, declared) ->
             let name, docstring =
               match declared with
               | Some d -> (d.name.txt, d.docstring)
-              | None -> (file.moduleName, file.structure.docstring)
+              | None -> (file.module_name, file.structure.docstring)
             in
-            showModule ~docstring ~name ~file ~package declared))))
+            show_module ~docstring ~name ~file ~package declared))))
   | LModule NotFound -> None
   | TopLevelModule name -> (
-    match ProcessCmt.fileForModule ~package name with
+    match ProcessCmt.file_for_module ~package name with
     | None -> None
     | Some file ->
-      showModule ~docstring:file.structure.docstring ~name:file.moduleName ~file
+      show_module ~docstring:file.structure.docstring ~name:file.module_name ~file
         ~package None)
   | Typed (_, _, Definition (_, (Field _ | Constructor _))) -> None
   | Constant t ->
     Some
-      (Markdown.codeBlock
+      (Markdown.code_block
          (match t with
          | Const_int _ -> "int"
          | Const_char _ -> "char"
@@ -228,34 +228,34 @@ let newHover ~full:{file; package} ~supportsMarkdownLinks locItem =
          | Const_int32 _ -> "int32"
          | Const_int64 _ -> "int64"
          | Const_bigint _ -> "bigint"))
-  | Typed (_, t, locKind) ->
-    let fromType ~docstring typ =
-      ( hoverWithExpandedTypes ~file ~package ~supportsMarkdownLinks typ,
+  | Typed (_, t, loc_kind) ->
+    let from_type ~docstring typ =
+      ( hover_with_expanded_types ~file ~package ~supports_markdown_links typ,
         docstring )
     in
     let parts =
-      match References.definedForLoc ~file ~package locKind with
+      match References.defined_for_loc ~file ~package loc_kind with
       | None ->
-        let typeString, docstring = t |> fromType ~docstring:[] in
-        typeString :: docstring
+        let type_string, docstring = t |> from_type ~docstring:[] in
+        type_string :: docstring
       | Some (docstring, res) -> (
         match res with
         | `Declared ->
-          let typeString, docstring = t |> fromType ~docstring in
-          typeString :: docstring
+          let type_string, docstring = t |> from_type ~docstring in
+          type_string :: docstring
         | `Constructor {cname = {txt}; args; docstring} ->
-          let typeString, docstring = t |> fromType ~docstring in
-          let argsString =
+          let type_string, docstring = t |> from_type ~docstring in
+          let args_string =
             match args with
             | InlineRecord _ | Args [] -> ""
             | Args args ->
               args
-              |> List.map (fun (t, _) -> Shared.typeToString t)
+              |> List.map (fun (t, _) -> Shared.type_to_string t)
               |> String.concat ", " |> Printf.sprintf "(%s)"
           in
-          typeString :: Markdown.codeBlock (txt ^ argsString) :: docstring
+          type_string :: Markdown.code_block (txt ^ args_string) :: docstring
         | `Field ->
-          let typeString, docstring = t |> fromType ~docstring in
-          typeString :: docstring)
+          let type_string, docstring = t |> from_type ~docstring in
+          type_string :: docstring)
     in
     Some (String.concat Markdown.divider parts)

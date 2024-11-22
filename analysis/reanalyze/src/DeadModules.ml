@@ -1,29 +1,29 @@
 let active () =
   (* When transitive reporting is off, the only dead modules would be empty modules *)
-  RunConfig.runConfig.transitive
+  RunConfig.run_config.transitive
 
 let table = Hashtbl.create 1
 
-let markDead ~isType ~loc path =
+let mark_dead ~is_type ~loc path =
   if active () then
-    let moduleName = path |> Common.Path.toModuleName ~isType in
-    match Hashtbl.find_opt table moduleName with
+    let module_name = path |> Common.Path.to_module_name ~is_type in
+    match Hashtbl.find_opt table module_name with
     | Some _ -> ()
-    | _ -> Hashtbl.replace table moduleName (false, loc)
+    | _ -> Hashtbl.replace table module_name (false, loc)
 
-let markLive ~isType ~(loc : Location.t) path =
+let mark_live ~is_type ~(loc : Location.t) path =
   if active () then
-    let moduleName = path |> Common.Path.toModuleName ~isType in
-    match Hashtbl.find_opt table moduleName with
-    | None -> Hashtbl.replace table moduleName (true, loc)
-    | Some (false, loc) -> Hashtbl.replace table moduleName (true, loc)
+    let module_name = path |> Common.Path.to_module_name ~is_type in
+    match Hashtbl.find_opt table module_name with
+    | None -> Hashtbl.replace table module_name (true, loc)
+    | Some (false, loc) -> Hashtbl.replace table module_name (true, loc)
     | Some (true, _) -> ()
 
-let checkModuleDead ~fileName:pos_fname moduleName =
+let check_module_dead ~file_name:pos_fname module_name =
   if active () then
-    match Hashtbl.find_opt table moduleName with
+    match Hashtbl.find_opt table module_name with
     | Some (false, loc) ->
-      Hashtbl.remove table moduleName;
+      Hashtbl.remove table module_name;
       (* only report once *)
       let loc =
         if loc.loc_ghost then
@@ -38,7 +38,7 @@ let checkModuleDead ~fileName:pos_fname moduleName =
            {
              message =
                Format.asprintf "@{<info>%s@} %s"
-                 (moduleName |> Name.toInterface |> Name.toString)
+                 (module_name |> Name.to_interface |> Name.to_string)
                  "is a dead module as all its items are dead.";
            })
     | _ -> ()

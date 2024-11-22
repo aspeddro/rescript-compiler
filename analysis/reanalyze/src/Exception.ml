@@ -1,71 +1,71 @@
-let posToString = Common.posToString
+let pos_to_string = Common.pos_to_string
 
 module LocSet = Common.LocSet
 
 module Values = struct
-  let valueBindingsTable =
+  let value_bindings_table =
     (Hashtbl.create 15 : (string, (Name.t, Exceptions.t) Hashtbl.t) Hashtbl.t)
 
-  let currentFileTable = ref (Hashtbl.create 1)
+  let current_file_table = ref (Hashtbl.create 1)
 
   let add ~name exceptions =
-    let path = (name |> Name.create) :: (ModulePath.getCurrent ()).path in
-    Hashtbl.replace !currentFileTable (path |> Common.Path.toName) exceptions
+    let path = (name |> Name.create) :: (ModulePath.get_current ()).path in
+    Hashtbl.replace !current_file_table (path |> Common.Path.to_name) exceptions
 
-  let getFromModule ~moduleName ~modulePath (path_ : Common.Path.t) =
-    let name = path_ @ modulePath |> Common.Path.toName in
+  let get_from_module ~module_name ~module_path (path_ : Common.Path.t) =
+    let name = path_ @ module_path |> Common.Path.to_name in
     match
-      Hashtbl.find_opt valueBindingsTable (String.capitalize_ascii moduleName)
+      Hashtbl.find_opt value_bindings_table (String.capitalize_ascii module_name)
     with
     | Some tbl -> Hashtbl.find_opt tbl name
     | None -> (
       match
-        Hashtbl.find_opt valueBindingsTable
-          (String.uncapitalize_ascii moduleName)
+        Hashtbl.find_opt value_bindings_table
+          (String.uncapitalize_ascii module_name)
       with
       | Some tbl -> Hashtbl.find_opt tbl name
       | None -> None)
 
-  let rec findLocal ~moduleName ~modulePath path =
-    match path |> getFromModule ~moduleName ~modulePath with
+  let rec find_local ~module_name ~module_path path =
+    match path |> get_from_module ~module_name ~module_path with
     | Some exceptions -> Some exceptions
     | None -> (
-      match modulePath with
+      match module_path with
       | [] -> None
-      | _ :: restModulePath ->
-        path |> findLocal ~moduleName ~modulePath:restModulePath)
+      | _ :: rest_module_path ->
+        path |> find_local ~module_name ~module_path:rest_module_path)
 
-  let findPath ~moduleName ~modulePath path =
-    let findExternal ~externalModuleName ~pathRev =
-      pathRev |> List.rev
-      |> getFromModule
-           ~moduleName:(externalModuleName |> Name.toString)
-           ~modulePath:[]
+  let find_path ~module_name ~module_path path =
+    let find_external ~external_module_name ~path_rev =
+      path_rev |> List.rev
+      |> get_from_module
+           ~module_name:(external_module_name |> Name.to_string)
+           ~module_path:[]
     in
-    match path |> findLocal ~moduleName ~modulePath with
+    match path |> find_local ~module_name ~module_path with
     | None -> (
       (* Search in another file *)
       match path |> List.rev with
-      | externalModuleName :: pathRev -> (
-        match (findExternal ~externalModuleName ~pathRev, pathRev) with
+      | external_module_name :: path_rev -> (
+        match (find_external ~external_module_name ~path_rev, path_rev) with
         | (Some _ as found), _ -> found
-        | None, externalModuleName2 :: pathRev2
-          when !Common.Cli.cmtCommand && pathRev2 <> [] ->
+        | None, external_module_name2 :: path_rev2
+          when !Common.Cli.cmt_command && path_rev2 <> [] ->
           (* Simplistic namespace resolution for dune namespace: skip the root of the path *)
-          findExternal ~externalModuleName:externalModuleName2 ~pathRev:pathRev2
+          find_external ~external_module_name:external_module_name2 ~path_rev:path_rev2
         | None, _ -> None)
       | [] -> None)
     | Some exceptions -> Some exceptions
 
-  let newCmt () =
-    currentFileTable := Hashtbl.create 15;
-    Hashtbl.replace valueBindingsTable !Common.currentModule !currentFileTable
+  let new_cmt () =
+    current_file_table := Hashtbl.create 15;
+    Hashtbl.replace value_bindings_table !Common.current_module !current_file_table
 end
 
 module Event = struct
   type kind =
     | Catches of t list (* with | E => ... *)
-    | Call of {callee: Common.Path.t; modulePath: Common.Path.t} (* foo() *)
+    | Call of {callee: Common.Path.t; module_path: Common.Path.t} (* foo() *)
     | DoesNotRaise of
         t list (* DoesNotRaise(events) where events come from an expression *)
     | Raises  (** raise E *)
@@ -74,73 +74,73 @@ module Event = struct
 
   let rec print ppf event =
     match event with
-    | {kind = Call {callee; modulePath}; exceptions; loc} ->
+    | {kind = Call {callee; module_path}; exceptions; loc} ->
       Format.fprintf ppf "%s Call(%s, modulePath:%s) %a@."
-        (loc.loc_start |> posToString)
-        (callee |> Common.Path.toString)
-        (modulePath |> Common.Path.toString)
-        (Exceptions.pp ~exnTable:None)
+        (loc.loc_start |> pos_to_string)
+        (callee |> Common.Path.to_string)
+        (module_path |> Common.Path.to_string)
+        (Exceptions.pp ~exn_table:None)
         exceptions
-    | {kind = DoesNotRaise nestedEvents; loc} ->
+    | {kind = DoesNotRaise nested_events; loc} ->
       Format.fprintf ppf "%s DoesNotRaise(%a)@."
-        (loc.loc_start |> posToString)
+        (loc.loc_start |> pos_to_string)
         (fun ppf () ->
-          nestedEvents |> List.iter (fun e -> Format.fprintf ppf "%a " print e))
+          nested_events |> List.iter (fun e -> Format.fprintf ppf "%a " print e))
         ()
     | {kind = Raises; exceptions; loc} ->
       Format.fprintf ppf "%s raises %a@."
-        (loc.loc_start |> posToString)
-        (Exceptions.pp ~exnTable:None)
+        (loc.loc_start |> pos_to_string)
+        (Exceptions.pp ~exn_table:None)
         exceptions
-    | {kind = Catches nestedEvents; exceptions; loc} ->
+    | {kind = Catches nested_events; exceptions; loc} ->
       Format.fprintf ppf "%s Catches exceptions:%a nestedEvents:%a@."
-        (loc.loc_start |> posToString)
-        (Exceptions.pp ~exnTable:None)
+        (loc.loc_start |> pos_to_string)
+        (Exceptions.pp ~exn_table:None)
         exceptions
         (fun ppf () ->
-          nestedEvents |> List.iter (fun e -> Format.fprintf ppf "%a " print e))
+          nested_events |> List.iter (fun e -> Format.fprintf ppf "%a " print e))
         ()
 
-  let combine ~moduleName events =
+  let combine ~module_name events =
     if !Common.Cli.debug then (
       Log_.item "@.";
       Log_.item "Events combine: #events %d@." (events |> List.length));
-    let exnTable = Hashtbl.create 1 in
-    let extendExnTable exn loc =
-      match Hashtbl.find_opt exnTable exn with
-      | Some locSet -> Hashtbl.replace exnTable exn (LocSet.add loc locSet)
-      | None -> Hashtbl.replace exnTable exn (LocSet.add loc LocSet.empty)
+    let exn_table = Hashtbl.create 1 in
+    let extend_exn_table exn loc =
+      match Hashtbl.find_opt exn_table exn with
+      | Some loc_set -> Hashtbl.replace exn_table exn (LocSet.add loc loc_set)
+      | None -> Hashtbl.replace exn_table exn (LocSet.add loc LocSet.empty)
     in
-    let shrinkExnTable exn loc =
-      match Hashtbl.find_opt exnTable exn with
-      | Some locSet -> Hashtbl.replace exnTable exn (LocSet.remove loc locSet)
+    let shrink_exn_table exn loc =
+      match Hashtbl.find_opt exn_table exn with
+      | Some loc_set -> Hashtbl.replace exn_table exn (LocSet.remove loc loc_set)
       | None -> ()
     in
-    let rec loop exnSet events =
+    let rec loop exn_set events =
       match events with
       | ({kind = Raises; exceptions; loc} as ev) :: rest ->
         if !Common.Cli.debug then Log_.item "%a@." print ev;
-        exceptions |> Exceptions.iter (fun exn -> extendExnTable exn loc);
-        loop (Exceptions.union exnSet exceptions) rest
-      | ({kind = Call {callee; modulePath}; loc} as ev) :: rest ->
+        exceptions |> Exceptions.iter (fun exn -> extend_exn_table exn loc);
+        loop (Exceptions.union exn_set exceptions) rest
+      | ({kind = Call {callee; module_path}; loc} as ev) :: rest ->
         if !Common.Cli.debug then Log_.item "%a@." print ev;
         let exceptions =
-          match callee |> Values.findPath ~moduleName ~modulePath with
+          match callee |> Values.find_path ~module_name ~module_path with
           | Some exceptions -> exceptions
           | _ -> (
             match ExnLib.find callee with
             | Some exceptions -> exceptions
             | None -> Exceptions.empty)
         in
-        exceptions |> Exceptions.iter (fun exn -> extendExnTable exn loc);
-        loop (Exceptions.union exnSet exceptions) rest
-      | ({kind = DoesNotRaise nestedEvents; loc} as ev) :: rest ->
+        exceptions |> Exceptions.iter (fun exn -> extend_exn_table exn loc);
+        loop (Exceptions.union exn_set exceptions) rest
+      | ({kind = DoesNotRaise nested_events; loc} as ev) :: rest ->
         if !Common.Cli.debug then Log_.item "%a@." print ev;
-        let nestedExceptions = loop Exceptions.empty nestedEvents in
-        (if Exceptions.isEmpty nestedExceptions (* catch-all *) then
+        let nested_exceptions = loop Exceptions.empty nested_events in
+        (if Exceptions.is_empty nested_exceptions (* catch-all *) then
            let name =
-             match nestedEvents with
-             | {kind = Call {callee}} :: _ -> callee |> Common.Path.toName
+             match nested_events with
+             | {kind = Call {callee}} :: _ -> callee |> Common.Path.to_name
              | _ -> "expression" |> Name.create
            in
            Log_.warning ~loc
@@ -150,33 +150,33 @@ module Event = struct
                     Format.asprintf
                       "@{<info>%s@} does not raise and is annotated with \
                        redundant @doesNotRaise"
-                      (name |> Name.toString);
+                      (name |> Name.to_string);
                 }));
-        loop exnSet rest
-      | ({kind = Catches nestedEvents; exceptions} as ev) :: rest ->
+        loop exn_set rest
+      | ({kind = Catches nested_events; exceptions} as ev) :: rest ->
         if !Common.Cli.debug then Log_.item "%a@." print ev;
-        if Exceptions.isEmpty exceptions then loop exnSet rest
+        if Exceptions.is_empty exceptions then loop exn_set rest
         else
-          let nestedExceptions = loop Exceptions.empty nestedEvents in
-          let newRaises = Exceptions.diff nestedExceptions exceptions in
+          let nested_exceptions = loop Exceptions.empty nested_events in
+          let new_raises = Exceptions.diff nested_exceptions exceptions in
           exceptions
           |> Exceptions.iter (fun exn ->
-                 nestedEvents
-                 |> List.iter (fun event -> shrinkExnTable exn event.loc));
-          loop (Exceptions.union exnSet newRaises) rest
-      | [] -> exnSet
+                 nested_events
+                 |> List.iter (fun event -> shrink_exn_table exn event.loc));
+          loop (Exceptions.union exn_set new_raises) rest
+      | [] -> exn_set
     in
-    let exnSet = loop Exceptions.empty events in
-    (exnSet, exnTable)
+    let exn_set = loop Exceptions.empty events in
+    (exn_set, exn_table)
 end
 
 module Checks = struct
   type check = {
     events: Event.t list;
     loc: Location.t;
-    locFull: Location.t;
-    moduleName: string;
-    exnName: string;
+    loc_full: Location.t;
+    module_name: string;
+    exn_name: string;
     exceptions: Exceptions.t;
   }
 
@@ -184,83 +184,83 @@ module Checks = struct
 
   let checks = (ref [] : t ref)
 
-  let add ~events ~exceptions ~loc ?(locFull = loc) ~moduleName exnName =
-    checks := {events; exceptions; loc; locFull; moduleName; exnName} :: !checks
+  let add ~events ~exceptions ~loc ?(loc_full = loc) ~module_name exn_name =
+    checks := {events; exceptions; loc; loc_full; module_name; exn_name} :: !checks
 
-  let doCheck {events; exceptions; loc; locFull; moduleName; exnName} =
-    let raiseSet, exnTable = events |> Event.combine ~moduleName in
-    let missingAnnotations = Exceptions.diff raiseSet exceptions in
-    let redundantAnnotations = Exceptions.diff exceptions raiseSet in
-    (if not (Exceptions.isEmpty missingAnnotations) then
+  let do_check {events; exceptions; loc; loc_full; module_name; exn_name} =
+    let raise_set, exn_table = events |> Event.combine ~module_name in
+    let missing_annotations = Exceptions.diff raise_set exceptions in
+    let redundant_annotations = Exceptions.diff exceptions raise_set in
+    (if not (Exceptions.is_empty missing_annotations) then
        let description =
          Common.ExceptionAnalysisMissing
-           {exnName; exnTable; raiseSet; missingAnnotations; locFull}
+           {exn_name; exn_table; raise_set; missing_annotations; loc_full}
        in
        Log_.warning ~loc description);
-    if not (Exceptions.isEmpty redundantAnnotations) then
+    if not (Exceptions.is_empty redundant_annotations) then
       Log_.warning ~loc
         (Common.ExceptionAnalysis
            {
              message =
-               (let raisesDescription ppf () =
-                  if raiseSet |> Exceptions.isEmpty then
+               (let raises_description ppf () =
+                  if raise_set |> Exceptions.is_empty then
                     Format.fprintf ppf "raises nothing"
                   else
                     Format.fprintf ppf "might raise %a"
-                      (Exceptions.pp ~exnTable:(Some exnTable))
-                      raiseSet
+                      (Exceptions.pp ~exn_table:(Some exn_table))
+                      raise_set
                 in
                 Format.asprintf
                   "@{<info>%s@} %a and is annotated with redundant @raises(%a)"
-                  exnName raisesDescription ()
-                  (Exceptions.pp ~exnTable:None)
-                  redundantAnnotations);
+                  exn_name raises_description ()
+                  (Exceptions.pp ~exn_table:None)
+                  redundant_annotations);
            })
 
-  let doChecks () = !checks |> List.rev |> List.iter doCheck
+  let do_checks () = !checks |> List.rev |> List.iter do_check
 end
 
-let traverseAst () =
+let traverse_ast () =
   ModulePath.init ();
   let super = Tast_mapper.default in
-  let currentId = ref "" in
-  let currentEvents = ref [] in
-  let exceptionsOfPatterns patterns =
+  let current_id = ref "" in
+  let current_events = ref [] in
+  let exceptions_of_patterns patterns =
     patterns
     |> List.fold_left
          (fun acc desc ->
            match desc with
            | Typedtree.Tpat_construct ({txt}, _, _) ->
-             Exceptions.add (Exn.fromLid txt) acc
+             Exceptions.add (Exn.from_lid txt) acc
            | _ -> acc)
          Exceptions.empty
   in
-  let iterExpr self e = self.Tast_mapper.expr self e |> ignore in
-  let iterExprOpt self eo =
+  let iter_expr self e = self.Tast_mapper.expr self e |> ignore in
+  let iter_expr_opt self eo =
     match eo with
     | None -> ()
-    | Some e -> e |> iterExpr self
+    | Some e -> e |> iter_expr self
   in
-  let iterPat self p = self.Tast_mapper.pat self p |> ignore in
-  let iterCases self cases =
+  let iter_pat self p = self.Tast_mapper.pat self p |> ignore in
+  let iter_cases self cases =
     cases
     |> List.iter (fun case ->
-           case.Typedtree.c_lhs |> iterPat self;
-           case.c_guard |> iterExprOpt self;
-           case.c_rhs |> iterExpr self)
+           case.Typedtree.c_lhs |> iter_pat self;
+           case.c_guard |> iter_expr_opt self;
+           case.c_rhs |> iter_expr self)
   in
-  let isRaise s = s = "Pervasives.raise" || s = "Pervasives.raise_notrace" in
-  let raiseArgs args =
+  let is_raise s = s = "Pervasives.raise" || s = "Pervasives.raise_notrace" in
+  let raise_args args =
     match args with
     | [(_, Some {Typedtree.exp_desc = Texp_construct ({txt}, _, _)})] ->
-      [Exn.fromLid txt] |> Exceptions.fromList
+      [Exn.from_lid txt] |> Exceptions.from_list
     | [(_, Some {Typedtree.exp_desc = Texp_ident _})] ->
-      [Exn.fromString "genericException"] |> Exceptions.fromList
-    | _ -> [Exn.fromString "TODO_from_raise1"] |> Exceptions.fromList
+      [Exn.from_string "genericException"] |> Exceptions.from_list
+    | _ -> [Exn.from_string "TODO_from_raise1"] |> Exceptions.from_list
   in
-  let doesNotRaise attributes =
+  let does_not_raise attributes =
     attributes
-    |> Annotation.getAttributePayload (fun s ->
+    |> Annotation.get_attribute_payload (fun s ->
            s = "doesNotRaise" || s = "doesnotraise" || s = "DoesNoRaise"
            || s = "doesNotraise" || s = "doNotRaise" || s = "donotraise"
            || s = "DoNoRaise" || s = "doNotraise")
@@ -268,223 +268,223 @@ let traverseAst () =
   in
   let expr (self : Tast_mapper.mapper) (expr : Typedtree.expression) =
     let loc = expr.exp_loc in
-    let isDoesNoRaise = expr.exp_attributes |> doesNotRaise in
-    let oldEvents = !currentEvents in
-    if isDoesNoRaise then currentEvents := [];
+    let is_does_no_raise = expr.exp_attributes |> does_not_raise in
+    let old_events = !current_events in
+    if is_does_no_raise then current_events := [];
     (match expr.exp_desc with
     | Texp_ident (callee_, _, _) ->
       let callee =
-        callee_ |> Common.Path.fromPathT |> ModulePath.resolveAlias
+        callee_ |> Common.Path.from_path_t |> ModulePath.resolve_alias
       in
-      let calleeName = callee |> Common.Path.toName in
-      if calleeName |> Name.toString |> isRaise then
+      let callee_name = callee |> Common.Path.to_name in
+      if callee_name |> Name.to_string |> is_raise then
         Log_.warning ~loc
           (Common.ExceptionAnalysis
              {
                message =
                  Format.asprintf
                    "@{<info>%s@} can be analyzed only if called directly"
-                   (calleeName |> Name.toString);
+                   (callee_name |> Name.to_string);
              });
-      currentEvents :=
+      current_events :=
         {
           Event.exceptions = Exceptions.empty;
           loc;
-          kind = Call {callee; modulePath = (ModulePath.getCurrent ()).path};
+          kind = Call {callee; module_path = (ModulePath.get_current ()).path};
         }
-        :: !currentEvents
+        :: !current_events
     | Texp_apply
         ( {exp_desc = Texp_ident (atat, _, _)},
           [(_lbl1, Some {exp_desc = Texp_ident (callee, _, _)}); arg] )
       when (* raise @@ Exn(...) *)
-           atat |> Path.name = "Pervasives.@@" && callee |> Path.name |> isRaise
+           atat |> Path.name = "Pervasives.@@" && callee |> Path.name |> is_raise
       ->
-      let exceptions = [arg] |> raiseArgs in
-      currentEvents := {Event.exceptions; loc; kind = Raises} :: !currentEvents;
-      arg |> snd |> iterExprOpt self
+      let exceptions = [arg] |> raise_args in
+      current_events := {Event.exceptions; loc; kind = Raises} :: !current_events;
+      arg |> snd |> iter_expr_opt self
     | Texp_apply
         ( {exp_desc = Texp_ident (atat, _, _)},
           [arg; (_lbl1, Some {exp_desc = Texp_ident (callee, _, _)})] )
       when (*  Exn(...) |> raise *)
-           atat |> Path.name = "Pervasives.|>" && callee |> Path.name |> isRaise
+           atat |> Path.name = "Pervasives.|>" && callee |> Path.name |> is_raise
       ->
-      let exceptions = [arg] |> raiseArgs in
-      currentEvents := {Event.exceptions; loc; kind = Raises} :: !currentEvents;
-      arg |> snd |> iterExprOpt self
+      let exceptions = [arg] |> raise_args in
+      current_events := {Event.exceptions; loc; kind = Raises} :: !current_events;
+      arg |> snd |> iter_expr_opt self
     | Texp_apply (({exp_desc = Texp_ident (callee, _, _)} as e), args) ->
-      let calleeName = Path.name callee in
-      if calleeName |> isRaise then
-        let exceptions = args |> raiseArgs in
-        currentEvents :=
-          {Event.exceptions; loc; kind = Raises} :: !currentEvents
-      else e |> iterExpr self;
-      args |> List.iter (fun (_, eOpt) -> eOpt |> iterExprOpt self)
-    | Texp_match (e, casesOk, casesExn, partial) ->
-      let cases = casesOk @ casesExn in
-      let exceptionPatterns =
-        casesExn
+      let callee_name = Path.name callee in
+      if callee_name |> is_raise then
+        let exceptions = args |> raise_args in
+        current_events :=
+          {Event.exceptions; loc; kind = Raises} :: !current_events
+      else e |> iter_expr self;
+      args |> List.iter (fun (_, e_opt) -> e_opt |> iter_expr_opt self)
+    | Texp_match (e, cases_ok, cases_exn, partial) ->
+      let cases = cases_ok @ cases_exn in
+      let exception_patterns =
+        cases_exn
         |> List.map (fun (case : Typedtree.case) -> case.c_lhs.pat_desc)
       in
-      let exceptions = exceptionPatterns |> exceptionsOfPatterns in
-      if exceptionPatterns <> [] then (
-        let oldEvents = !currentEvents in
-        currentEvents := [];
-        e |> iterExpr self;
-        currentEvents :=
-          {Event.exceptions; loc; kind = Catches !currentEvents} :: oldEvents)
-      else e |> iterExpr self;
-      cases |> iterCases self;
+      let exceptions = exception_patterns |> exceptions_of_patterns in
+      if exception_patterns <> [] then (
+        let old_events = !current_events in
+        current_events := [];
+        e |> iter_expr self;
+        current_events :=
+          {Event.exceptions; loc; kind = Catches !current_events} :: old_events)
+      else e |> iter_expr self;
+      cases |> iter_cases self;
       if partial = Partial then
-        currentEvents :=
+        current_events :=
           {
-            Event.exceptions = [Exn.matchFailure] |> Exceptions.fromList;
+            Event.exceptions = [Exn.match_failure] |> Exceptions.from_list;
             loc;
             kind = Raises;
           }
-          :: !currentEvents
+          :: !current_events
     | Texp_try (e, cases) ->
       let exceptions =
         cases
         |> List.map (fun case -> case.Typedtree.c_lhs.pat_desc)
-        |> exceptionsOfPatterns
+        |> exceptions_of_patterns
       in
-      let oldEvents = !currentEvents in
-      currentEvents := [];
-      e |> iterExpr self;
-      currentEvents :=
-        {Event.exceptions; loc; kind = Catches !currentEvents} :: oldEvents;
-      cases |> iterCases self
+      let old_events = !current_events in
+      current_events := [];
+      e |> iter_expr self;
+      current_events :=
+        {Event.exceptions; loc; kind = Catches !current_events} :: old_events;
+      cases |> iter_cases self
     | _ -> super.expr self expr |> ignore);
-    (if isDoesNoRaise then
-       let nestedEvents = !currentEvents in
-       currentEvents :=
+    (if is_does_no_raise then
+       let nested_events = !current_events in
+       current_events :=
          {
            Event.exceptions = Exceptions.empty;
            loc;
-           kind = DoesNotRaise nestedEvents;
+           kind = DoesNotRaise nested_events;
          }
-         :: oldEvents);
+         :: old_events);
     expr
   in
-  let getExceptionsFromAnnotations attributes =
-    let raisesAnnotationPayload =
+  let get_exceptions_from_annotations attributes =
+    let raises_annotation_payload =
       attributes
-      |> Annotation.getAttributePayload (fun s -> s = "raises" || s = "raise")
+      |> Annotation.get_attribute_payload (fun s -> s = "raises" || s = "raise")
     in
-    let rec getExceptions payload =
+    let rec get_exceptions payload =
       match payload with
-      | Annotation.StringPayload s -> [Exn.fromString s] |> Exceptions.fromList
+      | Annotation.StringPayload s -> [Exn.from_string s] |> Exceptions.from_list
       | Annotation.ConstructPayload s when s <> "::" ->
-        [Exn.fromString s] |> Exceptions.fromList
+        [Exn.from_string s] |> Exceptions.from_list
       | Annotation.IdentPayload s ->
-        [Exn.fromString (s |> Longident.flatten |> String.concat ".")]
-        |> Exceptions.fromList
+        [Exn.from_string (s |> Longident.flatten |> String.concat ".")]
+        |> Exceptions.from_list
       | Annotation.TuplePayload tuple ->
         tuple
         |> List.map (fun payload ->
-               payload |> getExceptions |> Exceptions.toList)
-        |> List.concat |> Exceptions.fromList
+               payload |> get_exceptions |> Exceptions.to_list)
+        |> List.concat |> Exceptions.from_list
       | _ -> Exceptions.empty
     in
-    match raisesAnnotationPayload with
+    match raises_annotation_payload with
     | None -> Exceptions.empty
-    | Some payload -> payload |> getExceptions
+    | Some payload -> payload |> get_exceptions
   in
-  let toplevelEval (self : Tast_mapper.mapper) (expr : Typedtree.expression)
+  let toplevel_eval (self : Tast_mapper.mapper) (expr : Typedtree.expression)
       attributes =
-    let oldId = !currentId in
-    let oldEvents = !currentEvents in
+    let old_id = !current_id in
+    let old_events = !current_events in
     let name = "Toplevel expression" in
-    currentId := name;
-    currentEvents := [];
-    let moduleName = !Common.currentModule in
+    current_id := name;
+    current_events := [];
+    let module_name = !Common.current_module in
     self.expr self expr |> ignore;
-    Checks.add ~events:!currentEvents
-      ~exceptions:(getExceptionsFromAnnotations attributes)
-      ~loc:expr.exp_loc ~moduleName name;
-    currentId := oldId;
-    currentEvents := oldEvents
+    Checks.add ~events:!current_events
+      ~exceptions:(get_exceptions_from_annotations attributes)
+      ~loc:expr.exp_loc ~module_name name;
+    current_id := old_id;
+    current_events := old_events
   in
   let structure_item (self : Tast_mapper.mapper)
-      (structureItem : Typedtree.structure_item) =
-    let oldModulePath = ModulePath.getCurrent () in
-    (match structureItem.str_desc with
-    | Tstr_eval (expr, attributes) -> toplevelEval self expr attributes
+      (structure_item : Typedtree.structure_item) =
+    let old_module_path = ModulePath.get_current () in
+    (match structure_item.str_desc with
+    | Tstr_eval (expr, attributes) -> toplevel_eval self expr attributes
     | Tstr_module {mb_id; mb_loc} ->
-      ModulePath.setCurrent
+      ModulePath.set_current
         {
-          oldModulePath with
+          old_module_path with
           loc = mb_loc;
-          path = (mb_id |> Ident.name |> Name.create) :: oldModulePath.path;
+          path = (mb_id |> Ident.name |> Name.create) :: old_module_path.path;
         }
     | _ -> ());
-    let result = super.structure_item self structureItem in
-    ModulePath.setCurrent oldModulePath;
-    (match structureItem.str_desc with
+    let result = super.structure_item self structure_item in
+    ModulePath.set_current old_module_path;
+    (match structure_item.str_desc with
     | Tstr_module {mb_id; mb_expr = {mod_desc = Tmod_ident (path_, _lid)}} ->
-      ModulePath.addAlias
+      ModulePath.add_alias
         ~name:(mb_id |> Ident.name |> Name.create)
-        ~path:(path_ |> Common.Path.fromPathT)
+        ~path:(path_ |> Common.Path.from_path_t)
     | _ -> ());
     result
   in
   let value_binding (self : Tast_mapper.mapper) (vb : Typedtree.value_binding) =
-    let oldId = !currentId in
-    let oldEvents = !currentEvents in
-    let isFunction =
+    let old_id = !current_id in
+    let old_events = !current_events in
+    let is_function =
       match vb.vb_expr.exp_desc with
       | Texp_function _ -> true
       | _ -> false
     in
-    let isToplevel = !currentId = "" in
-    let processBinding name =
-      currentId := name;
-      currentEvents := [];
-      let exceptionsFromAnnotations =
-        getExceptionsFromAnnotations vb.vb_attributes
+    let is_toplevel = !current_id = "" in
+    let process_binding name =
+      current_id := name;
+      current_events := [];
+      let exceptions_from_annotations =
+        get_exceptions_from_annotations vb.vb_attributes
       in
-      exceptionsFromAnnotations |> Values.add ~name;
+      exceptions_from_annotations |> Values.add ~name;
       let res = super.value_binding self vb in
-      let moduleName = !Common.currentModule in
+      let module_name = !Common.current_module in
       let path = [name |> Name.create] in
       let exceptions =
         match
           path
-          |> Values.findPath ~moduleName
-               ~modulePath:(ModulePath.getCurrent ()).path
+          |> Values.find_path ~module_name
+               ~module_path:(ModulePath.get_current ()).path
         with
         | Some exceptions -> exceptions
         | _ -> Exceptions.empty
       in
-      Checks.add ~events:!currentEvents ~exceptions ~loc:vb.vb_pat.pat_loc
-        ~locFull:vb.vb_loc ~moduleName name;
-      currentId := oldId;
-      currentEvents := oldEvents;
+      Checks.add ~events:!current_events ~exceptions ~loc:vb.vb_pat.pat_loc
+        ~loc_full:vb.vb_loc ~module_name name;
+      current_id := old_id;
+      current_events := old_events;
       res
     in
     match vb.vb_pat.pat_desc with
-    | Tpat_any when isToplevel && not vb.vb_loc.loc_ghost -> processBinding "_"
+    | Tpat_any when is_toplevel && not vb.vb_loc.loc_ghost -> process_binding "_"
     | Tpat_construct ({txt}, _, _)
-      when isToplevel && (not vb.vb_loc.loc_ghost)
+      when is_toplevel && (not vb.vb_loc.loc_ghost)
            && txt = Longident.Lident "()" ->
-      processBinding "()"
+      process_binding "()"
     | Tpat_var (id, {loc = {loc_ghost}})
-      when (isFunction || isToplevel) && (not loc_ghost)
+      when (is_function || is_toplevel) && (not loc_ghost)
            && not vb.vb_loc.loc_ghost ->
-      processBinding (id |> Ident.name)
+      process_binding (id |> Ident.name)
     | _ -> super.value_binding self vb
   in
   let open Tast_mapper in
   {super with expr; value_binding; structure_item}
 
-let processStructure (structure : Typedtree.structure) =
-  let traverseAst = traverseAst () in
-  structure |> traverseAst.structure traverseAst |> ignore
+let process_structure (structure : Typedtree.structure) =
+  let traverse_ast = traverse_ast () in
+  structure |> traverse_ast.structure traverse_ast |> ignore
 
-let processCmt (cmt_infos : Cmt_format.cmt_infos) =
+let process_cmt (cmt_infos : Cmt_format.cmt_infos) =
   match cmt_infos.cmt_annots with
   | Interface _ -> ()
   | Implementation structure ->
-    Values.newCmt ();
-    structure |> processStructure
+    Values.new_cmt ();
+    structure |> process_structure
   | _ -> ()

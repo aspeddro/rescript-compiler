@@ -1,24 +1,24 @@
 let items = ref 0
 let start () = Printf.printf "["
 let finish () = Printf.printf "\n]\n"
-let emitClose () = "\n}"
+let emit_close () = "\n}"
 
-let emitItem ~ppf ~name ~kind ~file ~range ~message =
+let emit_item ~ppf ~name ~kind ~file ~range ~message =
   let open Format in
   items := !items + 1;
-  let startLine, startCharacter, endLine, endCharacter = range in
+  let start_line, start_character, end_line, end_character = range in
   fprintf ppf "%s{\n" (if !items = 1 then "\n" else ",\n");
   fprintf ppf "  \"name\": \"%s\",\n" name;
   fprintf ppf "  \"kind\": \"%s\",\n" kind;
   fprintf ppf "  \"file\": \"%s\",\n" file;
-  fprintf ppf "  \"range\": [%d,%d,%d,%d],\n" startLine startCharacter endLine
-    endCharacter;
+  fprintf ppf "  \"range\": [%d,%d,%d,%d],\n" start_line start_character end_line
+    end_character;
   fprintf ppf "  \"message\": \"%s\"" message
 
-let locToPos (loc : Location.t) =
+let loc_to_pos (loc : Location.t) =
   (loc.loc_start.pos_lnum - 1, loc.loc_start.pos_cnum - loc.loc_start.pos_bol)
 
-let emitAnnotate ~pos ~text ~action =
+let emit_annotate ~pos ~text ~action =
   let line, character = pos in
   Format.asprintf
     ",\n\

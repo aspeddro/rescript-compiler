@@ -2,9 +2,9 @@ open Common
 module StringMap = Map_string
 
 let bsconfig = "bsconfig.json"
-let rescriptJson = "rescript.json"
+let rescript_json = "rescript.json"
 
-let readFile filename =
+let read_file filename =
   try
     (* windows can't use open_in *)
     let chan = open_in_bin filename in
@@ -13,28 +13,28 @@ let readFile filename =
     Some content
   with _ -> None
 
-let rec findProjectRoot ~dir =
-  let rescriptJsonFile = Filename.concat dir rescriptJson in
-  let bsconfigFile = Filename.concat dir bsconfig in
-  if Sys.file_exists rescriptJsonFile || Sys.file_exists bsconfigFile then dir
+let rec find_project_root ~dir =
+  let rescript_json_file = Filename.concat dir rescript_json in
+  let bsconfig_file = Filename.concat dir bsconfig in
+  if Sys.file_exists rescript_json_file || Sys.file_exists bsconfig_file then dir
   else
     let parent = dir |> Filename.dirname in
     if parent = dir then (
       prerr_endline
-        ("Error: cannot find project root containing " ^ rescriptJson ^ ".");
+        ("Error: cannot find project root containing " ^ rescript_json ^ ".");
       assert false)
-    else findProjectRoot ~dir:parent
+    else find_project_root ~dir:parent
 
-let setReScriptProjectRoot =
+let set_re_script_project_root =
   lazy
-    (runConfig.projectRoot <- findProjectRoot ~dir:(Sys.getcwd ());
-     runConfig.bsbProjectRoot <-
+    (run_config.project_root <- find_project_root ~dir:(Sys.getcwd ());
+     run_config.bsb_project_root <-
        (match Sys.getenv_opt "BSB_PROJECT_ROOT" with
-       | None -> runConfig.projectRoot
+       | None -> run_config.project_root
        | Some s -> s))
 
 module Config = struct
-  let readSuppress conf =
+  let read_suppress conf =
     match Json.get "suppress" conf with
     | Some (Array elements) ->
       let names =
@@ -44,10 +44,10 @@ module Config = struct
                | String s -> Some s
                | _ -> None)
       in
-      runConfig.suppress <- names @ runConfig.suppress
+      run_config.suppress <- names @ run_config.suppress
     | _ -> ()
 
-  let readUnsuppress conf =
+  let read_unsuppress conf =
     match Json.get "unsuppress" conf with
     | Some (Array elements) ->
       let names =
@@ -57,10 +57,10 @@ module Config = struct
                | String s -> Some s
                | _ -> None)
       in
-      runConfig.unsuppress <- names @ runConfig.unsuppress
+      run_config.unsuppress <- names @ run_config.unsuppress
     | _ -> ()
 
-  let readAnalysis conf =
+  let read_analysis conf =
     match Json.get "analysis" conf with
     | Some (Array elements) ->
       elements
@@ -75,38 +75,38 @@ module Config = struct
       (* if no "analysis" specified, default to dce *)
       RunConfig.dce ()
 
-  let readTransitive conf =
+  let read_transitive conf =
     match Json.get "transitive" conf with
     | Some True -> RunConfig.transitive true
     | Some False -> RunConfig.transitive false
     | _ -> ()
 
   (* Read the config from rescript.json/bsconfig.json and apply it to runConfig and suppress and unsuppress *)
-  let processBsconfig () =
-    Lazy.force setReScriptProjectRoot;
-    let rescriptFile = Filename.concat runConfig.projectRoot rescriptJson in
-    let bsconfigFile = Filename.concat runConfig.projectRoot bsconfig in
+  let process_bsconfig () =
+    Lazy.force set_re_script_project_root;
+    let rescript_file = Filename.concat run_config.project_root rescript_json in
+    let bsconfig_file = Filename.concat run_config.project_root bsconfig in
 
-    let processText text =
+    let process_text text =
       match Json.parse text with
       | None -> ()
       | Some json -> (
         match Json.get "reanalyze" json with
         | Some conf ->
-          readSuppress conf;
-          readUnsuppress conf;
-          readAnalysis conf;
-          readTransitive conf
+          read_suppress conf;
+          read_unsuppress conf;
+          read_analysis conf;
+          read_transitive conf
         | None ->
           (* if no "analysis" specified, default to dce *)
           RunConfig.dce ())
     in
 
-    match readFile rescriptFile with
-    | Some text -> processText text
+    match read_file rescript_file with
+    | Some text -> process_text text
     | None -> (
-      match readFile bsconfigFile with
-      | Some text -> processText text
+      match read_file bsconfig_file with
+      | Some text -> process_text text
       | None -> ())
 end
 
@@ -114,41 +114,41 @@ end
   * Handle namespaces in cmt files.
   * E.g. src/Module-Project.cmt becomes src/Module
   *)
-let handleNamespace cmt =
-  let cutAfterDash s =
+let handle_namespace cmt =
+  let cut_after_dash s =
     match String.index s '-' with
     | n -> ( try String.sub s 0 n with Invalid_argument _ -> s)
     | exception Not_found -> s
   in
-  let noDir = Filename.basename cmt = cmt in
-  if noDir then cmt |> Filename.remove_extension |> cutAfterDash
+  let no_dir = Filename.basename cmt = cmt in
+  if no_dir then cmt |> Filename.remove_extension |> cut_after_dash
   else
     let dir = cmt |> Filename.dirname in
     let base =
-      cmt |> Filename.basename |> Filename.remove_extension |> cutAfterDash
+      cmt |> Filename.basename |> Filename.remove_extension |> cut_after_dash
     in
     Filename.concat dir base
 
-let getModuleName cmt = cmt |> handleNamespace |> Filename.basename
+let get_module_name cmt = cmt |> handle_namespace |> Filename.basename
 
-let readDirsFromConfig ~configSources =
+let read_dirs_from_config ~config_sources =
   let dirs = ref [] in
-  let root = runConfig.projectRoot in
-  let rec processDir ~subdirs dir =
-    let absDir =
+  let root = run_config.project_root in
+  let rec process_dir ~subdirs dir =
+    let abs_dir =
       match dir = "" with
       | true -> root
       | false -> Filename.concat root dir
     in
-    if Sys.file_exists absDir && Sys.is_directory absDir then (
+    if Sys.file_exists abs_dir && Sys.is_directory abs_dir then (
       dirs := dir :: !dirs;
       if subdirs then
-        absDir |> Sys.readdir
-        |> Array.iter (fun d -> processDir ~subdirs (Filename.concat dir d)))
+        abs_dir |> Sys.readdir
+        |> Array.iter (fun d -> process_dir ~subdirs (Filename.concat dir d)))
   in
-  let rec processSourceItem (sourceItem : Ext_json_types.t) =
-    match sourceItem with
-    | Str {str} -> str |> processDir ~subdirs:false
+  let rec process_source_item (source_item : Ext_json_types.t) =
+    match source_item with
+    | Str {str} -> str |> process_dir ~subdirs:false
     | Obj {map} -> (
       match StringMap.find_opt map "dir" with
       | Some (Str {str}) ->
@@ -158,23 +158,23 @@ let readDirsFromConfig ~configSources =
           | Some (False _) -> false
           | _ -> false
         in
-        str |> processDir ~subdirs
+        str |> process_dir ~subdirs
       | _ -> ())
-    | Arr {content = arr} -> arr |> Array.iter processSourceItem
+    | Arr {content = arr} -> arr |> Array.iter process_source_item
     | _ -> ()
   in
-  (match configSources with
-  | Some sourceItem -> processSourceItem sourceItem
+  (match config_sources with
+  | Some source_item -> process_source_item source_item
   | None -> ());
   !dirs
 
-let readSourceDirs ~configSources =
-  let sourceDirs =
+let read_source_dirs ~config_sources =
+  let source_dirs =
     ["lib"; "bs"; ".sourcedirs.json"]
-    |> List.fold_left Filename.concat runConfig.bsbProjectRoot
+    |> List.fold_left Filename.concat run_config.bsb_project_root
   in
   let dirs = ref [] in
-  let readDirs json =
+  let read_dirs json =
     match json with
     | Ext_json_types.Obj {map} -> (
       match StringMap.find_opt map "dirs" with
@@ -188,18 +188,18 @@ let readSourceDirs ~configSources =
       | _ -> ())
     | _ -> ()
   in
-  if sourceDirs |> Sys.file_exists then
-    let jsonOpt = sourceDirs |> Ext_json_parse.parse_json_from_file in
-    match jsonOpt with
+  if source_dirs |> Sys.file_exists then
+    let json_opt = source_dirs |> Ext_json_parse.parse_json_from_file in
+    match json_opt with
     | exception _ -> ()
     | json ->
-      if runConfig.bsbProjectRoot <> runConfig.projectRoot then (
-        readDirs json;
-        dirs := readDirsFromConfig ~configSources)
-      else readDirs json
+      if run_config.bsb_project_root <> run_config.project_root then (
+        read_dirs json;
+        dirs := read_dirs_from_config ~config_sources)
+      else read_dirs json
   else (
     if !Cli.debug then (
-      Log_.item "Warning: can't find source dirs: %s\n" sourceDirs;
+      Log_.item "Warning: can't find source dirs: %s\n" source_dirs;
       Log_.item "Types for cross-references will not be found.\n");
-    dirs := readDirsFromConfig ~configSources);
+    dirs := read_dirs_from_config ~config_sources);
   !dirs

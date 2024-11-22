@@ -4,113 +4,113 @@ open Common
 let active () = true
 
 type item = {
-  posTo: Lexing.position;
-  argNames: string list;
-  argNamesMaybe: string list;
+  pos_to: Lexing.position;
+  arg_names: string list;
+  arg_names_maybe: string list;
 }
 
-let delayedItems = (ref [] : item list ref)
-let functionReferences = (ref [] : (Lexing.position * Lexing.position) list ref)
+let delayed_items = (ref [] : item list ref)
+let function_references = (ref [] : (Lexing.position * Lexing.position) list ref)
 
-let addFunctionReference ~(locFrom : Location.t) ~(locTo : Location.t) =
+let add_function_reference ~(loc_from : Location.t) ~(loc_to : Location.t) =
   if active () then
-    let posTo = locTo.loc_start in
-    let posFrom = locFrom.loc_start in
-    let shouldAdd =
-      match PosHash.find_opt decls posTo with
-      | Some {declKind = Value {optionalArgs}} ->
-        not (OptionalArgs.isEmpty optionalArgs)
+    let pos_to = loc_to.loc_start in
+    let pos_from = loc_from.loc_start in
+    let should_add =
+      match PosHash.find_opt decls pos_to with
+      | Some {decl_kind = Value {optional_args}} ->
+        not (OptionalArgs.is_empty optional_args)
       | _ -> false
     in
-    if shouldAdd then (
+    if should_add then (
       if !Common.Cli.debug then
         Log_.item "OptionalArgs.addFunctionReference %s %s@."
-          (posFrom |> posToString) (posTo |> posToString);
-      functionReferences := (posFrom, posTo) :: !functionReferences)
+          (pos_from |> pos_to_string) (pos_to |> pos_to_string);
+      function_references := (pos_from, pos_to) :: !function_references)
 
-let rec hasOptionalArgs (texpr : Types.type_expr) =
+let rec has_optional_args (texpr : Types.type_expr) =
   match texpr.desc with
   | _ when not (active ()) -> false
   | Tarrow (Optional _, _tFrom, _tTo, _) -> true
-  | Tarrow (_, _tFrom, tTo, _) -> hasOptionalArgs tTo
-  | Tlink t -> hasOptionalArgs t
-  | Tsubst t -> hasOptionalArgs t
+  | Tarrow (_, _tFrom, t_to, _) -> has_optional_args t_to
+  | Tlink t -> has_optional_args t
+  | Tsubst t -> has_optional_args t
   | _ -> false
 
-let rec fromTypeExpr (texpr : Types.type_expr) =
+let rec from_type_expr (texpr : Types.type_expr) =
   match texpr.desc with
   | _ when not (active ()) -> []
-  | Tarrow (Optional s, _tFrom, tTo, _) -> s :: fromTypeExpr tTo
-  | Tarrow (_, _tFrom, tTo, _) -> fromTypeExpr tTo
-  | Tlink t -> fromTypeExpr t
-  | Tsubst t -> fromTypeExpr t
+  | Tarrow (Optional s, _tFrom, t_to, _) -> s :: from_type_expr t_to
+  | Tarrow (_, _tFrom, t_to, _) -> from_type_expr t_to
+  | Tlink t -> from_type_expr t
+  | Tsubst t -> from_type_expr t
   | _ -> []
 
-let addReferences ~(locFrom : Location.t) ~(locTo : Location.t) ~path
-    (argNames, argNamesMaybe) =
+let add_references ~(loc_from : Location.t) ~(loc_to : Location.t) ~path
+    (arg_names, arg_names_maybe) =
   if active () then (
-    let posTo = locTo.loc_start in
-    let posFrom = locFrom.loc_start in
-    delayedItems := {posTo; argNames; argNamesMaybe} :: !delayedItems;
+    let pos_to = loc_to.loc_start in
+    let pos_from = loc_from.loc_start in
+    delayed_items := {pos_to; arg_names; arg_names_maybe} :: !delayed_items;
     if !Common.Cli.debug then
       Log_.item
         "DeadOptionalArgs.addReferences %s called with optional argNames:%s \
          argNamesMaybe:%s %s@."
-        (path |> Path.fromPathT |> Path.toString)
-        (argNames |> String.concat ", ")
-        (argNamesMaybe |> String.concat ", ")
-        (posFrom |> posToString))
+        (path |> Path.from_path_t |> Path.to_string)
+        (arg_names |> String.concat ", ")
+        (arg_names_maybe |> String.concat ", ")
+        (pos_from |> pos_to_string))
 
-let forceDelayedItems () =
-  let items = !delayedItems |> List.rev in
-  delayedItems := [];
+let force_delayed_items () =
+  let items = !delayed_items |> List.rev in
+  delayed_items := [];
   items
-  |> List.iter (fun {posTo; argNames; argNamesMaybe} ->
-         match PosHash.find_opt decls posTo with
-         | Some {declKind = Value r} ->
-           r.optionalArgs |> OptionalArgs.call ~argNames ~argNamesMaybe
+  |> List.iter (fun {pos_to; arg_names; arg_names_maybe} ->
+         match PosHash.find_opt decls pos_to with
+         | Some {decl_kind = Value r} ->
+           r.optional_args |> OptionalArgs.call ~arg_names ~arg_names_maybe
          | _ -> ());
-  let fRefs = !functionReferences |> List.rev in
-  functionReferences := [];
-  fRefs
-  |> List.iter (fun (posFrom, posTo) ->
+  let f_refs = !function_references |> List.rev in
+  function_references := [];
+  f_refs
+  |> List.iter (fun (pos_from, pos_to) ->
          match
-           (PosHash.find_opt decls posFrom, PosHash.find_opt decls posTo)
+           (PosHash.find_opt decls pos_from, PosHash.find_opt decls pos_to)
          with
-         | Some {declKind = Value rFrom}, Some {declKind = Value rTo} ->
-           OptionalArgs.combine rFrom.optionalArgs rTo.optionalArgs
+         | Some {decl_kind = Value r_from}, Some {decl_kind = Value r_to} ->
+           OptionalArgs.combine r_from.optional_args r_to.optional_args
          | _ -> ())
 
 let check decl =
   match decl with
-  | {declKind = Value {optionalArgs}}
+  | {decl_kind = Value {optional_args}}
     when active ()
-         && not (ProcessDeadAnnotations.isAnnotatedGenTypeOrLive decl.pos) ->
-    optionalArgs
-    |> OptionalArgs.iterUnused (fun s ->
-           Log_.warning ~loc:(decl |> declGetLoc)
+         && not (ProcessDeadAnnotations.is_annotated_gen_type_or_live decl.pos) ->
+    optional_args
+    |> OptionalArgs.iter_unused (fun s ->
+           Log_.warning ~loc:(decl |> decl_get_loc)
              (DeadOptional
                 {
-                  deadOptional = WarningUnusedArgument;
+                  dead_optional = WarningUnusedArgument;
                   message =
                     Format.asprintf
                       "optional argument @{<info>%s@} of function @{<info>%s@} \
                        is never used"
                       s
-                      (decl.path |> Path.withoutHead);
+                      (decl.path |> Path.without_head);
                 }));
-    optionalArgs
-    |> OptionalArgs.iterAlwaysUsed (fun s nCalls ->
-           Log_.warning ~loc:(decl |> declGetLoc)
+    optional_args
+    |> OptionalArgs.iter_always_used (fun s n_calls ->
+           Log_.warning ~loc:(decl |> decl_get_loc)
              (DeadOptional
                 {
-                  deadOptional = WarningRedundantOptionalArgument;
+                  dead_optional = WarningRedundantOptionalArgument;
                   message =
                     Format.asprintf
                       "optional argument @{<info>%s@} of function @{<info>%s@} \
                        is always supplied (%d calls)"
                       s
-                      (decl.path |> Path.withoutHead)
-                      nCalls;
+                      (decl.path |> Path.without_head)
+                      n_calls;
                 }))
   | _ -> ()

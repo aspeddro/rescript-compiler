@@ -1,11 +1,11 @@
 open SharedTypes
 
-type inlayHintKind = Type
-let inlayKindToNumber = function
+type inlay_hint_kind = Type
+let inlay_kind_to_number = function
   | Type -> 1
 
-let locItemToTypeHint ~full:{file; package} locItem =
-  match locItem.locType with
+let loc_item_to_type_hint ~full:{file; package} loc_item =
+  match loc_item.loc_type with
   | Constant t ->
     Some
       (match t with
@@ -16,36 +16,36 @@ let locItemToTypeHint ~full:{file; package} locItem =
       | Const_int32 _ -> "int32"
       | Const_int64 _ -> "int64"
       | Const_bigint _ -> "bigint")
-  | Typed (_, t, locKind) ->
-    let fromType typ =
-      typ |> Shared.typeToString
+  | Typed (_, t, loc_kind) ->
+    let from_type typ =
+      typ |> Shared.type_to_string
       |> Str.global_replace (Str.regexp "[\r\n\t]") ""
     in
     Some
-      (match References.definedForLoc ~file ~package locKind with
-      | None -> fromType t
+      (match References.defined_for_loc ~file ~package loc_kind with
+      | None -> from_type t
       | Some (_, res) -> (
         match res with
-        | `Declared -> fromType t
-        | `Constructor _ -> fromType t
-        | `Field -> fromType t))
+        | `Declared -> from_type t
+        | `Constructor _ -> from_type t
+        | `Field -> from_type t))
   | _ -> None
 
-let inlay ~path ~pos ~maxLength ~debug =
-  let maxlen = try Some (int_of_string maxLength) with Failure _ -> None in
+let inlay ~path ~pos ~max_length ~debug =
+  let maxlen = try Some (int_of_string max_length) with Failure _ -> None in
   let hints = ref [] in
   let start_line, end_line = pos in
   let push loc kind =
-    let range = Utils.cmtLocToRange loc in
+    let range = Utils.cmt_loc_to_range loc in
     if start_line <= range.end_.line && end_line >= range.start.line then
       hints := (range, kind) :: !hints
   in
-  let rec processPattern (pat : Parsetree.pattern) =
+  let rec process_pattern (pat : Parsetree.pattern) =
     match pat.ppat_desc with
-    | Ppat_tuple pl -> pl |> List.iter processPattern
+    | Ppat_tuple pl -> pl |> List.iter process_pattern
     | Ppat_record (fields, _) ->
-      fields |> List.iter (fun (_, p) -> processPattern p)
-    | Ppat_array fields -> fields |> List.iter processPattern
+      fields |> List.iter (fun (_, p) -> process_pattern p)
+    | Ppat_array fields -> fields |> List.iter process_pattern
     | Ppat_var {loc} -> push loc Type
     | _ -> ()
   in
@@ -64,43 +64,43 @@ let inlay ~path ~pos ~maxLength ~debug =
        };
     } ->
       push vb.pvb_pat.ppat_loc Type
-    | {pvb_pat = {ppat_desc = Ppat_tuple _}} -> processPattern vb.pvb_pat
-    | {pvb_pat = {ppat_desc = Ppat_record _}} -> processPattern vb.pvb_pat
+    | {pvb_pat = {ppat_desc = Ppat_tuple _}} -> process_pattern vb.pvb_pat
+    | {pvb_pat = {ppat_desc = Ppat_record _}} -> process_pattern vb.pvb_pat
     | _ -> ());
     Ast_iterator.default_iterator.value_binding iterator vb
   in
   let iterator = {Ast_iterator.default_iterator with value_binding} in
-  (if Files.classifySourceFile path = Res then
+  (if Files.classify_source_file path = Res then
      let parser =
        Res_driver.parsing_engine.parse_implementation ~for_printer:false
      in
      let {Res_driver.parsetree = structure} = parser ~filename:path in
      iterator.structure iterator structure |> ignore);
-  match Cmt.loadFullCmtFromPath ~path with
+  match Cmt.load_full_cmt_from_path ~path with
   | None -> None
   | Some full ->
     let result =
       !hints
-      |> List.filter_map (fun ((range : Protocol.range), hintKind) ->
+      |> List.filter_map (fun ((range : Protocol.range), hint_kind) ->
              match
-               References.getLocItem ~full
+               References.get_loc_item ~full
                  ~pos:(range.start.line, range.start.character + 1)
                  ~debug
              with
              | None -> None
-             | Some locItem -> (
+             | Some loc_item -> (
                let position : Protocol.position =
                  {line = range.start.line; character = range.end_.character}
                in
-               match locItemToTypeHint locItem ~full with
+               match loc_item_to_type_hint loc_item ~full with
                | Some label -> (
                  let result =
-                   Protocol.stringifyHint
+                   Protocol.stringify_hint
                      {
-                       kind = inlayKindToNumber hintKind;
+                       kind = inlay_kind_to_number hint_kind;
                        position;
-                       paddingLeft = true;
-                       paddingRight = false;
+                       padding_left = true;
+                       padding_right = false;
                        label = ": " ^ label;
                      }
                  in
@@ -112,10 +112,10 @@ let inlay ~path ~pos ~maxLength ~debug =
     in
     Some result
 
-let codeLens ~path ~debug =
+let code_lens ~path ~debug =
   let lenses = ref [] in
   let push loc =
-    let range = Utils.cmtLocToRange loc in
+    let range = Utils.cmt_loc_to_range loc in
     lenses := range :: !lenses
   in
   (* Code lenses are only emitted for functions right now. So look for value bindings that are functions,
@@ -139,26 +139,26 @@ let codeLens ~path ~debug =
   let iterator = {Ast_iterator.default_iterator with value_binding} in
   (* We only print code lenses in implementation files. This is because they'd be redundant in interface files,
      where the definition itself will be the same thing as what would've been printed in the code lens. *)
-  (if Files.classifySourceFile path = Res then
+  (if Files.classify_source_file path = Res then
      let parser =
        Res_driver.parsing_engine.parse_implementation ~for_printer:false
      in
      let {Res_driver.parsetree = structure} = parser ~filename:path in
      iterator.structure iterator structure |> ignore);
-  match Cmt.loadFullCmtFromPath ~path with
+  match Cmt.load_full_cmt_from_path ~path with
   | None -> None
   | Some full ->
     let result =
       !lenses
       |> List.filter_map (fun (range : Protocol.range) ->
              match
-               References.getLocItem ~full
+               References.get_loc_item ~full
                  ~pos:(range.start.line, range.start.character + 1)
                  ~debug
              with
-             | Some {locType = Typed (_, typeExpr, _)} ->
+             | Some {loc_type = Typed (_, type_expr, _)} ->
                Some
-                 (Protocol.stringifyCodeLens
+                 (Protocol.stringify_code_lens
                     {
                       range;
                       command =
@@ -170,7 +170,7 @@ let codeLens ~path ~debug =
                             (* Print the type with a huge line width, because the code lens always prints on a
                                single line in the editor. *)
                             title =
-                              typeExpr |> Shared.typeToString ~lineWidth:400;
+                              type_expr |> Shared.type_to_string ~line_width:400;
                           };
                     })
              | _ -> None)
