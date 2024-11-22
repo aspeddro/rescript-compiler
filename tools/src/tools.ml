@@ -130,7 +130,8 @@ let stringify_detail ?(indentation = 0) (detail : doc_item_detail) =
       [
         ("kind", Some (wrap_in_quotes "record"));
         ( "items",
-          Some (field_docs |> List.map (stringify_field_doc ~indentation) |> array)
+          Some
+            (field_docs |> List.map (stringify_field_doc ~indentation) |> array)
         );
       ]
   | Variant {constructor_docs} ->
@@ -145,13 +146,15 @@ let stringify_detail ?(indentation = 0) (detail : doc_item_detail) =
                      ~indentation:(indentation + 1)
                      [
                        ( "name",
-                         Some (wrap_in_quotes constructor_doc.constructor_name) );
+                         Some (wrap_in_quotes constructor_doc.constructor_name)
+                       );
                        ( "deprecated",
                          match constructor_doc.deprecated with
                          | Some d -> Some (wrap_in_quotes d)
                          | None -> None );
                        ( "docstrings",
-                         Some (stringify_docstrings constructor_doc.docstrings) );
+                         Some (stringify_docstrings constructor_doc.docstrings)
+                       );
                        ( "signature",
                          Some (wrap_in_quotes constructor_doc.signature) );
                        ( "payload",
@@ -181,7 +184,8 @@ let stringify_detail ?(indentation = 0) (detail : doc_item_detail) =
             (stringify_object ~start_on_newline:false ~indentation
                [
                  ("parameters", ps);
-                 ("returnType", Some (stringify_type_doc ~indentation return_type));
+                 ( "returnType",
+                   Some (stringify_type_doc ~indentation return_type) );
                ]) );
       ]
 
@@ -296,7 +300,8 @@ let rec stringify_doc_item ?(indentation = 0) ~original_env (item : doc_item) =
             |> array) );
       ]
 
-and stringify_docs_for_module ?(indentation = 0) ~original_env (d : docs_for_module) =
+and stringify_docs_for_module ?(indentation = 0) ~original_env
+    (d : docs_for_module) =
   let open Protocol in
   stringify_object ~start_on_newline:true ~indentation
     [
@@ -346,7 +351,10 @@ let type_detail typ ~env ~full =
                         | InlineRecord fields ->
                           Some
                             (InlineRecord
-                               {field_docs = fields |> List.map field_to_field_doc})
+                               {
+                                 field_docs =
+                                   fields |> List.map field_to_field_doc;
+                               })
                         | _ -> None);
                     });
          })
@@ -589,8 +597,8 @@ let extract_docs ~entry_point_file ~debug =
                      | Module {type_ = Constraint (Structure m, Ident p)} ->
                        (* module M: T = { <impl> }. Print M *)
                        let docs =
-                         extract_docs_for_module ~module_path:(m.name :: module_path)
-                           m
+                         extract_docs_for_module
+                           ~module_path:(m.name :: module_path) m
                        in
                        let ident_module_path = p |> Path.head |> Ident.name in
 
@@ -661,6 +669,7 @@ let extract_embedded ~extension_points ~filename =
            [
              ("extensionName", Some (wrap_in_quotes extension_name));
              ("contents", Some (wrap_in_quotes contents));
-             ("loc", Some (Analysis.Utils.cmt_loc_to_range loc |> stringify_range));
+             ( "loc",
+               Some (Analysis.Utils.cmt_loc_to_range loc |> stringify_range) );
            ])
   |> List.rev |> array

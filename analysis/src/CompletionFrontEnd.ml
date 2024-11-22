@@ -221,7 +221,8 @@ let rec expr_to_context_path_inner (e : Parsetree.expression) =
   | Pexp_ident {txt = Lident ("|." | "|.u")} -> None
   | Pexp_ident {txt; loc} ->
     Some
-      (CPId {path = Utils.flatten_long_ident txt; completion_context = Value; loc})
+      (CPId
+         {path = Utils.flatten_long_ident txt; completion_context = Value; loc})
   | Pexp_field (e1, {txt = Lident name}) -> (
     match expr_to_context_path e1 with
     | Some context_path -> Some (CPField (context_path, name))
@@ -273,7 +274,9 @@ let rec expr_to_context_path_inner (e : Parsetree.expression) =
     | None -> None
     | Some contex_path -> Some (CPApply (contex_path, args |> List.map fst)))
   | Pexp_tuple exprs ->
-    let exprs_as_context_paths = exprs |> List.filter_map expr_to_context_path in
+    let exprs_as_context_paths =
+      exprs |> List.filter_map expr_to_context_path
+    in
     if List.length exprs = List.length exprs_as_context_paths then
       Some (CTuple exprs_as_context_paths)
     else None
@@ -302,13 +305,15 @@ let complete_pipe_chain (exp : Parsetree.expression) =
   | Pexp_apply
       ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
         [_; (_, {pexp_desc = Pexp_apply (d, _)})] ) ->
-    expr_to_context_path exp |> Option.map (fun ctx_path -> (ctx_path, d.pexp_loc))
+    expr_to_context_path exp
+    |> Option.map (fun ctx_path -> (ctx_path, d.pexp_loc))
     (* When the left side of the pipe we're completing is an identifier application.
        Example: someArray->filterAllTheGoodStuff-> *)
   | Pexp_apply
       ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u")}},
         [_; (_, {pexp_desc = Pexp_ident _; pexp_loc})] ) ->
-    expr_to_context_path exp |> Option.map (fun ctx_path -> (ctx_path, pexp_loc))
+    expr_to_context_path exp
+    |> Option.map (fun ctx_path -> (ctx_path, pexp_loc))
   | _ -> None
 
 let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
@@ -415,7 +420,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
     | Ppat_any -> ()
     | Ppat_var {txt; loc} ->
       scope :=
-        !scope |> Scope.add_value ~name:txt ~loc ?context_path:context_path_to_save
+        !scope
+        |> Scope.add_value ~name:txt ~loc ?context_path:context_path_to_save
     | Ppat_alias (p, as_a) ->
       scope_pattern p ~pattern_path ?context_path;
       let ctx_path =
@@ -428,7 +434,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
         else None
       in
       scope :=
-        !scope |> Scope.add_value ~name:as_a.txt ~loc:as_a.loc ?context_path:ctx_path
+        !scope
+        |> Scope.add_value ~name:as_a.txt ~loc:as_a.loc ?context_path:ctx_path
     | Ppat_constant _ | Ppat_interval _ -> ()
     | Ppat_tuple pl ->
       pl
@@ -495,7 +502,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
     | Ppat_lazy p -> scope_pattern ~pattern_path ?context_path p
     | Ppat_unpack {txt; loc} ->
       scope :=
-        !scope |> Scope.add_value ~name:txt ~loc ?context_path:context_path_to_save
+        !scope
+        |> Scope.add_value ~name:txt ~loc ?context_path:context_path_to_save
     | Ppat_exception p -> scope_pattern ~pattern_path ?context_path p
     | Ppat_extension _ -> ()
     | Ppat_open (_, p) -> scope_pattern ~pattern_path ?context_path p
@@ -582,7 +590,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
           match expr_to_context_path expr with
           | None -> ()
           | Some context_path ->
-            set_result (CexhaustiveSwitch {context_path; expr_loc = exp.pexp_loc}))
+            set_result
+              (CexhaustiveSwitch {context_path; expr_loc = exp.pexp_loc}))
       | Pexp_match (_expr, []) ->
         (* switch x { } *)
         if Debug.verbose () && debug_typed_completion_expr then
@@ -732,8 +741,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
          E.g: let x = {name: "name", <com>}, when `x` has compiled. *)
       match
         pvb_expr
-        |> CompletionExpressions.traverse_expr ~expr_path:[] ~pos:pos_before_cursor
-             ~first_char_before_cursor_no_white
+        |> CompletionExpressions.traverse_expr ~expr_path:[]
+             ~pos:pos_before_cursor ~first_char_before_cursor_no_white
       with
       | Some (prefix, nested) ->
         (* This completion should be low prio, so let any deeper completion
@@ -765,8 +774,9 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
          E.g: let {<com>} = someVar *)
       match
         ( pvb_pat
-          |> CompletionPatterns.traverse_pattern ~pattern_path:[] ~loc_has_cursor
-               ~first_char_before_cursor_no_white ~pos_before_cursor,
+          |> CompletionPatterns.traverse_pattern ~pattern_path:[]
+               ~loc_has_cursor ~first_char_before_cursor_no_white
+               ~pos_before_cursor,
           expr_to_context_path pvb_expr )
       with
       | Some (prefix, nested), Some ctx_path ->
@@ -822,7 +832,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
      else if id.loc |> Loc.has_pos ~pos:pos_before_cursor then
        let pos_start, pos_end = Loc.range id.loc in
        match
-         (Pos.position_to_offset text pos_start, Pos.position_to_offset text pos_end)
+         ( Pos.position_to_offset text pos_start,
+           Pos.position_to_offset text pos_end )
        with
        | Some offset_start, Some offset_end ->
          (* Can't trust the parser's location
@@ -992,7 +1003,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
       found := true;
       if debug then
         Printf.printf "posCursor:[%s] posNoWhite:[%s] Found expr:%s\n"
-          (Pos.to_string pos_cursor) (Pos.to_string pos_no_white)
+          (Pos.to_string pos_cursor)
+          (Pos.to_string pos_no_white)
           (Loc.to_string expr.pexp_loc)
     in
     (match find_this_expr_loc with
@@ -1020,7 +1032,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
       | Some (pipe, lhs_loc) ->
         set_result
           (Cpath
-             (CPPipe {context_path = pipe; id; lhs_loc; in_jsx = !in_jsx_context}));
+             (CPPipe
+                {context_path = pipe; id; lhs_loc; in_jsx = !in_jsx_context}));
         true
     in
     typed_completion_expr expr;
@@ -1152,7 +1165,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
             | Lapply _ -> ()
           else if Loc.end_ e.pexp_loc = pos_before_cursor then
             match expr_to_context_path e with
-            | Some context_path -> set_result (Cpath (CPField (context_path, "")))
+            | Some context_path ->
+              set_result (Cpath (CPField (context_path, "")))
             | None -> ())
         | Pexp_apply ({pexp_desc = Pexp_ident comp_name}, args)
           when Res_parsetree_viewer.is_jsx_expression expr ->
@@ -1165,7 +1179,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
               (Loc.to_string comp_name.loc)
               (jsx_props.props
               |> List.map
-                   (fun ({name; pos_start; pos_end; exp} : CompletionJsx.prop) ->
+                   (fun
+                     ({name; pos_start; pos_end; exp} : CompletionJsx.prop) ->
                      Printf.sprintf "%s[%s->%s]=...%s" name
                        (Pos.to_string pos_start) (Pos.to_string pos_end)
                        (Loc.to_string exp.pexp_loc))
@@ -1204,7 +1219,10 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
           if Debug.verbose () then print_endline "[expr_iter] Case foo->id";
           set_pipe_result ~lhs ~id |> ignore
         | Pexp_apply
-            ( {pexp_desc = Pexp_ident {txt = Lident ("|." | "|.u"); loc = op_loc}},
+            ( {
+                pexp_desc =
+                  Pexp_ident {txt = Lident ("|." | "|.u"); loc = op_loc};
+              },
               [(_, lhs); _] )
           when Loc.end_ op_loc = pos_cursor ->
           if Debug.verbose () then print_endline "[expr_iter] Case foo->";
@@ -1240,7 +1258,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
             | Some fun_ctx_path ->
               let old_ctx_path = !current_ctx_path in
               set_current_ctx_path fun_ctx_path;
-              arg_completable |> iterate_fn_arguments ~is_pipe:true ~args ~iterator;
+              arg_completable
+              |> iterate_fn_arguments ~is_pipe:true ~args ~iterator;
               reset_current_ctx_path old_ctx_path)
           | Some arg_completable -> set_result arg_completable)
         | Pexp_apply
@@ -1288,7 +1307,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
             | Some fun_ctx_path ->
               let old_ctx_path = !current_ctx_path in
               set_current_ctx_path fun_ctx_path;
-              arg_completable |> iterate_fn_arguments ~is_pipe:false ~args ~iterator;
+              arg_completable
+              |> iterate_fn_arguments ~is_pipe:false ~args ~iterator;
               reset_current_ctx_path old_ctx_path)
           | Some arg_completable -> set_result arg_completable)
         | Pexp_send (lhs, {txt; loc}) -> (
@@ -1315,7 +1335,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
             || (label = "" && pos_cursor = fst label_range)
           then
             match expr_to_context_path lhs with
-            | Some context_path -> set_result (Cpath (CPObj (context_path, label)))
+            | Some context_path ->
+              set_result (Cpath (CPObj (context_path, label)))
             | None -> ())
         | Pexp_fun (lbl, default_exp_opt, pat, e) ->
           let old_scope = !scope in
@@ -1339,7 +1360,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
                      argument_label =
                        (match lbl with
                        | Nolabel ->
-                         Unlabelled {argument_position = current_unlabelled_count}
+                         Unlabelled
+                           {argument_position = current_unlabelled_count}
                        | Optional name -> Optional name
                        | Labelled name -> Labelled name);
                    })
@@ -1358,7 +1380,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
           let old_scope = !scope in
           if rec_flag = Recursive then bindings |> List.iter scope_value_binding;
           bindings |> List.iter (fun vb -> iterator.value_binding iterator vb);
-          if rec_flag = Nonrecursive then bindings |> List.iter scope_value_binding;
+          if rec_flag = Nonrecursive then
+            bindings |> List.iter scope_value_binding;
           iterator.expr iterator e;
           scope := old_scope;
           processed := true
@@ -1389,7 +1412,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
       found := true;
       if debug then
         Printf.printf "posCursor:[%s] posNoWhite:[%s] Found type:%s\n"
-          (Pos.to_string pos_cursor) (Pos.to_string pos_no_white)
+          (Pos.to_string pos_cursor)
+          (Pos.to_string pos_no_white)
           (Loc.to_string core_type.ptyp_loc);
       match core_type.ptyp_desc with
       | Ptyp_constr (lid, _args) ->
@@ -1410,7 +1434,8 @@ let completion_with_parser1 ~current_file ~debug ~offset ~path ~pos_cursor
       found := true;
       if debug then
         Printf.printf "posCursor:[%s] posNoWhite:[%s] Found pattern:%s\n"
-          (Pos.to_string pos_cursor) (Pos.to_string pos_no_white)
+          (Pos.to_string pos_cursor)
+          (Pos.to_string pos_no_white)
           (Loc.to_string pat.ppat_loc);
       (match pat.ppat_desc with
       | Ppat_construct (lid, _) -> (
@@ -1549,6 +1574,6 @@ let find_type_of_expression_at_loc ~debug ~path ~pos_cursor ~current_file loc =
   | Some text -> (
     match Pos.position_to_offset text pos_cursor with
     | Some offset ->
-      completion_with_parser1 ~find_this_expr_loc:loc ~current_file ~debug ~offset
-        ~path ~pos_cursor text
+      completion_with_parser1 ~find_this_expr_loc:loc ~current_file ~debug
+        ~offset ~path ~pos_cursor text
     | None -> None)

@@ -15,7 +15,8 @@ module Values = struct
   let get_from_module ~module_name ~module_path (path_ : Common.Path.t) =
     let name = path_ @ module_path |> Common.Path.to_name in
     match
-      Hashtbl.find_opt value_bindings_table (String.capitalize_ascii module_name)
+      Hashtbl.find_opt value_bindings_table
+        (String.capitalize_ascii module_name)
     with
     | Some tbl -> Hashtbl.find_opt tbl name
     | None -> (
@@ -52,14 +53,16 @@ module Values = struct
         | None, external_module_name2 :: path_rev2
           when !Common.Cli.cmt_command && path_rev2 <> [] ->
           (* Simplistic namespace resolution for dune namespace: skip the root of the path *)
-          find_external ~external_module_name:external_module_name2 ~path_rev:path_rev2
+          find_external ~external_module_name:external_module_name2
+            ~path_rev:path_rev2
         | None, _ -> None)
       | [] -> None)
     | Some exceptions -> Some exceptions
 
   let new_cmt () =
     current_file_table := Hashtbl.create 15;
-    Hashtbl.replace value_bindings_table !Common.current_module !current_file_table
+    Hashtbl.replace value_bindings_table !Common.current_module
+      !current_file_table
 end
 
 module Event = struct
@@ -113,7 +116,8 @@ module Event = struct
     in
     let shrink_exn_table exn loc =
       match Hashtbl.find_opt exn_table exn with
-      | Some loc_set -> Hashtbl.replace exn_table exn (LocSet.remove loc loc_set)
+      | Some loc_set ->
+        Hashtbl.replace exn_table exn (LocSet.remove loc loc_set)
       | None -> ()
     in
     let rec loop exn_set events =
@@ -185,7 +189,8 @@ module Checks = struct
   let checks = (ref [] : t ref)
 
   let add ~events ~exceptions ~loc ?(loc_full = loc) ~module_name exn_name =
-    checks := {events; exceptions; loc; loc_full; module_name; exn_name} :: !checks
+    checks :=
+      {events; exceptions; loc; loc_full; module_name; exn_name} :: !checks
 
   let do_check {events; exceptions; loc; loc_full; module_name; exn_name} =
     let raise_set, exn_table = events |> Event.combine ~module_name in
@@ -297,19 +302,21 @@ let traverse_ast () =
         ( {exp_desc = Texp_ident (atat, _, _)},
           [(_lbl1, Some {exp_desc = Texp_ident (callee, _, _)}); arg] )
       when (* raise @@ Exn(...) *)
-           atat |> Path.name = "Pervasives.@@" && callee |> Path.name |> is_raise
-      ->
+           atat |> Path.name = "Pervasives.@@"
+           && callee |> Path.name |> is_raise ->
       let exceptions = [arg] |> raise_args in
-      current_events := {Event.exceptions; loc; kind = Raises} :: !current_events;
+      current_events :=
+        {Event.exceptions; loc; kind = Raises} :: !current_events;
       arg |> snd |> iter_expr_opt self
     | Texp_apply
         ( {exp_desc = Texp_ident (atat, _, _)},
           [arg; (_lbl1, Some {exp_desc = Texp_ident (callee, _, _)})] )
       when (*  Exn(...) |> raise *)
-           atat |> Path.name = "Pervasives.|>" && callee |> Path.name |> is_raise
-      ->
+           atat |> Path.name = "Pervasives.|>"
+           && callee |> Path.name |> is_raise ->
       let exceptions = [arg] |> raise_args in
-      current_events := {Event.exceptions; loc; kind = Raises} :: !current_events;
+      current_events :=
+        {Event.exceptions; loc; kind = Raises} :: !current_events;
       arg |> snd |> iter_expr_opt self
     | Texp_apply (({exp_desc = Texp_ident (callee, _, _)} as e), args) ->
       let callee_name = Path.name callee in
@@ -373,7 +380,8 @@ let traverse_ast () =
     in
     let rec get_exceptions payload =
       match payload with
-      | Annotation.StringPayload s -> [Exn.from_string s] |> Exceptions.from_list
+      | Annotation.StringPayload s ->
+        [Exn.from_string s] |> Exceptions.from_list
       | Annotation.ConstructPayload s when s <> "::" ->
         [Exn.from_string s] |> Exceptions.from_list
       | Annotation.IdentPayload s ->
@@ -463,14 +471,15 @@ let traverse_ast () =
       res
     in
     match vb.vb_pat.pat_desc with
-    | Tpat_any when is_toplevel && not vb.vb_loc.loc_ghost -> process_binding "_"
+    | Tpat_any when is_toplevel && not vb.vb_loc.loc_ghost ->
+      process_binding "_"
     | Tpat_construct ({txt}, _, _)
       when is_toplevel && (not vb.vb_loc.loc_ghost)
            && txt = Longident.Lident "()" ->
       process_binding "()"
     | Tpat_var (id, {loc = {loc_ghost}})
-      when (is_function || is_toplevel) && (not loc_ghost)
-           && not vb.vb_loc.loc_ghost ->
+      when (is_function || is_toplevel)
+           && (not loc_ghost) && not vb.vb_loc.loc_ghost ->
       process_binding (id |> Ident.name)
     | _ -> super.value_binding self vb
   in

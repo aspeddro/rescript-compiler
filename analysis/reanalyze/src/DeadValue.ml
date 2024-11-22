@@ -50,7 +50,8 @@ let collect_value_binding super self (vb : Typedtree.value_binding) =
          let side_effects = SideEffects.check_expr vb.vb_expr in
          name
          |> add_value_declaration ~is_toplevel ~loc
-              ~module_loc:current_module_path.loc ~optional_args ~path ~side_effects);
+              ~module_loc:current_module_path.loc ~optional_args ~path
+              ~side_effects);
       (match PosHash.find_opt decls loc_start with
       | None -> ()
       | Some decl ->
@@ -80,7 +81,8 @@ let collect_value_binding super self (vb : Typedtree.value_binding) =
   Current.last_binding := old_last_binding;
   r
 
-let process_optional_args ~exp_type ~(loc_from : Location.t) ~loc_to ~path args =
+let process_optional_args ~exp_type ~(loc_from : Location.t) ~loc_to ~path args
+    =
   if exp_type |> DeadOptionalArgs.has_optional_args then (
     let supplied = ref [] in
     let supplied_maybe = ref [] in
@@ -106,7 +108,8 @@ let process_optional_args ~exp_type ~(loc_from : Location.t) ~loc_to ~path args 
            match lbl with
            | Asttypes.Optional s when not loc_from.loc_ghost ->
              if arg_is_supplied <> Some false then supplied := s :: !supplied;
-             if arg_is_supplied = None then supplied_maybe := s :: !supplied_maybe
+             if arg_is_supplied = None then
+               supplied_maybe := s :: !supplied_maybe
            | _ -> ());
     (!supplied, !supplied_maybe)
     |> DeadOptionalArgs.add_references ~loc_from ~loc_to ~path)
@@ -134,7 +137,7 @@ let rec collect_expr super self (e : Typedtree.expression) =
         },
         args ) ->
     args
-    |> process_optional_args ~exp_type:exp_type
+    |> process_optional_args ~exp_type
          ~loc_from:(loc_from : Location.t)
          ~loc_to ~path
   | Texp_let
@@ -174,7 +177,7 @@ let rec collect_expr super self (e : Typedtree.expression) =
          && Ident.name eta_arg = "eta"
          && Path.name id_arg2 = "arg" ->
     args
-    |> process_optional_args ~exp_type:exp_type
+    |> process_optional_args ~exp_type
          ~loc_from:(loc_from : Location.t)
          ~loc_to ~path
   | Texp_field
@@ -183,10 +186,14 @@ let rec collect_expr super self (e : Typedtree.expression) =
       DeadType.add_type_reference ~pos_to ~pos_from:loc_from.loc_start
   | Texp_construct
       ( _,
-        {cstr_loc = {Location.loc_start = pos_to; loc_ghost} as loc_to; cstr_tag},
+        {
+          cstr_loc = {Location.loc_start = pos_to; loc_ghost} as loc_to;
+          cstr_tag;
+        },
         _ ) ->
     (match cstr_tag with
-    | Cstr_extension path -> path |> DeadException.mark_as_used ~loc_from ~loc_to
+    | Cstr_extension path ->
+      path |> DeadException.mark_as_used ~loc_from ~loc_to
     | _ -> ());
     if !Config.analyze_types && not loc_ghost then
       DeadType.add_type_reference ~pos_to ~pos_from:loc_from.loc_start
@@ -259,7 +266,8 @@ let rec process_signature_item ~do_types ~do_values ~module_loc ~path
         |> add_value_declaration ~loc ~module_loc ~optional_args ~path
              ~side_effects:false
   | Sig_module (id, {Types.md_type = module_type; md_loc = module_loc}, _)
-  | Sig_modtype (id, {Types.mtd_type = Some module_type; mtd_loc = module_loc}) ->
+  | Sig_modtype (id, {Types.mtd_type = Some module_type; mtd_loc = module_loc})
+    ->
     ModulePath.set_current
       {
         old_module_path with
@@ -370,8 +378,8 @@ let process_value_dependency
         Types.value_description),
       ({
          val_loc =
-           {loc_start = {pos_fname = fn_from} as pos_from; loc_ghost = ghost2} as
-           loc_from;
+           {loc_start = {pos_fname = fn_from} as pos_from; loc_ghost = ghost2}
+           as loc_from;
        } :
         Types.value_description) ) =
   if (not ghost1) && (not ghost2) && pos_to <> pos_from then (

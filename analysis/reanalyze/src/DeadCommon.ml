@@ -148,7 +148,8 @@ let iter_files_from_roots_to_leaves iter_fun =
   in
   FileReferences.iter (fun from_file set ->
       if get_num from_file = 0 then
-        Hashtbl.replace references_by_number 0 (FileSet.add from_file (get_set 0));
+        Hashtbl.replace references_by_number 0
+          (FileSet.add from_file (get_set 0));
       set |> FileSet.iter (fun to_file -> add_edge from_file to_file));
   while get_set 0 <> FileSet.empty do
     let files_with_no_incoming_references = get_set 0 in
@@ -157,7 +158,8 @@ let iter_files_from_roots_to_leaves iter_fun =
     |> FileSet.iter (fun file_name ->
            iter_fun file_name;
            let references = FileReferences.find file_name in
-           references |> FileSet.iter (fun to_file -> remove_edge file_name to_file))
+           references
+           |> FileSet.iter (fun to_file -> remove_edge file_name to_file))
   done;
   (* Process any remaining items in case of circular references *)
   references_by_number
@@ -187,7 +189,8 @@ module ProcessDeadAnnotations = struct
   type annotated_as = GenType | Dead | Live
 
   let positions_annotated = PosHash.create 1
-  let is_annotated_dead pos = PosHash.find_opt positions_annotated pos = Some Dead
+  let is_annotated_dead pos =
+    PosHash.find_opt positions_annotated pos = Some Dead
 
   let is_annotated_gen_type_or_live pos =
     match PosHash.find_opt positions_annotated pos with
@@ -215,7 +218,8 @@ module ProcessDeadAnnotations = struct
     in
     if
       do_gen_type
-      && get_payload_fun Annotation.tag_is_one_of_the_gen_type_annotations <> None
+      && get_payload_fun Annotation.tag_is_one_of_the_gen_type_annotations
+         <> None
     then pos |> annotate_gen_type;
     if get_payload WriteDeadAnnotations.dead_annotation <> None then
       pos |> annotate_dead;
@@ -235,8 +239,8 @@ module ProcessDeadAnnotations = struct
              try String.sub fname 0 (String.length prefix) = prefix
              with Invalid_argument _ -> false)
     in
-    if get_payload live_annotation <> None || name_is_in_live_names_or_paths () then
-      pos |> annotate_live;
+    if get_payload live_annotation <> None || name_is_in_live_names_or_paths ()
+    then pos |> annotate_live;
     if attributes |> Annotation.is_ocaml_suppress_dead_warning then
       pos |> annotate_live
 
@@ -563,7 +567,8 @@ module Decl = struct
       let should_emit_warning =
         (not inside_reported_value)
         && (match decl.path with
-           | name :: _ when name |> Name.is_underscore -> Config.report_underscore
+           | name :: _ when name |> Name.is_underscore ->
+             Config.report_underscore
            | _ -> true)
         && (run_config.transitive || not (has_ref_below ()))
       in
@@ -582,7 +587,8 @@ let decl_is_dead ~refs decl =
   live_refs |> PosSet.cardinal = 0
   && not (ProcessDeadAnnotations.is_annotated_gen_type_or_live decl.pos)
 
-let do_report_dead pos = not (ProcessDeadAnnotations.is_annotated_gen_type_or_dead pos)
+let do_report_dead pos =
+  not (ProcessDeadAnnotations.is_annotated_gen_type_or_dead pos)
 
 let rec resolve_recursive_refs ~check_optional_arg ~dead_declarations ~level
     ~ordered_files ~refs ~refs_being_resolved decl : bool =
@@ -629,9 +635,9 @@ let rec resolve_recursive_refs ~check_optional_arg ~dead_declarations ~level
                  in
                  let x_decl_is_dead =
                    x_decl
-                   |> resolve_recursive_refs ~check_optional_arg ~dead_declarations
-                        ~level:(level + 1) ~ordered_files ~refs:x_refs
-                        ~refs_being_resolved
+                   |> resolve_recursive_refs ~check_optional_arg
+                        ~dead_declarations ~level:(level + 1) ~ordered_files
+                        ~refs:x_refs ~refs_being_resolved
                  in
                  if x_decl.resolved_dead = None then all_deps_resolved := false;
                  not x_decl_is_dead)
@@ -707,7 +713,8 @@ let report_dead ~check_optional_arg =
        Hashtbl.add ordered_files file_name !current);
   let ordered_declarations =
     (* analyze in reverse order *)
-    declarations |> List.fast_sort (Decl.compare_using_dependencies ~ordered_files)
+    declarations
+    |> List.fast_sort (Decl.compare_using_dependencies ~ordered_files)
   in
   let dead_declarations = ref [] in
   ordered_declarations

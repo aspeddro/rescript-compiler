@@ -22,7 +22,8 @@ let cmt_pos_to_position {Lexing.pos_lnum; pos_cnum; pos_bol} =
   Protocol.{line = pos_lnum - 1; character = pos_cnum - pos_bol}
 
 let cmt_loc_to_range {Location.loc_start; loc_end} =
-  Protocol.{start = cmt_pos_to_position loc_start; end_ = cmt_pos_to_position loc_end}
+  Protocol.
+    {start = cmt_pos_to_position loc_start; end_ = cmt_pos_to_position loc_end}
 
 let end_of_location loc length =
   let open Location in
@@ -153,7 +154,8 @@ let has_braces attributes =
 let rec unwrap_if_option (t : Types.type_expr) =
   match t.desc with
   | Tlink t1 | Tsubst t1 | Tpoly (t1, []) -> unwrap_if_option t1
-  | Tconstr (Path.Pident {name = "option"}, [unwrapped_type], _) -> unwrapped_type
+  | Tconstr (Path.Pident {name = "option"}, [unwrapped_type], _) ->
+    unwrapped_type
   | _ -> t
 
 let is_jsx_component (vb : Parsetree.value_binding) =

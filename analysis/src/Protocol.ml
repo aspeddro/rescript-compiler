@@ -75,7 +75,10 @@ type text_document_edit = {
   edits: text_edit list;
 }
 
-type create_file_options = {overwrite: bool option; ignore_if_exists: bool option}
+type create_file_options = {
+  overwrite: bool option;
+  ignore_if_exists: bool option;
+}
 type create_file = {uri: string; options: create_file_options option}
 
 type document_change =
@@ -147,7 +150,9 @@ let stringify_completion_item c =
         match c.insert_text_format with
         | None -> None
         | Some insert_text_format ->
-          Some (Printf.sprintf "%i" (insert_text_format_to_int insert_text_format)) );
+          Some
+            (Printf.sprintf "%i" (insert_text_format_to_int insert_text_format))
+      );
       ( "data",
         match c.data with
         | None -> None
@@ -220,7 +225,8 @@ let stringify_text_edit (te : text_edit) =
   "range": %s,
   "newText": %s
   }|}
-    (stringify_range te.range) (wrap_in_quotes te.new_text)
+    (stringify_range te.range)
+    (wrap_in_quotes te.new_text)
 
 let stringifyoptional_versioned_text_document_identifier td =
   Printf.sprintf {|{
@@ -292,7 +298,8 @@ let stringify_hint hint =
     "paddingRight": %b
 }|}
     (stringify_position hint.position)
-    (wrap_in_quotes hint.label) hint.kind hint.padding_left hint.padding_right
+    (wrap_in_quotes hint.label)
+    hint.kind hint.padding_left hint.padding_right
 
 let stringify_command (command : command) =
   Printf.sprintf {|{"title": %s, "command": %s}|}
@@ -310,15 +317,15 @@ let stringify_code_lens (code_lens : code_lens) =
     | None -> ""
     | Some command -> stringify_command command)
 
-let stringify_parameter_information (parameter_information : parameter_information)
-    =
+let stringify_parameter_information
+    (parameter_information : parameter_information) =
   Printf.sprintf {|{"label": %s, "documentation": %s}|}
     (let line, chr = parameter_information.label in
      "[" ^ string_of_int line ^ ", " ^ string_of_int chr ^ "]")
     (stringify_markup_content parameter_information.documentation)
 
-let stringify_signature_information (signature_information : signature_information)
-    =
+let stringify_signature_information
+    (signature_information : signature_information) =
   Printf.sprintf
     {|{
     "label": %s,
@@ -341,7 +348,9 @@ let stringify_signature_help (signature_help : signature_help) =
   "activeSignature": %s,
   "activeParameter": %s
 }|}
-    (signature_help.signatures |> List.map stringify_signature_information |> array)
+    (signature_help.signatures
+    |> List.map stringify_signature_information
+    |> array)
     (match signature_help.active_signature with
     | None -> null
     | Some active_signature -> active_signature |> string_of_int)

@@ -131,7 +131,8 @@ let emit_longident ?(backwards = false) ?(jsx = false)
       let type_ =
         match last_token with
         | Some type_ -> type_
-        | None -> if is_uppercase_id id then upper_case_token else lower_case_token
+        | None ->
+          if is_uppercase_id id then upper_case_token else lower_case_token
       in
       let pos_after = (fst pos, snd pos + String.length id) in
       let pos_end, len_mismatch =
@@ -147,7 +148,9 @@ let emit_longident ?(backwards = false) ?(jsx = false)
           (Token.token_type_debug type_);
       emitter |> emit_from_range (pos, pos_end) ~type_
     | id :: segments when is_uppercase_id id || is_lowercase_id id ->
-      let type_ = if is_uppercase_id id then upper_case_token else lower_case_token in
+      let type_ =
+        if is_uppercase_id id then upper_case_token else lower_case_token
+      in
       if debug then
         Printf.printf "Ldot: %s %s %s\n" id (Pos.to_string pos)
           (Token.token_type_debug type_);
@@ -181,12 +184,14 @@ let emit_jsx_tag ~debug ~name ~pos emitter =
 let emit_type ~lid ~debug ~(loc : Location.t) emitter =
   if not loc.loc_ghost then
     emitter
-    |> emit_longident ~lower_case_token:Token.Type ~pos:(Loc.start loc) ~lid ~debug
+    |> emit_longident ~lower_case_token:Token.Type ~pos:(Loc.start loc) ~lid
+         ~debug
 
 let emit_record_label ~(label : Longident.t Location.loc) ~debug emitter =
   if not label.loc.loc_ghost then
     emitter
-    |> emit_longident ~lower_case_token:Token.Property ~pos:(Loc.start label.loc)
+    |> emit_longident ~lower_case_token:Token.Property
+         ~pos:(Loc.start label.loc)
          ~pos_end:(Some (Loc.end_ label.loc))
          ~lid:label.txt ~debug
 
@@ -198,7 +203,8 @@ let emit_variant ~(name : Longident.t Location.loc) ~debug emitter =
 
 let command ~debug ~emitter ~path =
   let process_type_arg (core_type : Parsetree.core_type) =
-    if debug then Printf.printf "TypeArg: %s\n" (Loc.to_string core_type.ptyp_loc)
+    if debug then
+      Printf.printf "TypeArg: %s\n" (Loc.to_string core_type.ptyp_loc)
   in
   let typ (iterator : Ast_iterator.iterator) (core_type : Parsetree.core_type) =
     match core_type.ptyp_desc with
@@ -226,7 +232,8 @@ let command ~debug ~emitter ~path =
       Ast_iterator.default_iterator.pat iterator p
     | Ppat_record (cases, _) ->
       cases
-      |> List.iter (fun (label, _) -> emitter |> emit_record_label ~label ~debug);
+      |> List.iter (fun (label, _) ->
+             emitter |> emit_record_label ~label ~debug);
       Ast_iterator.default_iterator.pat iterator p
     | Ppat_construct (name, _) ->
       emitter |> emit_variant ~name ~debug;
@@ -279,13 +286,16 @@ let command ~debug ~emitter ~path =
       in
       let self_closing =
         fst pos_of_greatherthan_after_props == fst pos_of_final_greatherthan
-        && snd pos_of_greatherthan_after_props + 1 == snd pos_of_final_greatherthan
+        && snd pos_of_greatherthan_after_props + 1
+           == snd pos_of_final_greatherthan
         (* there's an off-by one somehow in the AST *)
       in
       (if not self_closing then
          let line_start, col_start = Loc.start pexp_loc in
          let line_end, col_end = Loc.end_ pexp_loc in
-         let length = if line_start = line_end then col_end - col_start else 0 in
+         let length =
+           if line_start = line_end then col_end - col_start else 0
+         in
          let line_end_whole, col_end_whole = Loc.end_ e.pexp_loc in
          if length > 0 && col_end_whole > length then (
            emitter

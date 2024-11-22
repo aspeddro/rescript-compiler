@@ -53,7 +53,8 @@ let process_cmt_files ~cmt_root =
       in
       if (not skip_dir) && Sys.file_exists abs_dir then
         if Sys.is_directory abs_dir then
-          abs_dir |> Sys.readdir |> Array.iter (fun d -> walk_sub_dirs (dir +++ d))
+          abs_dir |> Sys.readdir
+          |> Array.iter (fun d -> walk_sub_dirs (dir +++ d))
         else if
           Filename.check_suffix abs_dir ".cmt"
           || Filename.check_suffix abs_dir ".cmti"
@@ -82,7 +83,9 @@ let process_cmt_files ~cmt_root =
            in
            cmt_files |> List.sort String.compare
            |> List.iter (fun cmt_file ->
-                  let cmt_file_path = Filename.concat lib_bs_source_dir cmt_file in
+                  let cmt_file_path =
+                    Filename.concat lib_bs_source_dir cmt_file
+                  in
                   cmt_file_path |> load_cmt_file))
 
 let run_analysis ~cmt_root =
@@ -159,7 +162,8 @@ let cli () =
         String
           (fun s ->
             let paths = s |> String.split_on_char ',' in
-            Common.Cli.exclude_paths := paths @ Common.Cli.exclude_paths.contents),
+            Common.Cli.exclude_paths :=
+              paths @ Common.Cli.exclude_paths.contents),
         "comma-separated-path-prefixes Exclude from analysis files whose path \
          has a prefix in the list" );
       ( "-experimental",

@@ -34,7 +34,9 @@ let rec lineToString_ {original; declarations} =
         ^ (match decl_kind |> DeclKind.is_type with
           | true -> "@"
           | false -> "@@")
-        ^ dead_annotation ^ " \"" ^ (path |> Path.without_head) ^ "\"] "
+        ^ dead_annotation ^ " \""
+        ^ (path |> Path.without_head)
+        ^ "\"] "
     in
     let pos_annotation = decl |> get_pos_annotation in
     let col = pos_annotation.pos_cnum - pos_annotation.pos_bol in
@@ -77,7 +79,8 @@ let line_to_string {original; declarations} =
   let declarations =
     declarations
     |> List.sort (fun decl1 decl2 ->
-           (get_pos_annotation decl2).pos_cnum - (get_pos_annotation decl1).pos_cnum)
+           (get_pos_annotation decl2).pos_cnum
+           - (get_pos_annotation decl1).pos_cnum)
   in
   lineToString_ {original; declarations}
 

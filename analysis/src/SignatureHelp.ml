@@ -80,15 +80,15 @@ let find_function_type ~current_file ~debug ~path ~pos =
              This lets us leverage all of the smart work done in completions to find the correct type in many cases even
              for files not saved yet. *)
           match
-            CompletionFrontEnd.completion_with_parser ~debug ~path ~pos_cursor:pos
-              ~current_file ~text
+            CompletionFrontEnd.completion_with_parser ~debug ~path
+              ~pos_cursor:pos ~current_file ~text
           with
           | None -> None
           | Some (completable, scope) ->
             Some
               ( completable
-                |> CompletionBackEnd.process_completable ~debug ~full ~pos ~scope
-                     ~env ~for_hover:true,
+                |> CompletionBackEnd.process_completable ~debug ~full ~pos
+                     ~scope ~env ~for_hover:true,
                 env,
                 package,
                 file ))
@@ -254,7 +254,8 @@ let find_constructor_args ~full ~env ~constructor_name loc =
     | _ -> None)
   | _ -> None
 
-let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloads =
+let signature_help ~path ~pos ~current_file ~debug
+    ~allow_for_constructor_payloads =
   let text_opt = Files.read_file current_file in
   match text_opt with
   | None | Some "" -> None
@@ -298,13 +299,15 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
               Printf.printf
                 "[sig_help_result] Setting because loc of %s > then existing \
                  of %s\n"
-                (print_thing thing) (print_thing current_thing)
+                (print_thing thing)
+                (print_thing current_thing)
           | Some (_, current_thing) ->
             if Debug.verbose () then
               Printf.printf
                 "[sig_help_result] Doing nothing because loc of %s < then \
                  existing of %s\n"
-                (print_thing thing) (print_thing current_thing))
+                (print_thing thing)
+                (print_thing current_thing))
       in
       let search_for_arg_with_cursor ~is_pipe_expr ~args =
         let extracted_args = extract_exp_apply_args ~args in
@@ -334,7 +337,8 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                    | Some {name; pos_start; pos_end} -> (
                      (* Check for the label identifier itself having the cursor *)
                      match
-                       pos |> CursorPosition.classify_positions ~pos_start ~pos_end
+                       pos
+                       |> CursorPosition.classify_positions ~pos_start ~pos_end
                      with
                      | HasCursor -> Some (Labelled name)
                      | NoCursor | EmptyLoc -> (
@@ -345,7 +349,8 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                        match
                          ( arg.exp.pexp_desc,
                            arg.exp.pexp_loc
-                           |> CursorPosition.classify_loc ~pos:pos_before_cursor )
+                           |> CursorPosition.classify_loc ~pos:pos_before_cursor
+                         )
                        with
                        | Pexp_extension ({txt = "rescript.exprhole"}, _), _
                        | _, HasCursor ->
@@ -483,7 +488,9 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                     parameters =
                       parameters
                       |> List.map (fun (arg_label, start, end_) ->
-                             let param_arg_count = !param_unlabelled_arg_count in
+                             let param_arg_count =
+                               !param_unlabelled_arg_count
+                             in
                              param_unlabelled_arg_count := param_arg_count + 1;
                              let unlabelled_arg_count = ref 0 in
                              {
@@ -492,7 +499,9 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                                  (match
                                     args
                                     |> List.find_opt (fun (lbl, _) ->
-                                           let arg_count = !unlabelled_arg_count in
+                                           let arg_count =
+                                             !unlabelled_arg_count
+                                           in
                                            unlabelled_arg_count := arg_count + 1;
                                            match (lbl, arg_label) with
                                            | ( Asttypes.Optional l1,
@@ -513,8 +522,8 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                                    {
                                      Protocol.kind = "markdown";
                                      value =
-                                       docs_for_label ~supports_markdown_links ~file
-                                         ~package label_typ_expr;
+                                       docs_for_label ~supports_markdown_links
+                                         ~file ~package label_typ_expr;
                                    });
                              });
                     documentation =
@@ -596,8 +605,9 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                            in
                            offset := end_offset + String.length ", ";
                            ( arg_text,
-                             docs_for_label ~file:full.file ~package:full.package
-                               ~supports_markdown_links typ,
+                             docs_for_label ~file:full.file
+                               ~package:full.package ~supports_markdown_links
+                               typ,
                              (start_offset, end_offset) ))))
             in
             let label =
@@ -660,7 +670,8 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                          else ());
                   !field_index
                 | _ -> -1)
-              | `ConstructorExpr (_, expr) when loc_has_cursor expr.pexp_loc -> 0
+              | `ConstructorExpr (_, expr) when loc_has_cursor expr.pexp_loc ->
+                0
               | `ConstructorPat (_, {ppat_desc = Ppat_tuple items}) -> (
                 let idx = ref 0 in
                 let tuple_item_with_cursor =
@@ -743,7 +754,8 @@ let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloa
                 items
                 |> List.map (fun (_, docstring, (start, end_)) ->
                        {
-                         Protocol.label = (base_offset + start, base_offset + end_);
+                         Protocol.label =
+                           (base_offset + start, base_offset + end_);
                          documentation =
                            {Protocol.kind = "markdown"; value = docstring};
                        })

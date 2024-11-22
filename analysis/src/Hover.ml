@@ -1,6 +1,7 @@
 open SharedTypes
 
-let show_module_top_level ~docstring ~is_type ~name (top_level : Module.item list) =
+let show_module_top_level ~docstring ~is_type ~name
+    (top_level : Module.item list) =
   let contents =
     top_level
     |> List.map (fun item ->
@@ -47,7 +48,8 @@ let rec show_module ~docstring ~(file : File.t) ~package ~name
   | Some ({item = Ident path} as declared) -> (
     match References.resolve_module_reference ~file ~package declared with
     | None -> Some ("Unable to resolve module reference " ^ Path.name path)
-    | Some (_, declared) -> show_module ~docstring ~file ~name ~package declared)
+    | Some (_, declared) -> show_module ~docstring ~file ~name ~package declared
+    )
 
 type extracted_type = {
   name: string;
@@ -71,7 +73,8 @@ let find_relevant_types_from_type ~file ~package typ =
       | None -> (env, [typ])
       | Some (env1, {item = {decl}}) -> (
         match decl.type_kind with
-        | Type_record (lds, _) -> (env1, typ :: (lds |> label_declarations_types))
+        | Type_record (lds, _) ->
+          (env1, typ :: (lds |> label_declarations_types))
         | Type_variant cds ->
           ( env1,
             cds
@@ -126,7 +129,9 @@ let hover_with_expanded_types ~file ~package ~supports_markdown_links typ =
    makes it (most often) work with unsaved content. *)
 let get_hover_via_completions ~debug ~path ~pos ~current_file ~for_hover
     ~supports_markdown_links =
-  match Completions.get_completions ~debug ~path ~pos ~current_file ~for_hover with
+  match
+    Completions.get_completions ~debug ~path ~pos ~current_file ~for_hover
+  with
   | None -> None
   | Some (completions, ({file; package} as full), scope) -> (
     let raw_opens = Scope.get_raw_opens scope in
@@ -141,8 +146,8 @@ let get_hover_via_completions ~debug ~path ~pos ~current_file ~for_hover
     | {kind = Field _; env; docstring} :: _ -> (
       let opens = CompletionBackEnd.get_opens ~debug ~raw_opens ~package ~env in
       match
-        CompletionBackEnd.completions_get_type_env2 ~debug ~full ~raw_opens ~opens
-          ~pos completions
+        CompletionBackEnd.completions_get_type_env2 ~debug ~full ~raw_opens
+          ~opens ~pos completions
       with
       | Some (typ, _env) ->
         let type_string =
@@ -154,8 +159,8 @@ let get_hover_via_completions ~debug ~path ~pos ~current_file ~for_hover
     | {env} :: _ -> (
       let opens = CompletionBackEnd.get_opens ~debug ~raw_opens ~package ~env in
       match
-        CompletionBackEnd.completions_get_type_env2 ~debug ~full ~raw_opens ~opens
-          ~pos completions
+        CompletionBackEnd.completions_get_type_env2 ~debug ~full ~raw_opens
+          ~opens ~pos completions
       with
       | Some (typ, _env) ->
         let type_string =
@@ -214,8 +219,8 @@ let new_hover ~full:{file; package} ~supports_markdown_links loc_item =
     match ProcessCmt.file_for_module ~package name with
     | None -> None
     | Some file ->
-      show_module ~docstring:file.structure.docstring ~name:file.module_name ~file
-        ~package None)
+      show_module ~docstring:file.structure.docstring ~name:file.module_name
+        ~file ~package None)
   | Typed (_, _, Definition (_, (Field _ | Constructor _))) -> None
   | Constant t ->
     Some

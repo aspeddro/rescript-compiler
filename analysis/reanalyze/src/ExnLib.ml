@@ -14,13 +14,19 @@ let raises_lib_table : (Name.t, Exceptions.t) Hashtbl.t =
       ("map2", [invalid_argument]);
     ]
   in
-  let belt_array = [("getExn", [assert_failure]); ("setExn", [assert_failure])] in
+  let belt_array =
+    [("getExn", [assert_failure]); ("setExn", [assert_failure])]
+  in
   let belt_list =
-    [("getExn", [not_found]); ("headExn", [not_found]); ("tailExn", [not_found])]
+    [
+      ("getExn", [not_found]); ("headExn", [not_found]); ("tailExn", [not_found]);
+    ]
   in
   let belt_map = [("getExn", [not_found])] in
   let belt_mutable_map = belt_map in
-  let belt_mutable_queue = [("peekExn", [not_found]); ("popExn", [not_found])] in
+  let belt_mutable_queue =
+    [("peekExn", [not_found]); ("popExn", [not_found])]
+  in
   let belt_mutable_set = [("getExn", [not_found])] in
   let belt_option = [("getExn", [not_found])] in
   let belt_result = [("getExn", [not_found])] in

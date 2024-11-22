@@ -11,7 +11,8 @@ let add ~path ~loc ~(str_loc : Location.t) name =
   Hashtbl.add declarations exception_path loc;
   name
   |> addDeclaration_ ~pos_end:str_loc.loc_end ~pos_start:str_loc.loc_start
-       ~decl_kind:Exception ~module_loc:(ModulePath.get_current ()).loc ~path ~loc
+       ~decl_kind:Exception ~module_loc:(ModulePath.get_current ()).loc ~path
+       ~loc
 
 let force_delayed_items () =
   let items = !delayed_items |> List.rev in

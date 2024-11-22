@@ -11,8 +11,8 @@ let emit_item ~ppf ~name ~kind ~file ~range ~message =
   fprintf ppf "  \"name\": \"%s\",\n" name;
   fprintf ppf "  \"kind\": \"%s\",\n" kind;
   fprintf ppf "  \"file\": \"%s\",\n" file;
-  fprintf ppf "  \"range\": [%d,%d,%d,%d],\n" start_line start_character end_line
-    end_character;
+  fprintf ppf "  \"range\": [%d,%d,%d,%d],\n" start_line start_character
+    end_line end_character;
   fprintf ppf "  \"message\": \"%s\"" message
 
 let loc_to_pos (loc : Location.t) =

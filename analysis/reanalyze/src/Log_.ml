@@ -117,8 +117,8 @@ let log_additional_info ~(description : description) =
     missing_raise_info_to_text missing_raise_info
   | _ -> ""
 
-let missing_raise_info_to_message {exn_table; exn_name; missing_annotations; raise_set}
-    =
+let missing_raise_info_to_message
+    {exn_table; exn_name; missing_annotations; raise_set} =
   let raises_txt =
     Format.asprintf "%a" (Exceptions.pp ~exn_table:(Some exn_table)) raise_set
   in

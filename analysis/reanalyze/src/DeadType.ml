@@ -13,7 +13,8 @@ end
 
 let add_type_reference ~pos_from ~pos_to =
   if !Common.Cli.debug then
-    Log_.item "addTypeReference %s --> %s@." (pos_from |> pos_to_string)
+    Log_.item "addTypeReference %s --> %s@."
+      (pos_from |> pos_to_string)
       (pos_to |> pos_to_string);
   TypeReferences.add pos_to pos_from
 

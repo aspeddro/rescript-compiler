@@ -152,7 +152,13 @@ let main () =
         | "true" -> true
         | _ -> false)
   | [
-   _; "signatureHelp"; path; line; col; current_file; allow_for_constructor_payloads;
+   _;
+   "signatureHelp";
+   path;
+   line;
+   col;
+   current_file;
+   allow_for_constructor_payloads;
   ] ->
     Commands.signature_help ~path
       ~pos:(int_of_string line, int_of_string col)
@@ -166,8 +172,9 @@ let main () =
       ~pos:(int_of_string line_start, int_of_string line_end)
       ~max_length ~debug
   | [_; "codeLens"; path] -> Commands.code_lens ~path ~debug
-  | [_; "codeAction"; path; start_line; start_col; end_line; end_col; current_file]
-    ->
+  | [
+   _; "codeAction"; path; start_line; start_col; end_line; end_col; current_file;
+  ] ->
     Commands.code_action ~path
       ~start_pos:(int_of_string start_line, int_of_string start_col)
       ~end_pos:(int_of_string end_line, int_of_string end_col)

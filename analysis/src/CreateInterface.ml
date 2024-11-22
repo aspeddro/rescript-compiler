@@ -22,7 +22,8 @@ module SourceFileExtractor = struct
         else if n = line_start then (
           if col_start >= 0 && col_start < len then
             let indent = String.make col_start ' ' in
-            res := (indent ^ String.sub line col_start (len - col_start)) :: !res)
+            res :=
+              (indent ^ String.sub line col_start (len - col_start)) :: !res)
         else if n = line_end then (
           if col_end > 0 && col_end <= len then
             res := String.sub line 0 col_end :: !res)
@@ -49,7 +50,8 @@ end = struct
       {
         line = line_idx;
         offset = attr_offset_start;
-        name = String.sub line attr_offset_start (attr_offset_end - attr_offset_start);
+        name =
+          String.sub line attr_offset_start (attr_offset_end - attr_offset_start);
       }
     in
     let res = ref [] in
@@ -123,8 +125,10 @@ let print_signature ~extractor ~signature =
       Ctype.newconstr (Pdot (Pident (Ident.create "React"), "element", 0)) []
     in
     match typ.desc with
-    | Tconstr (Pident {name = "function$"}, [typ; _], _) -> get_component_type typ
-    | Tarrow (_, {desc = Tconstr (Path.Pident props_id, type_args, _)}, ret_type, _)
+    | Tconstr (Pident {name = "function$"}, [typ; _], _) ->
+      get_component_type typ
+    | Tarrow
+        (_, {desc = Tconstr (Path.Pident props_id, type_args, _)}, ret_type, _)
       when Ident.name props_id = "props" ->
       Some (type_args, ret_type)
     | Tconstr
@@ -170,7 +174,7 @@ let print_signature ~extractor ~signature =
           | [] -> ret_type
           | label_decl :: rest ->
             let prop_type =
-              TypeUtils.instantiate_type ~type_params:type_params ~type_args
+              TypeUtils.instantiate_type ~type_params ~type_args
                 label_decl.ld_type
             in
             let lbl_name = label_decl.ld_id |> Ident.name in
@@ -183,7 +187,10 @@ let print_signature ~extractor ~signature =
               if List.mem lbl_name opt_lbls then Asttypes.Optional lbl_name
               else Labelled lbl_name
             in
-            {ret_type with desc = Tarrow (lbl, prop_type, mk_fun_type rest, Cok)}
+            {
+              ret_type with
+              desc = Tarrow (lbl, prop_type, mk_fun_type rest, Cok);
+            }
         in
         let fun_type =
           if List.length label_decls = 0 (* No props *) then
@@ -238,7 +245,8 @@ let print_signature ~extractor ~signature =
 
       if AttributesUtils.contains "@inline" attributes then
         (* Generate type signature for @inline declaration *)
-        Buffer.add_string buf (gen_sig_str_for_inline_attr lines attributes id vd)
+        Buffer.add_string buf
+          (gen_sig_str_for_inline_attr lines attributes id vd)
       else
         (* Copy the external declaration verbatim from the implementation file *)
         Buffer.add_string buf ((lines |> String.concat "\n") ^ "\n");

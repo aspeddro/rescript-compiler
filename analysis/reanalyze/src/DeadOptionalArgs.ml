@@ -10,7 +10,8 @@ type item = {
 }
 
 let delayed_items = (ref [] : item list ref)
-let function_references = (ref [] : (Lexing.position * Lexing.position) list ref)
+let function_references =
+  (ref [] : (Lexing.position * Lexing.position) list ref)
 
 let add_function_reference ~(loc_from : Location.t) ~(loc_to : Location.t) =
   if active () then
@@ -25,7 +26,8 @@ let add_function_reference ~(loc_from : Location.t) ~(loc_to : Location.t) =
     if should_add then (
       if !Common.Cli.debug then
         Log_.item "OptionalArgs.addFunctionReference %s %s@."
-          (pos_from |> pos_to_string) (pos_to |> pos_to_string);
+          (pos_from |> pos_to_string)
+          (pos_to |> pos_to_string);
       function_references := (pos_from, pos_to) :: !function_references)
 
 let rec has_optional_args (texpr : Types.type_expr) =
@@ -85,7 +87,8 @@ let check decl =
   match decl with
   | {decl_kind = Value {optional_args}}
     when active ()
-         && not (ProcessDeadAnnotations.is_annotated_gen_type_or_live decl.pos) ->
+         && not (ProcessDeadAnnotations.is_annotated_gen_type_or_live decl.pos)
+    ->
     optional_args
     |> OptionalArgs.iter_unused (fun s ->
            Log_.warning ~loc:(decl |> decl_get_loc)

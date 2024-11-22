@@ -1,7 +1,8 @@
 let completion ~debug ~path ~pos ~current_file =
   let completions =
     match
-      Completions.get_completions ~debug ~path ~pos ~current_file ~for_hover:false
+      Completions.get_completions ~debug ~path ~pos ~current_file
+        ~for_hover:false
     with
     | None -> []
     | Some (completions, full, _) ->
@@ -89,25 +90,33 @@ let hover ~path ~pos ~current_file ~debug ~supports_markdown_links =
               (not is_interface) && pos_lnum = 1 && pos_cnum - pos_bol = 0
             in
             (* Skip if range is all zero, unless it's a module *)
-            (not is_module) && pos_is_zero loc.loc_start && pos_is_zero loc.loc_end
+            (not is_module) && pos_is_zero loc.loc_start
+            && pos_is_zero loc.loc_end
         in
         if skip_zero then Protocol.null
         else
-          let hover_text = Hover.new_hover ~supports_markdown_links ~full loc_item in
+          let hover_text =
+            Hover.new_hover ~supports_markdown_links ~full loc_item
+          in
           match hover_text with
           | None -> Protocol.null
           | Some s -> Protocol.stringify_hover s))
   in
   print_endline result
 
-let signature_help ~path ~pos ~current_file ~debug ~allow_for_constructor_payloads =
+let signature_help ~path ~pos ~current_file ~debug
+    ~allow_for_constructor_payloads =
   let result =
     match
       SignatureHelp.signature_help ~path ~pos ~current_file ~debug
         ~allow_for_constructor_payloads
     with
     | None ->
-      {Protocol.signatures = []; active_signature = None; active_parameter = None}
+      {
+        Protocol.signatures = [];
+        active_signature = None;
+        active_parameter = None;
+      }
     | Some res -> res
   in
   print_endline (Protocol.stringify_signature_help result)
@@ -185,7 +194,9 @@ let references ~path ~pos ~debug =
       match References.get_loc_item ~full ~pos ~debug with
       | None -> []
       | Some loc_item ->
-        let all_references = References.all_references_for_loc_item ~full loc_item in
+        let all_references =
+          References.all_references_for_loc_item ~full loc_item
+        in
         all_references
         |> List.fold_left
              (fun acc {References.uri = uri2; loc_opt} ->
@@ -211,7 +222,9 @@ let rename ~path ~pos ~new_name ~debug =
       match References.get_loc_item ~full ~pos ~debug with
       | None -> Protocol.null
       | Some loc_item ->
-        let all_references = References.all_references_for_loc_item ~full loc_item in
+        let all_references =
+          References.all_references_for_loc_item ~full loc_item
+        in
         let references_to_toplevel_modules =
           all_references
           |> Utils.filter_map (fun {References.uri = uri2; loc_opt} ->
@@ -270,7 +283,8 @@ let rename ~path ~pos ~new_name ~debug =
           text_document_edits |> List.map Protocol.stringify_text_document_edit
         in
         "[\n"
-        ^ (file_renames_string @ text_document_edits_string |> String.concat ",\n")
+        ^ (file_renames_string @ text_document_edits_string
+          |> String.concat ",\n")
         ^ "\n]")
   in
   print_endline result
@@ -353,7 +367,9 @@ let test ~path =
               Printf.printf "Setting version: %s\n" version;
             match String.split_on_char '.' version with
             | [major_raw; minor_raw] ->
-              let version = (int_of_string major_raw, int_of_string minor_raw) in
+              let version =
+                (int_of_string major_raw, int_of_string minor_raw)
+              in
               Packages.override_rescript_version := Some version
             | _ -> ())
           | "ve-" -> Packages.override_rescript_version := None

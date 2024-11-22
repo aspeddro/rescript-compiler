@@ -128,7 +128,8 @@ let extra_for_cmt ~(iterator : Tast_iterator.iterator)
     in
     extra_for_structure_items ~iterator items;
     extra_for_parts parts
-  | Interface signature -> extra_for_signature_items ~iterator signature.sig_items
+  | Interface signature ->
+    extra_for_signature_items ~iterator signature.sig_items
   | Partial_interface parts ->
     let items =
       parts |> Array.to_list
@@ -250,7 +251,8 @@ let add_for_record ~env ~extra ~record_type items =
                  LocalReference (stamp, Field name)
                | None -> NotFound)
              | `Global (module_name, path) ->
-               add_external_reference ~extra module_name path (Field name) name_loc;
+               add_external_reference ~extra module_name path (Field name)
+                 name_loc;
                GlobalReference (module_name, path, Field name)
              | _ -> NotFound
            in
@@ -276,15 +278,16 @@ let add_for_constructor ~env ~extra constructor_type {Asttypes.txt; loc}
           LocalReference (stamp, Constructor name)
         | None -> NotFound)
       | `Global (module_name, path) ->
-        add_external_reference ~extra module_name path (Constructor name) name_loc;
+        add_external_reference ~extra module_name path (Constructor name)
+          name_loc;
         GlobalReference (module_name, path, Constructor name)
       | _ -> NotFound
     in
     add_loc_item extra name_loc (Typed (name, constructor_type, loc_type))
   | _ -> ()
 
-let rec add_for_longident ~env ~extra top (path : Path.t) (txt : Longident.t) loc
-    =
+let rec add_for_longident ~env ~extra top (path : Path.t) (txt : Longident.t)
+    loc =
   if (not loc.Location.loc_ghost) && not (lid_is_complex txt) then (
     let id_length = String.length (String.concat "." (Longident.flatten txt)) in
     let reported_length = loc.loc_end.pos_cnum - loc.loc_start.pos_cnum in
@@ -389,8 +392,11 @@ let pat ~(file : File.t) ~env ~extra (iter : Tast_iterator.iterator)
 let expr ~env ~(extra : extra) (iter : Tast_iterator.iterator)
     (expression : Typedtree.expression) =
   (match expression.exp_desc with
-  | Texp_ident (path, {txt; loc}, _) when not (JsxHacks.path_is_fragment path) ->
-    add_for_longident ~env ~extra (Some (expression.exp_type, Value)) path txt loc
+  | Texp_ident (path, {txt; loc}, _) when not (JsxHacks.path_is_fragment path)
+    ->
+    add_for_longident ~env ~extra
+      (Some (expression.exp_type, Value))
+      path txt loc
   | Texp_record {fields} ->
     add_for_record ~env ~extra ~record_type:expression.exp_type
       (fields |> Array.to_list

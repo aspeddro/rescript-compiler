@@ -16,7 +16,8 @@ let read_file filename =
 let rec find_project_root ~dir =
   let rescript_json_file = Filename.concat dir rescript_json in
   let bsconfig_file = Filename.concat dir bsconfig in
-  if Sys.file_exists rescript_json_file || Sys.file_exists bsconfig_file then dir
+  if Sys.file_exists rescript_json_file || Sys.file_exists bsconfig_file then
+    dir
   else
     let parent = dir |> Filename.dirname in
     if parent = dir then (
