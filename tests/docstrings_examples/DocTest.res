@@ -404,12 +404,23 @@ let main = async () => {
           ->Array.map(async example => {
             let id = example.id->String.replaceAll(".", "__")
             let rescriptCode = example->getCodeBlocks
-            let jsCode = await compileTest(~id, ~code=rescriptCode)
-            (example, (rescriptCode, jsCode))
+            if String.trim(rescriptCode)->String.length === 0 {
+              None
+            } else {
+              let jsCode = await compileTest(~id, ~code=rescriptCode)
+              Some(example, (rescriptCode, jsCode))
+            }
           })
           ->Promise.all
 
-        Array.push(result, a)
+        let b = a->Array.filterMap(x => {
+          switch x {
+          | Some(x) => Some(x)
+          | None => None
+          }
+        })
+
+        Array.push(result, b)
 
       | None => ()
       }

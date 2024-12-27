@@ -408,6 +408,9 @@ async function main() {
         let a = await Promise.all(c.map(async example => {
           let id = example.id.replaceAll(".", "__");
           let rescriptCode = getCodeBlocks(example);
+          if (rescriptCode.trim().length === 0) {
+            return;
+          }
           let jsCode = await compileTest(id, rescriptCode);
           return [
             example,
@@ -417,7 +420,13 @@ async function main() {
             ]
           ];
         }));
-        result.push(a);
+        let b = $$Array.filterMap(a, x => {
+          if (x !== undefined) {
+            return x;
+          }
+          
+        });
+        result.push(b);
       }
       
     };
