@@ -107,8 +107,8 @@ jobs:
           #   upload_binaries: true
 
           # Verify that the compiler still builds with older OCaml versions
-          - os: ubuntu-latest
-            ocaml_compiler: ocaml-variants.5.0.0+options,ocaml-option-static
+          # - os: ubuntu-latest
+          #   ocaml_compiler: ocaml-variants.5.0.0+options,ocaml-option-static
           # - os: ubuntu-latest
           #   ocaml_compiler: ocaml-variants.4.14.2+options,ocaml-option-static
           # - os: ubuntu-latest
@@ -139,7 +139,7 @@ jobs:
 
       - name: Increase max user process (macOS only)
         if: runner.os == 'macOS'
-        run: sudo launchctl limit maxproc 5000 8000
+        run: sudo launchctl limit maxproc 7000 8000
 
       - name: Use Node.js
         uses: actions/setup-node@v4

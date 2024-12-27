@@ -152,6 +152,10 @@ async function runtimeTests(code) {
       _0: stderr.length > 0 ? stderr : stdout
     };
   }
+  console.log({
+    code: code,
+    exitCode: exitCode
+  });
   if (std.TAG === "Ok") {
     return {
       TAG: "Ok",
@@ -188,7 +192,7 @@ function extractDocFromFile(file) {
       RE_EXN_ID: "Assert_failure",
       _1: [
         "DocTest.res",
-        204,
+        206,
         9
       ],
       Error: new Error()

@@ -162,6 +162,8 @@ let runtimeTests = async code => {
   | None | Some(_) => Error(Array.length(stderr) > 0 ? stderr : stdout)
   }
 
+  Console.log({"code": code, "exitCode": exitCode})
+
   switch std {
   | Ok(buf) =>
     buf
