@@ -94,6 +94,10 @@ function createFileInTempDir(id) {
 }
 
 async function compileTest(id, code) {
+  console.log({
+    id: id,
+    code: code
+  });
   let match = await run(bscBin, [
     "-w",
     "-3-109-44",
@@ -104,9 +108,8 @@ async function compileTest(id, code) {
   let stdout = match.stdout;
   console.log({
     id: id,
-    code: code,
-    stderr: stderr,
-    stdout: stdout
+    stderr: stderr.map(e => e.toString()).join(""),
+    stdout: stdout.map(e => e.toString()).join("")
   });
   if (stderr.length > 0) {
     return {
@@ -199,7 +202,7 @@ function extractDocFromFile(file) {
       RE_EXN_ID: "Assert_failure",
       _1: [
         "DocTest.res",
-        208,
+        217,
         9
       ],
       Error: new Error()
