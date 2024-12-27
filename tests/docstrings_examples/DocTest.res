@@ -131,6 +131,12 @@ let compileTest = async (~id, ~code) => {
     ~args=["-w", "-3-109-44", "-e", code],
   )
 
+  switch Null.toOption(code) {
+  | Some(v) if v != 0.0 => panic(id)
+  | None => panic(`${id} exit code is None`)
+  | _ => ()
+  }
+
   Console.log({
     "id": id,
     "code": code,

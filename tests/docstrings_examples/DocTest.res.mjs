@@ -102,11 +102,20 @@ async function compileTest(id, code) {
     "-e",
     code
   ], undefined);
+  let code$1 = match.code;
   let stderr = match.stderr;
   let stdout = match.stdout;
+  if (code$1 !== null) {
+    if (code$1 !== 0.0) {
+      Pervasives.panic(id);
+    }
+    
+  } else {
+    Pervasives.panic(id + " exit code is None");
+  }
   console.log({
     id: id,
-    code: match.code,
+    code: code$1,
     signal: match.signal,
     stderr: stderr.map(e => e.toString()).join(""),
     stdout: stdout.map(e => e.toString()).join("")
@@ -202,7 +211,7 @@ function extractDocFromFile(file) {
       RE_EXN_ID: "Assert_failure",
       _1: [
         "DocTest.res",
-        219,
+        225,
         9
       ],
       Error: new Error()
