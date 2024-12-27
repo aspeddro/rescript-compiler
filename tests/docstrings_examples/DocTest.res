@@ -123,12 +123,14 @@ type example = {
 
 let createFileInTempDir = id => Path.join2(OS.tmpdir(), id)
 
-let compileTest = async (~id as _, ~code) => {
+let compileTest = async (~id, ~code) => {
   let {stderr, stdout} = await SpawnAsync.run(
     ~command=bscBin,
     // NOTE: warnings argument (-w) should be before eval (-e) argument
     ~args=["-w", "-3-109-44", "-e", code],
   )
+
+  Console.log({"id": id, "code": code, "stderr": stderr, "stdout": stdout})
 
   switch Array.length(stderr) > 0 {
   | true =>

@@ -93,7 +93,7 @@ function createFileInTempDir(id) {
   return Path.join(Os.tmpdir(), id);
 }
 
-async function compileTest(param, code) {
+async function compileTest(id, code) {
   let match = await run(bscBin, [
     "-w",
     "-3-109-44",
@@ -101,6 +101,13 @@ async function compileTest(param, code) {
     code
   ], undefined);
   let stderr = match.stderr;
+  let stdout = match.stdout;
+  console.log({
+    id: id,
+    code: code,
+    stderr: stderr,
+    stdout: stdout
+  });
   if (stderr.length > 0) {
     return {
       TAG: "Error",
@@ -109,7 +116,7 @@ async function compileTest(param, code) {
   } else {
     return {
       TAG: "Ok",
-      _0: match.stdout.map(e => e.toString()).join("")
+      _0: stdout.map(e => e.toString()).join("")
     };
   }
 }
@@ -192,7 +199,7 @@ function extractDocFromFile(file) {
       RE_EXN_ID: "Assert_failure",
       _1: [
         "DocTest.res",
-        206,
+        208,
         9
       ],
       Error: new Error()
