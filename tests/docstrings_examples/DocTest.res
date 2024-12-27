@@ -396,13 +396,14 @@ let main = async () => {
         let a =
           await c
           ->Array.map(async example => {
-            Console.log3(index, Array.length(chuncks), example.id)
             let id = example.id->String.replaceAll(".", "__")
             let rescriptCode = example->getCodeBlocks
             if String.trim(rescriptCode)->String.length === 0 {
               None
             } else {
+              Console.log3(index, Array.length(chuncks), example.id, "started")
               let jsCode = await compileTest(~id, ~code=rescriptCode)
+              Console.log3(index, Array.length(chuncks), example.id, "finished")
               Some(example, (rescriptCode, jsCode))
             }
           })
