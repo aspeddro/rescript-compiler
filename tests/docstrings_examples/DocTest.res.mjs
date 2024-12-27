@@ -390,7 +390,7 @@ async function main() {
       return acc.concat([cur]);
     }
   }).map(f => getExamples(extractDocFromFile(Path.join("runtime", f)))).flat();
-  let batchSize = (Os.cpus().length << 1);
+  let batchSize = (Os.cpus().length << 2);
   let chuncks = chunkArray(modules, batchSize);
   console.log("chuncks length", chuncks.length);
   console.log("chunck part size", $$Array.reduce(chuncks, 0, (acc, cur) => acc + cur.length | 0));
