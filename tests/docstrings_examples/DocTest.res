@@ -125,7 +125,7 @@ type example = {
 let createFileInTempDir = id => Path.join2(OS.tmpdir(), id)
 
 let compileTest = async (~id, ~code) => {
-  let {stderr, stdout, code, signal} = await SpawnAsync.run(
+  let {stderr, stdout, code} = await SpawnAsync.run(
     ~command=bscBin,
     // NOTE: warnings argument (-w) should be before eval (-e) argument
     ~args=["-w", "-3-109-44", "-e", code],
@@ -136,18 +136,6 @@ let compileTest = async (~id, ~code) => {
   | None => panic(`${id} exit code is None`)
   | _ => ()
   }
-
-  Console.log({
-    "id": id,
-    "code": code,
-    "signal": signal,
-    "stderr": stderr
-    ->Array.map(e => e->Buffer.toString)
-    ->Array.join(""),
-    "stdout": stdout
-    ->Array.map(e => e->Buffer.toString)
-    ->Array.join(""),
-  })
 
   switch Array.length(stderr) > 0 {
   | true =>
@@ -180,8 +168,6 @@ let runtimeTests = async code => {
   | Some(exitCode) if exitCode == 0.0 => stdout->Ok
   | None | Some(_) => Error(Array.length(stderr) > 0 ? stderr : stdout)
   }
-
-  Console.log({"code": code, "exitCode": exitCode})
 
   switch std {
   | Ok(buf) =>
@@ -407,6 +393,7 @@ let main = async () => {
       switch value {
       | Some(index) =>
         let c = Array.getUnsafe(chuncks, index)
+        Console.log2(index, Array.length(chuncks))
         let a =
           await c
           ->Array.map(async example => {

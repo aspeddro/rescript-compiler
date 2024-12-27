@@ -104,7 +104,6 @@ async function compileTest(id, code) {
   ], undefined);
   let code$1 = match.code;
   let stderr = match.stderr;
-  let stdout = match.stdout;
   if (code$1 !== null) {
     if (code$1 !== 0.0) {
       Pervasives.panic(id);
@@ -113,13 +112,6 @@ async function compileTest(id, code) {
   } else {
     Pervasives.panic(id + " exit code is None");
   }
-  console.log({
-    id: id,
-    code: code$1,
-    signal: match.signal,
-    stderr: stderr.map(e => e.toString()).join(""),
-    stdout: stdout.map(e => e.toString()).join("")
-  });
   if (stderr.length > 0) {
     return {
       TAG: "Error",
@@ -128,7 +120,7 @@ async function compileTest(id, code) {
   } else {
     return {
       TAG: "Ok",
-      _0: stdout.map(e => e.toString()).join("")
+      _0: match.stdout.map(e => e.toString()).join("")
     };
   }
 }
@@ -171,10 +163,6 @@ async function runtimeTests(code) {
       _0: stderr.length > 0 ? stderr : stdout
     };
   }
-  console.log({
-    code: code,
-    exitCode: exitCode
-  });
   if (std.TAG === "Ok") {
     return {
       TAG: "Ok",
@@ -211,7 +199,7 @@ function extractDocFromFile(file) {
       RE_EXN_ID: "Assert_failure",
       _1: [
         "DocTest.res",
-        225,
+        211,
         9
       ],
       Error: new Error()
@@ -414,6 +402,7 @@ async function main() {
       $$break = match.done;
       if (value !== undefined) {
         let c = chuncks[value];
+        console.log(value, chuncks.length);
         let a = await Promise.all(c.map(async example => {
           let id = example.id.replaceAll(".", "__");
           let rescriptCode = getCodeBlocks(example);
