@@ -403,13 +403,14 @@ async function main() {
       if (value !== undefined) {
         let c = chuncks[value];
         let a = await Promise.all(c.map(async example => {
-          console.log(value, chuncks.length, example.id);
           let id = example.id.replaceAll(".", "__");
           let rescriptCode = getCodeBlocks(example);
           if (rescriptCode.trim().length === 0) {
             return;
           }
+          console.log(value, chuncks.length, example.id, "started");
           let jsCode = await compileTest(id, rescriptCode);
+          console.log(value, chuncks.length, example.id, "finished");
           return [
             example,
             [

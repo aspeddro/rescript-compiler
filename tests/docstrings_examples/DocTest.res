@@ -401,9 +401,9 @@ let main = async () => {
             if String.trim(rescriptCode)->String.length === 0 {
               None
             } else {
-              Console.log3(index, Array.length(chuncks), example.id, "started")
+              Console.log4(index, Array.length(chuncks), example.id, "started")
               let jsCode = await compileTest(~id, ~code=rescriptCode)
-              Console.log3(index, Array.length(chuncks), example.id, "finished")
+              Console.log4(index, Array.length(chuncks), example.id, "finished")
               Some(example, (rescriptCode, jsCode))
             }
           })
