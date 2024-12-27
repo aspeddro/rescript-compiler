@@ -72,15 +72,17 @@ async function run(command, args, options) {
     stderr.push(data);
   });
   return await new Promise((resolve, reject) => {
-    spawn.once("error", (param, param$1) => reject({
+    spawn.once("error", (code, signal) => reject({
       stdout: stdout,
       stderr: stderr,
-      code: 1.0
+      code: code,
+      signal: signal
     }));
-    spawn.once("close", (code, _signal) => resolve({
+    spawn.once("close", (code, signal) => resolve({
       stdout: stdout,
       stderr: stderr,
-      code: code
+      code: code,
+      signal: signal
     }));
   });
 }
@@ -94,10 +96,6 @@ function createFileInTempDir(id) {
 }
 
 async function compileTest(id, code) {
-  console.log({
-    id: id,
-    code: code
-  });
   let match = await run(bscBin, [
     "-w",
     "-3-109-44",
@@ -108,6 +106,8 @@ async function compileTest(id, code) {
   let stdout = match.stdout;
   console.log({
     id: id,
+    code: match.code,
+    signal: match.signal,
     stderr: stderr.map(e => e.toString()).join(""),
     stdout: stdout.map(e => e.toString()).join("")
   });
@@ -202,7 +202,7 @@ function extractDocFromFile(file) {
       RE_EXN_ID: "Assert_failure",
       _1: [
         "DocTest.res",
-        217,
+        219,
         9
       ],
       Error: new Error()

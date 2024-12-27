@@ -92,6 +92,7 @@ module SpawnAsync = {
     stdout: array<Buffer.t>,
     stderr: array<Buffer.t>,
     code: Null.t<float>,
+    signal: Null.t<string>,
   }
   let run = async (~command, ~args, ~options=?) => {
     let spawn = ChildProcess.spawn(command, args, ~options?)
@@ -104,11 +105,11 @@ module SpawnAsync = {
       Array.push(stderr, data)
     })
     await Promise.make((resolve, reject) => {
-      spawn->ChildProcess.once("error", (_, _) => {
-        reject({stdout, stderr, code: Null.make(1.0)})
+      spawn->ChildProcess.once("error", (code, signal) => {
+        reject({stdout, stderr, code, signal})
       })
-      spawn->ChildProcess.once("close", (code, _signal) => {
-        resolve({stdout, stderr, code})
+      spawn->ChildProcess.once("close", (code, signal) => {
+        resolve({stdout, stderr, code, signal})
       })
     })
   }
@@ -124,8 +125,7 @@ type example = {
 let createFileInTempDir = id => Path.join2(OS.tmpdir(), id)
 
 let compileTest = async (~id, ~code) => {
-  Console.log({"id": id, "code": code})
-  let {stderr, stdout} = await SpawnAsync.run(
+  let {stderr, stdout, code, signal} = await SpawnAsync.run(
     ~command=bscBin,
     // NOTE: warnings argument (-w) should be before eval (-e) argument
     ~args=["-w", "-3-109-44", "-e", code],
@@ -133,6 +133,8 @@ let compileTest = async (~id, ~code) => {
 
   Console.log({
     "id": id,
+    "code": code,
+    "signal": signal,
     "stderr": stderr
     ->Array.map(e => e->Buffer.toString)
     ->Array.join(""),
