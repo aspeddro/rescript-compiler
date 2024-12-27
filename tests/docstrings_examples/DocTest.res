@@ -393,10 +393,10 @@ let main = async () => {
       switch value {
       | Some(index) =>
         let c = Array.getUnsafe(chuncks, index)
-        Console.log2(index, Array.length(chuncks))
         let a =
           await c
           ->Array.map(async example => {
+            Console.log3(index, Array.length(chuncks), example.id)
             let id = example.id->String.replaceAll(".", "__")
             let rescriptCode = example->getCodeBlocks
             if String.trim(rescriptCode)->String.length === 0 {

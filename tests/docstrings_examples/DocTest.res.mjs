@@ -402,8 +402,8 @@ async function main() {
       $$break = match.done;
       if (value !== undefined) {
         let c = chuncks[value];
-        console.log(value, chuncks.length);
         let a = await Promise.all(c.map(async example => {
+          console.log(value, chuncks.length, example.id);
           let id = example.id.replaceAll(".", "__");
           let rescriptCode = getCodeBlocks(example);
           if (rescriptCode.trim().length === 0) {
