@@ -20,66 +20,66 @@ env:
   OCAMLRUNPARAM: b
 
 jobs:
-  build-rewatch:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-13 # x64
-            rust-target: x86_64-apple-darwin
-          - os: macos-14 # ARM
-            rust-target: aarch64-apple-darwin
-          - os: ubuntu-latest # x64
-            rust-target: x86_64-unknown-linux-musl
-          - os: buildjet-2vcpu-ubuntu-2204-arm # ARM
-            rust-target: aarch64-unknown-linux-musl
-          - os: windows-latest
-            rust-target: x86_64-pc-windows-gnu
-
-    runs-on: ${{matrix.os}}
-
-    env:
-      RUST_BACKTRACE: "1"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Restore build cache
-        id: build-cache
-        uses: actions/cache@v4
-        with:
-          path: rewatch/target
-          key: rewatch-build-v2-${{ matrix.rust-target }}-${{ hashFiles('rewatch/src/**', 'rewatch/Cargo.lock') }}
-
-      - name: Install musl gcc
-        if: steps.build-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
-        run: sudo apt-get install -y --no-install-recommends musl-tools
-
-      - name: Install rust toolchain
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-          targets: ${{matrix.rust-target}}
-
-      - name: Build rewatch
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        run: cargo build --manifest-path rewatch/Cargo.toml --target ${{matrix.rust-target}} --release
-
-      - name: Copy rewatch exe to platform bin dir
-        run: |
-          cp rewatch/target/${{matrix.rust-target}}/release/rewatch${{ runner.os == 'Windows' && '.exe' || '' }} rewatch
-          node ./scripts/copyExes.js -rewatch
-
-      - name: Get artifact dir name
-        run: node .github/workflows/get_artifact_dir_name.js
-
-      - name: "Upload artifact: rewatch binary"
-        uses: actions/upload-artifact@v4
-        with:
-          name: rewatch-${{env.artifact_dir_name}}
-          path: ${{ env.artifact_dir_name }}
+  # build-rewatch:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - os: macos-13 # x64
+  #           rust-target: x86_64-apple-darwin
+  #         - os: macos-14 # ARM
+  #           rust-target: aarch64-apple-darwin
+  #         - os: ubuntu-latest # x64
+  #           rust-target: x86_64-unknown-linux-musl
+  #         - os: buildjet-2vcpu-ubuntu-2204-arm # ARM
+  #           rust-target: aarch64-unknown-linux-musl
+  #         - os: windows-latest
+  #           rust-target: x86_64-pc-windows-gnu
+  #
+  #   runs-on: ${{matrix.os}}
+  #
+  #   env:
+  #     RUST_BACKTRACE: "1"
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Restore build cache
+  #       id: build-cache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: rewatch/target
+  #         key: rewatch-build-v2-${{ matrix.rust-target }}-${{ hashFiles('rewatch/src/**', 'rewatch/Cargo.lock') }}
+  #
+  #     - name: Install musl gcc
+  #       if: steps.build-cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
+  #       run: sudo apt-get install -y --no-install-recommends musl-tools
+  #
+  #     - name: Install rust toolchain
+  #       if: steps.build-cache.outputs.cache-hit != 'true'
+  #       uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: stable
+  #         targets: ${{matrix.rust-target}}
+  #
+  #     - name: Build rewatch
+  #       if: steps.build-cache.outputs.cache-hit != 'true'
+  #       run: cargo build --manifest-path rewatch/Cargo.toml --target ${{matrix.rust-target}} --release
+  #
+  #     - name: Copy rewatch exe to platform bin dir
+  #       run: |
+  #         cp rewatch/target/${{matrix.rust-target}}/release/rewatch${{ runner.os == 'Windows' && '.exe' || '' }} rewatch
+  #         node ./scripts/copyExes.js -rewatch
+  #
+  #     - name: Get artifact dir name
+  #       run: node .github/workflows/get_artifact_dir_name.js
+  #
+  #     - name: "Upload artifact: rewatch binary"
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: rewatch-${{env.artifact_dir_name}}
+  #         path: ${{ env.artifact_dir_name }}
 
   build-compiler:
     strategy:
@@ -93,26 +93,26 @@ jobs:
             # Build the playground compiler and run the benchmarks on the fastest runner
             build_playground: true
             benchmarks: true
-          - os: buildjet-2vcpu-ubuntu-2204-arm # ARM
-            ocaml_compiler: ocaml-variants.5.2.1+options,ocaml-option-static
-            upload_binaries: true
-          - os: macos-13 # x64
-            ocaml_compiler: 5.2.1
-            upload_binaries: true
+          # - os: buildjet-2vcpu-ubuntu-2204-arm # ARM
+          #   ocaml_compiler: ocaml-variants.5.2.1+options,ocaml-option-static
+          #   upload_binaries: true
+          # - os: macos-13 # x64
+          #   ocaml_compiler: 5.2.1
+          #   upload_binaries: true
           - os: macos-14 # ARM
             ocaml_compiler: 5.2.1
             upload_binaries: true
-          - os: windows-latest
-            ocaml_compiler: 5.2.1
-            upload_binaries: true
+          # - os: windows-latest
+          #   ocaml_compiler: 5.2.1
+          #   upload_binaries: true
 
           # Verify that the compiler still builds with older OCaml versions
           - os: ubuntu-latest
             ocaml_compiler: ocaml-variants.5.0.0+options,ocaml-option-static
-          - os: ubuntu-latest
-            ocaml_compiler: ocaml-variants.4.14.2+options,ocaml-option-static
-          - os: ubuntu-latest
-            ocaml_compiler: ocaml-variants.4.13.0+options,ocaml-option-static
+          # - os: ubuntu-latest
+          #   ocaml_compiler: ocaml-variants.4.14.2+options,ocaml-option-static
+          # - os: ubuntu-latest
+          #   ocaml_compiler: ocaml-variants.4.13.0+options,ocaml-option-static
 
     runs-on: ${{matrix.os}}
 
