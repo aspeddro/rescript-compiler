@@ -15,6 +15,7 @@
 #### :nail_care: Polish
 
 - Allow single newline in JSX. https://github.com/rescript-lang/rescript/pull/7269
+- Editor: Always complete from Core first. Use actual native regex syntax in code snippets for regexps. https://github.com/rescript-lang/rescript/pull/7295
 
 #### :bug: Bug fix
 
@@ -29,6 +30,8 @@
 #### :house: Internal
 
 - Remove ignore in res_scanner.ml . https://github.com/rescript-lang/rescript/pull/7280
+- Use the new stdlib modules in the analysis tests. https://github.com/rescript-lang/rescript/pull/7295
+- Build with OCaml 5.3.0. https://github.com/rescript-lang/rescript-compiler/pull/7294
 
 # 12.0.0-alpha.8
 
