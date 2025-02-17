@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 test:
-	npm ci
+	npm install
 	npm run lint
 	npm run build
 	npm run tsc
