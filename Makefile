@@ -27,7 +27,7 @@ ninja/ninja:
 ninja: ninja/ninja
 
 node_modules/.bin/semver:
-	npm install
+	npm ci
 
 test: lib
 	node scripts/test.js -all
