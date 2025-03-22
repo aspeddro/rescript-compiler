@@ -262,7 +262,12 @@ type type_declaration = {
   type_attributes: Parsetree.attributes;
   type_immediate: bool; (* true iff type should not be a pointer *)
   type_unboxed: unboxed_status;
+  type_inlined_types: type_inlined_type list;
+      (** Representation of inlined types, needed for printing *)
 }
+
+and type_inlined_type =
+  | Record of {type_name: string; labels: label_declaration list}
 
 and type_kind =
   | Type_abstract
@@ -330,13 +335,6 @@ type extension_constructor = {
   ext_is_exception: bool;
 }
 
-and type_transparence =
-  | Type_public (* unrestricted expansion *)
-  | Type_new (* "new" type *)
-  | Type_private (* private type *)
-
-(* Type expressions for the class language *)
-
 module Concr : Set.S with type elt = string
 
 (* Type expressions for the module language *)
@@ -394,7 +392,6 @@ type constructor_description = {
   cstr_tag: constructor_tag; (* Tag for heap blocks *)
   cstr_consts: int; (* Number of constant constructors *)
   cstr_nonconsts: int; (* Number of non-const constructors *)
-  cstr_normal: int; (* Number of non generalized constrs *)
   cstr_generalized: bool; (* Constrained return type? *)
   cstr_private: private_flag; (* Read-only constructor? *)
   cstr_loc: Location.t;

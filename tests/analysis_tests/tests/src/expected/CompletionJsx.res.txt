@@ -260,8 +260,14 @@ Path Stdlib.Int.
     "label": "Int.compare",
     "kind": 12,
     "tags": [],
-    "detail": "(int, int) => Stdlib_Ordering.t",
+    "detail": "(int, int) => Ordering.t",
     "documentation": null
+  }, {
+    "label": "Int.ignore",
+    "kind": 12,
+    "tags": [],
+    "detail": "int => unit",
+    "documentation": {"kind": "markdown", "value": "\n  `ignore(int)` ignores the provided int and returns unit.\n\n  This helper is useful when you want to discard a value (for example, the result of an operation with side effects)\n  without having to store or process it further.\n"}
   }, {
     "label": "Int.toPrecision",
     "kind": 12,
@@ -387,8 +393,14 @@ Path Stdlib.Int.
     "label": "Int.compare",
     "kind": 12,
     "tags": [],
-    "detail": "(int, int) => Stdlib_Ordering.t",
+    "detail": "(int, int) => Ordering.t",
     "documentation": null
+  }, {
+    "label": "Int.ignore",
+    "kind": 12,
+    "tags": [],
+    "detail": "int => unit",
+    "documentation": {"kind": "markdown", "value": "\n  `ignore(int)` ignores the provided int and returns unit.\n\n  This helper is useful when you want to discard a value (for example, the result of an operation with side effects)\n  without having to store or process it further.\n"}
   }, {
     "label": "Int.toPrecision",
     "kind": 12,
@@ -724,6 +736,54 @@ Path Stdlib.String.s
       "newText": ""
       }]
   }, {
+    "label": "->String.searchOpt",
+    "kind": 12,
+    "tags": [],
+    "detail": "(string, RegExp.t) => option<int>",
+    "documentation": {"kind": "markdown", "value": "\n`searchOpt(str, regexp)`. Like `search`, but return an `option<int>`.\n\n## Examples\n\n```rescript\nString.searchOpt(\"testing 1 2 3\", %re(\"/\\d+/\")) == Some(8)\nString.searchOpt(\"no numbers\", %re(\"/\\d+/\")) == None\n```\n"},
+    "sortText": "searchOpt",
+    "insertText": "->String.searchOpt",
+    "additionalTextEdits": [{
+      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
+      "newText": ""
+      }]
+  }, {
+    "label": "->String.splitByRegExpAtMost",
+    "kind": 12,
+    "tags": [],
+    "detail": "(string, RegExp.t, ~limit: int) => array<option<string>>",
+    "documentation": {"kind": "markdown", "value": "\n`splitByRegExpAtMost(str, regexp, ~limit)` splits the given `str` at every\noccurrence of `regexp` and returns an array of the first `limit` resulting\nsubstrings. If `limit` is negative or greater than the number of substrings, the\narray will contain all the substrings.\nSee [`String.split`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) on MDN.\n\n## Examples\n\n```rescript\nString.splitByRegExpAtMost(\"Hello World. How are you doing?\", %re(\"/ /\"), ~limit=3) == [\n  Some(\"Hello\"),\n  Some(\"World.\"),\n  Some(\"How\"),\n]\n```\n"},
+    "sortText": "splitByRegExpAtMost",
+    "insertText": "->String.splitByRegExpAtMost",
+    "additionalTextEdits": [{
+      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
+      "newText": ""
+      }]
+  }, {
+    "label": "->String.slice",
+    "kind": 12,
+    "tags": [],
+    "detail": "(string, ~start: int, ~end: int) => string",
+    "documentation": {"kind": "markdown", "value": "\n`slice(str, ~start, ~end)` returns the substring of `str` starting at\ncharacter `start` up to but not including `end`.\n- If either `start` or `end` is negative, then it is evaluated as\n`length(str - start)` or `length(str - end)`.\n- If `end` is greater than the length of `str`, then it is treated as\n`length(str)`.\n- If `start` is greater than `end`, slice returns the empty string.\nSee [`String.slice`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice) on MDN.\n\n## Examples\n\n```rescript\nString.slice(\"abcdefg\", ~start=2, ~end=5) == \"cde\"\nString.slice(\"abcdefg\", ~start=2, ~end=9) == \"cdefg\"\nString.slice(\"abcdefg\", ~start=-4, ~end=-2) == \"de\"\nString.slice(\"abcdefg\", ~start=5, ~end=1) == \"\"\n```\n"},
+    "sortText": "slice",
+    "insertText": "->String.slice",
+    "additionalTextEdits": [{
+      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
+      "newText": ""
+      }]
+  }, {
+    "label": "->String.substringToEnd",
+    "kind": 12,
+    "tags": [],
+    "detail": "(string, ~start: int) => string",
+    "documentation": {"kind": "markdown", "value": "\n`substringToEnd(str, ~start)` returns the substring of `str` from position\n`start` to the end.\n- If `start` is less than or equal to zero, the entire string is returned.\n- If `start` is greater than or equal to the length of `str`, the empty string\nis returned.\nSee [`String.substring`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring) on MDN.\n\n## Examples\n\n```rescript\nString.substringToEnd(\"playground\", ~start=4) == \"ground\"\nString.substringToEnd(\"playground\", ~start=-3) == \"playground\"\nString.substringToEnd(\"playground\", ~start=12) == \"\"\n```\n"},
+    "sortText": "substringToEnd",
+    "insertText": "->String.substringToEnd",
+    "additionalTextEdits": [{
+      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
+      "newText": ""
+      }]
+  }, {
     "label": "->String.startsWith",
     "kind": 12,
     "tags": [],
@@ -748,42 +808,6 @@ Path Stdlib.String.s
       "newText": ""
       }]
   }, {
-    "label": "->String.searchOpt",
-    "kind": 12,
-    "tags": [],
-    "detail": "(string, Stdlib_RegExp.t) => option<int>",
-    "documentation": {"kind": "markdown", "value": "\n`searchOpt(str, regexp)`. Like `search`, but return an `option<int>`.\n\n## Examples\n\n```rescript\nString.searchOpt(\"testing 1 2 3\", %re(\"/\\d+/\")) == Some(8)\nString.searchOpt(\"no numbers\", %re(\"/\\d+/\")) == None\n```\n"},
-    "sortText": "searchOpt",
-    "insertText": "->String.searchOpt",
-    "additionalTextEdits": [{
-      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
-      "newText": ""
-      }]
-  }, {
-    "label": "->String.splitByRegExpAtMost",
-    "kind": 12,
-    "tags": [],
-    "detail": "(\n  string,\n  Stdlib_RegExp.t,\n  ~limit: int,\n) => array<option<string>>",
-    "documentation": {"kind": "markdown", "value": "\n`splitByRegExpAtMost(str, regexp, ~limit)` splits the given `str` at every\noccurrence of `regexp` and returns an array of the first `limit` resulting\nsubstrings. If `limit` is negative or greater than the number of substrings, the\narray will contain all the substrings.\nSee [`String.split`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) on MDN.\n\n## Examples\n\n```rescript\nString.splitByRegExpAtMost(\"Hello World. How are you doing?\", %re(\"/ /\"), ~limit=3) == [\n  Some(\"Hello\"),\n  Some(\"World.\"),\n  Some(\"How\"),\n]\n```\n"},
-    "sortText": "splitByRegExpAtMost",
-    "insertText": "->String.splitByRegExpAtMost",
-    "additionalTextEdits": [{
-      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
-      "newText": ""
-      }]
-  }, {
-    "label": "->String.slice",
-    "kind": 12,
-    "tags": [],
-    "detail": "(string, ~start: int, ~end: int) => string",
-    "documentation": {"kind": "markdown", "value": "\n`slice(str, ~start, ~end)` returns the substring of `str` starting at\ncharacter `start` up to but not including `end`.\n- If either `start` or `end` is negative, then it is evaluated as\n`length(str - start)` or `length(str - end)`.\n- If `end` is greater than the length of `str`, then it is treated as\n`length(str)`.\n- If `start` is greater than `end`, slice returns the empty string.\nSee [`String.slice`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice) on MDN.\n\n## Examples\n\n```rescript\nString.slice(\"abcdefg\", ~start=2, ~end=5) == \"cde\"\nString.slice(\"abcdefg\", ~start=2, ~end=9) == \"cdefg\"\nString.slice(\"abcdefg\", ~start=-4, ~end=-2) == \"de\"\nString.slice(\"abcdefg\", ~start=5, ~end=1) == \"\"\n```\n"},
-    "sortText": "slice",
-    "insertText": "->String.slice",
-    "additionalTextEdits": [{
-      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
-      "newText": ""
-      }]
-  }, {
     "label": "->String.sliceToEnd",
     "kind": 12,
     "tags": [],
@@ -799,7 +823,7 @@ Path Stdlib.String.s
     "label": "->String.setSymbol",
     "kind": 12,
     "tags": [],
-    "detail": "(string, Stdlib_Symbol.t, 'a) => unit",
+    "detail": "(string, Symbol.t, 'a) => unit",
     "documentation": null,
     "sortText": "setSymbol",
     "insertText": "->String.setSymbol",
@@ -811,7 +835,7 @@ Path Stdlib.String.s
     "label": "->String.splitByRegExp",
     "kind": 12,
     "tags": [],
-    "detail": "(string, Stdlib_RegExp.t) => array<option<string>>",
+    "detail": "(string, RegExp.t) => array<option<string>>",
     "documentation": {"kind": "markdown", "value": "\n`splitByRegExp(str, regexp)` splits the given `str` at every occurrence of\n`regexp` and returns an array of the resulting substrings.\nSee [`String.split`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) on MDN.\n\n## Examples\n\n```rescript\nString.splitByRegExp(\"Jan,Feb,Mar\", %re(\"/,/\")) == [Some(\"Jan\"), Some(\"Feb\"), Some(\"Mar\")]\n```\n"},
     "sortText": "splitByRegExp",
     "insertText": "->String.splitByRegExp",
@@ -859,22 +883,10 @@ Path Stdlib.String.s
     "label": "->String.search",
     "kind": 12,
     "tags": [],
-    "detail": "(string, Stdlib_RegExp.t) => int",
+    "detail": "(string, RegExp.t) => int",
     "documentation": {"kind": "markdown", "value": "\n`search(str, regexp)` returns the starting position of the first match of\n`regexp` in the given `str`, or -1 if there is no match.\nSee [`String.search`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search) on MDN.\n\n## Examples\n\n```rescript\nString.search(\"testing 1 2 3\", %re(\"/\\d+/\")) == 8\nString.search(\"no numbers\", %re(\"/\\d+/\")) == -1\n```\n"},
     "sortText": "search",
     "insertText": "->String.search",
-    "additionalTextEdits": [{
-      "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
-      "newText": ""
-      }]
-  }, {
-    "label": "->String.substringToEnd",
-    "kind": 12,
-    "tags": [],
-    "detail": "(string, ~start: int) => string",
-    "documentation": {"kind": "markdown", "value": "\n`substringToEnd(str, ~start)` returns the substring of `str` from position\n`start` to the end.\n- If `start` is less than or equal to zero, the entire string is returned.\n- If `start` is greater than or equal to the length of `str`, the empty string\nis returned.\nSee [`String.substring`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring) on MDN.\n\n## Examples\n\n```rescript\nString.substringToEnd(\"playground\", ~start=4) == \"ground\"\nString.substringToEnd(\"playground\", ~start=-3) == \"playground\"\nString.substringToEnd(\"playground\", ~start=12) == \"\"\n```\n"},
-    "sortText": "substringToEnd",
-    "insertText": "->String.substringToEnd",
     "additionalTextEdits": [{
       "range": {"start": {"line": 93, "character": 17}, "end": {"line": 93, "character": 18}},
       "newText": ""

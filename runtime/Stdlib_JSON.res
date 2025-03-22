@@ -57,6 +57,7 @@ module Classify = {
     | Object(dict<t>)
     | Array(array<t>)
 
+  @deprecated("Directly switch on the JSON object instead")
   let classify = value => {
     switch _internalClass(value) {
     | "[object Boolean]" => Bool(_asBool(value))
@@ -80,22 +81,41 @@ module Encode = {
 }
 
 module Decode = {
-  let bool = (json: t) =>
-    Stdlib_Type.typeof(json) === #boolean ? Some((Obj.magic(json): bool)) : None
-  let null = (json: t) => Obj.magic(json) === Stdlib_Null.null ? Some(Stdlib_Null.null) : None
-  let string = (json: t) =>
-    Stdlib_Type.typeof(json) === #string ? Some((Obj.magic(json): string)) : None
-  let float = (json: t) =>
-    Stdlib_Type.typeof(json) === #number ? Some((Obj.magic(json): float)) : None
-  let object = (json: t) =>
-    if (
-      Stdlib_Type.typeof(json) === #object &&
-      !Stdlib_Array.isArray(json) &&
-      !(Obj.magic(json) === Stdlib_Null.null)
-    ) {
-      Some((Obj.magic(json): dict<t>))
-    } else {
-      None
+  let bool = json =>
+    switch json {
+    | Boolean(b) => Some(b)
+    | _ => None
     }
-  let array = (json: t) => Stdlib_Array.isArray(json) ? Some((Obj.magic(json): array<t>)) : None
+
+  let null = json =>
+    switch json {
+    | Null => Some(Stdlib_Null.null)
+    | _ => None
+    }
+
+  let string = json =>
+    switch json {
+    | String(s) => Some(s)
+    | _ => None
+    }
+
+  let float = json =>
+    switch json {
+    | Number(f) => Some(f)
+    | _ => None
+    }
+
+  let object = json =>
+    switch json {
+    | Object(o) => Some(o)
+    | _ => None
+    }
+
+  let array = (json: t) =>
+    switch json {
+    | Array(a) => Some(a)
+    | _ => None
+    }
 }
+
+external ignore: t => unit = "%ignore"

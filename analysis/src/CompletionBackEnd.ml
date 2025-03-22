@@ -965,7 +965,8 @@ and getCompletionsForContextPath ~debug ~full ~opens ~rawOpens ~pos ~env ~exact
         | [], [(Nolabel | Labelled _ | Optional _)] ->
           (* should not happen, but just ignore extra arguments *) []
       in
-      match TypeUtils.extractFunctionType ~env ~package typ with
+
+      match TypeUtils.extractFunctionType ~env ~package ~digInto:false typ with
       | args, tRet when args <> [] ->
         let args = processApply args labels in
         let retType = reconstructFunctionType args tRet in

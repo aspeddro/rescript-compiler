@@ -164,7 +164,7 @@ let comparisons_table =
           objcomp = Pobjmax;
           intcomp = Pintmax;
           boolcomp = Pboolmax;
-          floatcomp = Pboolmax;
+          floatcomp = Pfloatmax;
           stringcomp = Pstringmax;
           bigintcomp = Pbigintmax;
           simplify_constant_constructor = false;
@@ -212,22 +212,22 @@ let comparisons_table =
       (* FIXME: Core compatibility *)
       ( "%bs_min",
         {
-          objcomp = Pobjmax;
-          intcomp = Pintmax;
-          boolcomp = Pboolmax;
-          floatcomp = Pboolmax;
-          stringcomp = Pstringmax;
-          bigintcomp = Pbigintmax;
-          simplify_constant_constructor = false;
-        } );
-      ( "%bs_max",
-        {
           objcomp = Pobjmin;
           intcomp = Pintmin;
           boolcomp = Pboolmin;
           floatcomp = Pfloatmin;
           stringcomp = Pstringmin;
           bigintcomp = Pbigintmin;
+          simplify_constant_constructor = false;
+        } );
+      ( "%bs_max",
+        {
+          objcomp = Pobjmax;
+          intcomp = Pintmax;
+          boolcomp = Pboolmax;
+          floatcomp = Pfloatmax;
+          stringcomp = Pstringmax;
+          bigintcomp = Pbigintmax;
           simplify_constant_constructor = false;
         } );
     |]
@@ -274,8 +274,8 @@ let primitives_table =
       ("%addint", Paddint);
       ("%subint", Psubint);
       ("%mulint", Pmulint);
-      ("%divint", Pdivint Safe);
-      ("%modint", Pmodint Safe);
+      ("%divint", Pdivint);
+      ("%modint", Pmodint);
       ("%andint", Pandint);
       ("%orint", Porint);
       ("%xorint", Pxorint);
@@ -447,15 +447,6 @@ let transl_primitive loc p env ty =
     with Not_found -> Pccall p
   in
   match prim with
-  | Plazyforce ->
-    let parm = Ident.create "prim" in
-    Lfunction
-      {
-        params = [parm];
-        body = Matching.inline_lazy_force (Lvar parm) Location.none;
-        loc;
-        attr = default_function_attribute;
-      }
   | Ploc kind -> (
     let lam = lam_of_loc kind loc in
     match p.prim_arity with
@@ -757,8 +748,6 @@ and transl_exp0 (e : Typedtree.expression) : Lambda.lambda =
     | Ploc _, _ -> assert false
     | _, _ -> (
       match (prim, argl) with
-      | Plazyforce, [a] -> wrap (Matching.inline_lazy_force a e.exp_loc)
-      | Plazyforce, _ -> assert false
       | _ -> wrap (Lprim (prim, argl, e.exp_loc))))
   | Texp_apply {funct; args = oargs; partial} ->
     let inlined, funct =

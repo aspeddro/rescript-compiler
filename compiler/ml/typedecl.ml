@@ -107,6 +107,7 @@ let enter_type rec_flag env sdecl id =
         type_attributes = sdecl.ptype_attributes;
         type_immediate = false;
         type_unboxed = unboxed_false_default_false;
+        type_inlined_types = [];
       }
     in
     Env.add_type ~check:true id decl env
@@ -293,7 +294,7 @@ let make_constructor env type_path type_params sargs sret_type =
    any type variable present in [ty].
 *)
 
-let transl_declaration ~type_record_as_object env sdecl id =
+let transl_declaration ~type_record_as_object ~untagged_wfc env sdecl id =
   (* Bind type parameters *)
   reset_type_variables ();
   Ctype.begin_def ();
@@ -529,7 +530,11 @@ let transl_declaration ~type_record_as_object env sdecl id =
       let is_untagged_def =
         Ast_untagged_variants.has_untagged sdecl.ptype_attributes
       in
-      Ast_untagged_variants.check_well_formed ~env ~is_untagged_def cstrs;
+      let well_formedness_check : Ast_untagged_variants.well_formedness_check =
+        {is_untagged_def; cstrs}
+      in
+      (* delay the check until the newenv is created to handle recursive types *)
+      untagged_wfc := well_formedness_check :: !untagged_wfc;
       (Ttype_variant tcstrs, Type_variant cstrs, sdecl)
     | Ptype_record lbls_ -> (
       let optional_labels =
@@ -679,6 +684,7 @@ let transl_declaration ~type_record_as_object env sdecl id =
       type_attributes = sdecl.ptype_attributes;
       type_immediate = false;
       type_unboxed = unboxed_status;
+      type_inlined_types = [];
     }
   in
 
@@ -1467,15 +1473,35 @@ let transl_type_decl env rec_flag sdecl_list =
     | Asttypes.Recursive | Asttypes.Nonrecursive -> (id, None)
   in
   let type_record_as_object = ref false in
+  let untagged_wfc = ref [] in
   let transl_declaration name_sdecl (id, slot) =
     current_slot := slot;
     Builtin_attributes.warning_scope name_sdecl.ptype_attributes (fun () ->
-        transl_declaration ~type_record_as_object temp_env name_sdecl id)
+        transl_declaration ~type_record_as_object ~untagged_wfc temp_env
+          name_sdecl id)
   in
   let tdecls =
     List.map2 transl_declaration sdecl_list (List.map id_slots id_list)
   in
-  let decls = List.map (fun tdecl -> (tdecl.typ_id, tdecl.typ_type)) tdecls in
+  let inline_types =
+    tdecls
+    |> List.filter (fun tdecl ->
+           tdecl.typ_attributes
+           |> List.find_opt (fun (({txt}, _) : Parsetree.attribute) ->
+                  txt = "res.inlineRecordDefinition")
+           |> Option.is_some)
+    |> List.filter_map (fun tdecl ->
+           match tdecl.typ_type.type_kind with
+           | Type_record (labels, _) ->
+             Some (Record {type_name = tdecl.typ_name.txt; labels})
+           | _ -> None)
+  in
+  let decls =
+    List.map
+      (fun tdecl ->
+        (tdecl.typ_id, {tdecl.typ_type with type_inlined_types = inline_types}))
+      tdecls
+  in
   let sdecl_list =
     Variant_type_spread.expand_dummy_constructor_args sdecl_list decls
   in
@@ -1528,6 +1554,9 @@ let transl_type_decl env rec_flag sdecl_list =
       | None -> ())
     sdecl_list tdecls;
   (* Check that constraints are enforced *)
+  List.iter
+    (fun check -> Ast_untagged_variants.check_well_formed ~env:newenv check)
+    !untagged_wfc;
   List.iter2 (check_constraints ~type_record_as_object newenv) sdecl_list decls;
   (* Name recursion *)
   let decls =
@@ -1926,6 +1955,7 @@ let transl_with_constraint env id row_path orig_decl sdecl =
       type_attributes = sdecl.ptype_attributes;
       type_immediate = false;
       type_unboxed;
+      type_inlined_types = [];
     }
   in
   (match row_path with
@@ -1976,6 +2006,7 @@ let abstract_type_decl arity =
       type_attributes = [];
       type_immediate = false;
       type_unboxed = unboxed_false_default_false;
+      type_inlined_types = [];
     }
   in
   Ctype.end_def ();

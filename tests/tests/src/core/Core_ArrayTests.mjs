@@ -457,6 +457,44 @@ Test.run([
   "last - empty"
 ], Stdlib_Array.last([]), eq, undefined);
 
+let array = [];
+
+array.splice(1, 0, "foo");
+
+Test.run([
+  [
+    "Core_ArrayTests.res",
+    116,
+    22,
+    49
+  ],
+  "splice - Insert no delete"
+], array, eq, ["foo"]);
+
+let array$1 = [
+  "bar",
+  "baz"
+];
+
+Test.run([
+  [
+    "Core_ArrayTests.res",
+    122,
+    15,
+    43
+  ],
+  "splice - Insert and delete"
+], [
+  (array$1.splice(1, 1, "foo"), undefined),
+  array$1
+], eq, [
+  undefined,
+  [
+    "bar",
+    "foo"
+  ]
+]);
+
 export {
   eq,
 }
